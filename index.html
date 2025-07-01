@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOOTLOADER.LIVE</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: #000;
+            color: #00ff00;
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Matrix rain effect */
+        .matrix {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.1;
+        }
+
+        .container {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: clamp(2rem, 8vw, 6rem);
+            font-weight: 700;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 20px #00ff00;
+            animation: glitch 2s infinite;
+            letter-spacing: 0.1em;
+        }
+
+        @keyframes glitch {
+
+            0%,
+            90%,
+            100% {
+                transform: translate(0);
+            }
+
+            10% {
+                transform: translate(-2px, 2px);
+            }
+
+            20% {
+                transform: translate(2px, -2px);
+            }
+
+            30% {
+                transform: translate(-2px, -2px);
+            }
+
+            40% {
+                transform: translate(2px, 2px);
+            }
+
+            50% {
+                transform: translate(-2px, 2px);
+            }
+
+            60% {
+                transform: translate(2px, -2px);
+            }
+
+            70% {
+                transform: translate(-2px, -2px);
+            }
+
+            80% {
+                transform: translate(2px, 2px);
+            }
+        }
+
+        .terminal {
+            background: rgba(0, 20, 0, 0.9);
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 30px;
+            max-width: 600px;
+            width: 100%;
+            margin: 20px;
+            box-shadow: 0 0 50px rgba(0, 255, 0, 0.3);
+        }
+
+        .terminal-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #00ff00;
+        }
+
+        .terminal-title {
+            font-size: 1.2rem;
+            margin-left: 10px;
+        }
+
+        .terminal-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ff0000;
+        }
+
+        .btn:nth-child(2) {
+            background: #ffff00;
+        }
+
+        .btn:nth-child(3) {
+            background: #00ff00;
+        }
+
+        .content {
+            font-size: 1rem;
+            line-height: 1.6;
+            text-align: left;
+        }
+
+        .prompt {
+            color: #00ffff;
+            margin-right: 10px;
+        }
+
+        .cursor {
+            animation: blink 1s infinite;
+            background: #00ff00;
+            width: 10px;
+            height: 20px;
+            display: inline-block;
+            margin-left: 5px;
+        }
+
+        @keyframes blink {
+
+            0%,
+            50% {
+                opacity: 1;
+            }
+
+            51%,
+            100% {
+                opacity: 0;
+            }
+        }
+
+        .command {
+            margin: 10px 0;
+        }
+
+        .output {
+            color: #888;
+            margin-left: 20px;
+        }
+
+        .ascii-art {
+            font-size: 0.7rem;
+            color: #00ff00;
+            white-space: pre;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .footer {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            color: #555;
+        }
+
+        @media (max-width: 768px) {
+            .terminal {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            .ascii-art {
+                font-size: 0.5rem;
+            }
+
+            .content {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <canvas class="matrix"></canvas>
+
+    <div class="container">
+        <div class="logo">BOOTLOADER.LIVE</div>
+
+        <div class="terminal">
+            <div class="terminal-header">
+                <div class="terminal-buttons">
+                    <div class="btn"></div>
+                    <div class="btn"></div>
+                    <div class="btn"></div>
+                </div>
+                <div class="terminal-title">system.boot</div>
+            </div>
+
+            <div class="content">
+                <div class="command">
+                    <span class="prompt">root@bootloader:~$</span> ./initialize
+                </div>
+                <div class="output">Starting system initialization...</div>
+                <div class="output">Loading kernel modules... [OK]</div>
+                <div class="output">Mounting filesystems... [OK]</div>
+                <div class="output">Network interface up... [OK]</div>
+
+                <div class="ascii-art">
+                    ██████╗ ██████╗ ██████╗ ████████╗
+                    ██╔══██╗██╔═══██╗██╔═══██╗╚══██╔══╝
+                    ██████╔╝██║ ██║██║ ██║ ██║
+                    ██╔══██╗██║ ██║██║ ██║ ██║
+                    ██████╔╝╚██████╔╝╚██████╔╝ ██║
+                    ╚═════╝ ╚═════╝ ╚═════╝ ╚═╝
+                </div>
+
+                <div class="command">
+                    <span class="prompt">root@bootloader:~$</span> status
+                </div>
+                <div class="output">System: ONLINE</div>
+                <div class="output">Uptime: ∞</div>
+                <div class="output">Mission: READY</div>
+
+                <div class="command">
+                    <span class="prompt">root@bootloader:~$</span> echo "Welcome to the machine"
+                </div>
+                <div class="output">Welcome to the machine</div>
+
+                <div class="command">
+                    <span class="prompt">root@bootloader:~$</span> <span class="cursor"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        © 2024 BOOTLOADER.LIVE • SYSTEM READY
+    </div>
+
+    <script>
+        // Matrix rain effect
+        const canvas = document.querySelector('.matrix');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const matrix = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*()*&^%+-/~{[|`]}";
+        const matrixArray = matrix.split("");
+
+        const fontSize = 10;
+        const columns = canvas.width / fontSize;
+
+        const drops = [];
+        for (let x = 0; x < columns; x++) {
+            drops[x] = 1;
+        }
+
+        function draw() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.04)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#00ff00';
+            ctx.font = fontSize + 'px monospace';
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = matrixArray[Math.floor(Math.random() * matrixArray.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+
+        setInterval(draw, 35);
+
+        // Resize canvas on window resize
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // Add some random glitch effects
+        setInterval(() => {
+            const logo = document.querySelector('.logo');
+            logo.style.textShadow = `0 0 20px #00ff00, ${Math.random() * 5}px ${Math.random() * 5}px 10px #ff0000`;
+            setTimeout(() => {
+                logo.style.textShadow = '0 0 20px #00ff00';
+            }, 100);
+        }, 3000 + Math.random() * 7000);
+    </script>
+</body>
+
+</html>
