@@ -13,110 +13,131 @@
         }
 
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(180deg, #2c3e50 0%, #34495e 30%, #455a64 100%);
             min-height: 100vh;
             overflow: hidden;
             position: relative;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
         }
 
-        .rocket {
-            font-size: 8rem;
-            position: absolute;
-            animation: fly 6s infinite linear;
-            transform-origin: center;
-            filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
-        }
-
-        @keyframes fly {
-            0% {
-                left: -10%;
-                top: 80%;
-                transform: rotate(-45deg);
-            }
-
-            25% {
-                left: 30%;
-                top: 40%;
-                transform: rotate(-20deg);
-            }
-
-            50% {
-                left: 50%;
-                top: 20%;
-                transform: rotate(10deg);
-            }
-
-            75% {
-                left: 80%;
-                top: 30%;
-                transform: rotate(25deg);
-            }
-
-            100% {
-                left: 110%;
-                top: -10%;
-                transform: rotate(45deg);
-            }
-        }
-
-        /* Multiple rockets for a more dynamic effect */
-        .rocket:nth-child(2) {
-            animation-delay: -2s;
-            font-size: 6rem;
-            opacity: 0.7;
-        }
-
-        .rocket:nth-child(3) {
-            animation-delay: -4s;
-            font-size: 4rem;
-            opacity: 0.5;
-        }
-
-        /* Subtle background animation */
+        /* Early morning atmosphere with subtle stars */
         body::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 40% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
-            animation: drift 20s infinite ease-in-out;
+            height: 60%;
+            background:
+                radial-gradient(2px 2px at 20px 30px, rgba(255, 255, 255, 0.3), transparent),
+                radial-gradient(2px 2px at 40px 70px, rgba(255, 255, 255, 0.2), transparent),
+                radial-gradient(1px 1px at 90px 40px, rgba(255, 255, 255, 0.3), transparent),
+                radial-gradient(1px 1px at 130px 80px, rgba(255, 255, 255, 0.2), transparent),
+                radial-gradient(2px 2px at 160px 30px, rgba(255, 255, 255, 0.3), transparent);
+            background-repeat: repeat;
+            background-size: 200px 100px;
+            opacity: 0.4;
         }
 
-        @keyframes drift {
+        .ground {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 20%;
+            background: linear-gradient(180deg, #37474f 0%, #263238 100%);
+            border-top: 1px solid #455a64;
+        }
+
+        .launch-pad {
+            position: absolute;
+            bottom: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 20px;
+            background: linear-gradient(90deg, #546e7a 0%, #37474f 100%);
+            border-radius: 10px;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .launch-pad::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 10px;
+            background: #455a64;
+            border-radius: 5px;
+        }
+
+        .rocket {
+            font-size: 12rem;
+            position: absolute;
+            bottom: 40%;
+            left: 50%;
+            transform: translateX(-50%);
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.5));
+            animation: subtle-hover 4s ease-in-out infinite;
+        }
+
+        @keyframes subtle-hover {
 
             0%,
             100% {
-                transform: translateY(0px);
+                transform: translateX(-50%) translateY(0px);
             }
 
             50% {
-                transform: translateY(-20px);
+                transform: translateX(-50%) translateY(-3px);
             }
+        }
+
+        /* Subtle mist/fog effect */
+        .mist {
+            position: absolute;
+            bottom: 15%;
+            left: 0;
+            width: 100%;
+            height: 30%;
+            background: linear-gradient(180deg, transparent 0%, rgba(255, 255, 255, 0.03) 50%, rgba(255, 255, 255, 0.08) 100%);
+            pointer-events: none;
         }
 
         @media (max-width: 768px) {
             .rocket {
-                font-size: 5rem;
+                font-size: 8rem;
+                bottom: 35%;
             }
 
-            .rocket:nth-child(2) {
-                font-size: 4rem;
+            .launch-pad {
+                width: 150px;
+                bottom: 15%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .rocket {
+                font-size: 6rem;
+                bottom: 30%;
             }
 
-            .rocket:nth-child(3) {
-                font-size: 3rem;
+            .launch-pad {
+                width: 120px;
+                bottom: 12%;
             }
         }
     </style>
 </head>
 
 <body>
-    <div class="rocket">🚀</div>
-    <div class="rocket">🚀</div>
+    <div class="ground"></div>
+    <div class="launch-pad"></div>
+    <div class="mist"></div>
     <div class="rocket">🚀</div>
 </body>
 
