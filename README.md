@@ -1,90 +1,68 @@
-# BOOTLOADER.LIVE
+# bootloader.live
 
-A cyberpunk-themed landing page with terminal aesthetics, matrix rain effects, and glitch animations.
+A static blog on AI-assisted development, MCP tools, and developer productivity. Hosted on GitHub Pages at [bootloader.live](https://bootloader.live).
 
-## 🚀 Free Hosting Options (Long-term)
+## Architecture
 
-### Recommended: GitHub Pages
-- **Cost**: Free forever for public repositories
-- **Custom domain**: Full support
-- **Bandwidth**: Generous limits
-- **Setup**: Push to GitHub → Enable Pages
-- **Longevity**: ⭐⭐⭐⭐⭐ (GitHub isn't going anywhere)
+Zero-build-step SPA. All rendering happens client-side:
 
-### Alternative Options
+- **marked.js** — Markdown to HTML
+- **highlight.js** — Code syntax highlighting
+- **mermaid 11** — Flowchart/diagram rendering (ESM import)
+- **DOMPurify** — HTML sanitization
+- **github-markdown.css** — Content styling matching [mdp](https://github.com/mxcoppell/mdp)
 
-1. **Netlify**
-   - 100GB bandwidth/month free
-   - Excellent performance
-   - Easy custom domain setup
-   - Automatic HTTPS
+Single `index.html` file with hash-based routing (`#/post/slug`). No framework, no bundler, no CI pipeline.
 
-2. **Vercel**
-   - Great performance and CDN
-   - Simple deployment from Git
-   - Generous free tier
+## Adding a New Post
 
-3. **Cloudflare Pages**
-   - Unlimited bandwidth on free tier
-   - Global CDN
-   - Fast builds and deployments
-
-## 📡 Domain Setup (Squarespace DNS)
-
-Since you bought the domain through Squarespace:
-
-1. **Option A - Keep DNS with Squarespace**:
-   - Add CNAME record: `www` → `your-username.github.io`
-   - Add A records for apex domain to GitHub's IPs:
-     - `185.199.108.153`
-     - `185.199.109.153`
-     - `185.199.110.153`
-     - `185.199.111.153`
-
-2. **Option B - Transfer DNS** (Recommended):
-   - Point nameservers to your hosting provider
-   - Manage DNS through hosting platform
-
-## 🛠 Quick Deploy to GitHub Pages
-
-1. Create a new repository on GitHub
-2. Push this code:
+1. Copy the markdown from `ai-productivity-blog`:
    ```bash
-   git add .
-   git commit -m "Initial commit: BOOTLOADER.LIVE landing page"
-   git branch -M main
-   git remote add origin https://github.com/YOUR-USERNAME/bootloader.live.git
-   git push -u origin main
+   mkdir -p posts/<slug>
+   cp ../ai-productivity-blog/posts/<slug>/blog.md posts/<slug>/
+   cp -r ../ai-productivity-blog/posts/<slug>/images posts/<slug>/ 2>/dev/null
    ```
-3. Go to repository Settings → Pages
-4. Set source to "Deploy from a branch"
-5. Select `main` branch and `/ (root)`
-6. Add your custom domain: `bootloader.live`
 
-## 🎨 Features
+2. Add an entry to the `POSTS` array in `index.html`:
+   ```js
+   {
+       slug: '<slug>',
+       title: 'Post Title',
+       date: 'YYYY-MM-DD',
+       excerpt: 'First sentence or two.',
+       tags: ['Tag1', 'Tag2'],
+       file: 'blog.md'
+   },
+   ```
 
-- **Matrix rain animation** - Falling green characters background
-- **Glitch effects** - Random text shadow glitches on title
-- **Terminal simulation** - Authentic bootloader sequence
-- **Responsive design** - Mobile and desktop optimized
-- **Zero dependencies** - Single HTML file, works anywhere
-- **Fast loading** - Minimal external resources
+3. Push to `main` — GitHub Pages deploys automatically.
 
-## 🔧 Customization
+A Claude Code skill (`/publish-post`) automates this workflow.
 
-The page is designed to be self-contained. To modify:
+## Features
 
-- **Colors**: Update CSS variables in the `<style>` section
-- **Content**: Edit the terminal commands and ASCII art
-- **Animations**: Adjust timing in CSS keyframes and JavaScript intervals
+- Light/dark theme toggle with localStorage persistence
+- Mermaid diagram rendering matching mdp exactly
+- Table of contents panel for longer posts
+- Reading progress bar and estimated reading time
+- Responsive design (mobile-friendly)
+- Newsreader serif typography for headings
 
-## 📱 Mobile Responsive
+## Project Structure
 
-The design automatically adapts to smaller screens:
-- Responsive typography using `clamp()`
-- Touch-friendly interface
-- Optimized ASCII art scaling
-
----
-
-**Status**: SYSTEM READY • Uptime: ∞ 
+```
+bootloader.live/
+├── index.html          # Complete SPA (HTML + CSS + JS)
+├── CNAME               # GitHub Pages custom domain
+├── posts/
+│   ├── what-is-agent/
+│   │   └── blog.md
+│   ├── claude-code-team-experience/
+│   │   ├── blog.md
+│   │   └── images/
+│   └── ...             # 8 posts total
+└── .claude/
+    └── skills/
+        └── publish-post/
+            └── SKILL.md
+```
