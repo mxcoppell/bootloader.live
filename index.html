@@ -216,7 +216,29 @@ body {
     letter-spacing: -0.01em;
 }
 
-.nav-logo .logo-icon { font-size: 20px; line-height: 1; }
+.nav-logo .logo-icon {
+    font-size: 20px;
+    line-height: 1;
+    display: inline-block;
+    transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.nav-logo:hover .logo-icon {
+    animation: rocket-alive 1.5s ease-in-out infinite;
+    filter: drop-shadow(0 2px 6px rgba(255, 140, 0, 0.4));
+}
+
+.nav-logo:hover {
+    color: var(--text-primary);
+}
+
+@keyframes rocket-alive {
+    0%   { transform: translateY(0) rotate(0deg) scale(1); }
+    25%  { transform: translateY(-3px) rotate(2deg) scale(1.05); }
+    50%  { transform: translateY(-1px) rotate(-1deg) scale(0.98); }
+    75%  { transform: translateY(-4px) rotate(1.5deg) scale(1.03); }
+    100% { transform: translateY(0) rotate(0deg) scale(1); }
+}
 
 .nav-actions {
     display: flex;
