@@ -224,41 +224,38 @@ body {
     transition: transform 0.3s ease, filter 0.3s ease;
 }
 
-/* Two exhaust trails via pseudo-elements */
+/* Exhaust trails via pseudo-elements */
 .nav-logo .logo-icon::before,
 .nav-logo .logo-icon::after {
     content: '';
     position: absolute;
-    height: 1px;
+    height: 2px;
     width: 0;
     opacity: 0;
-    background: linear-gradient(to left, rgba(255, 160, 40, 0.5), transparent);
+    border-radius: 1px;
     transform: rotate(-45deg);
     transform-origin: right center;
-    transition: all 0.3s ease;
     pointer-events: none;
 }
 
 .nav-logo .logo-icon::before {
-    bottom: 4px;
-    left: -2px;
+    bottom: 2px;
+    left: -6px;
+    background: linear-gradient(to left, rgba(255, 160, 50, 0.9), rgba(255, 100, 0, 0.4), transparent);
 }
 
 .nav-logo .logo-icon::after {
-    bottom: 7px;
-    left: -5px;
+    bottom: 6px;
+    left: -3px;
+    background: linear-gradient(to left, rgba(255, 200, 80, 0.8), rgba(255, 120, 0, 0.3), transparent);
 }
 
 .nav-logo:hover .logo-icon::before {
-    width: 14px;
-    opacity: 1;
-    animation: streak-1 0.7s ease-in-out infinite;
+    animation: streak-1 0.8s ease-out infinite;
 }
 
 .nav-logo:hover .logo-icon::after {
-    width: 10px;
-    opacity: 0.7;
-    animation: streak-2 0.5s ease-in-out infinite 0.15s;
+    animation: streak-2 0.6s ease-out infinite 0.2s;
 }
 
 .nav-logo:hover .logo-icon {
@@ -274,37 +271,38 @@ body {
 
 @keyframes streak-1 {
     0%   { width: 0; opacity: 0; }
-    50%  { opacity: 0.6; }
-    100% { width: 14px; opacity: 0; }
+    40%  { opacity: 0.9; }
+    100% { width: 20px; opacity: 0; }
 }
 
 @keyframes streak-2 {
     0%   { width: 0; opacity: 0; }
-    50%  { opacity: 0.4; }
-    100% { width: 10px; opacity: 0; }
+    40%  { opacity: 0.7; }
+    100% { width: 14px; opacity: 0; }
 }
 
 .nav-logo .logo-icon .streak-3 {
     position: absolute;
-    bottom: 1px;
-    left: 0px;
-    height: 1px;
+    bottom: -1px;
+    left: -8px;
+    height: 2px;
     width: 0;
     opacity: 0;
-    background: linear-gradient(to left, rgba(255, 180, 60, 0.4), transparent);
+    border-radius: 1px;
+    background: linear-gradient(to left, rgba(255, 140, 30, 0.7), rgba(255, 80, 0, 0.3), transparent);
     transform: rotate(-45deg);
     transform-origin: right center;
     pointer-events: none;
 }
 
 .nav-logo:hover .logo-icon .streak-3 {
-    animation: streak-3 0.6s ease-in-out infinite 0.3s;
+    animation: streak-3 0.7s ease-out infinite 0.4s;
 }
 
 @keyframes streak-3 {
     0%   { width: 0; opacity: 0; }
-    50%  { opacity: 0.35; }
-    100% { width: 8px; opacity: 0; }
+    40%  { opacity: 0.6; }
+    100% { width: 16px; opacity: 0; }
 }
 
 .nav-actions {
