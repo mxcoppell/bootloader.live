@@ -224,42 +224,87 @@ body {
     transition: transform 0.3s ease, filter 0.3s ease;
 }
 
-/* Exhaust trail - appears on hover */
+/* Two exhaust trails via pseudo-elements */
+.nav-logo .logo-icon::before,
 .nav-logo .logo-icon::after {
     content: '';
     position: absolute;
-    bottom: 2px;
-    left: -4px;
+    height: 1px;
     width: 0;
-    height: 3px;
-    background: linear-gradient(to left, rgba(255, 140, 0, 0.8), rgba(255, 69, 0, 0.6), transparent);
-    border-radius: 2px;
     opacity: 0;
-    transition: all 0.2s ease;
+    background: linear-gradient(to left, rgba(255, 160, 40, 0.5), transparent);
     transform: rotate(-45deg);
     transform-origin: right center;
+    transition: all 0.3s ease;
+    pointer-events: none;
+}
+
+.nav-logo .logo-icon::before {
+    bottom: 4px;
+    left: -2px;
+}
+
+.nav-logo .logo-icon::after {
+    bottom: 7px;
+    left: -5px;
+}
+
+.nav-logo:hover .logo-icon::before {
+    width: 14px;
+    opacity: 1;
+    animation: streak-1 0.7s ease-in-out infinite;
 }
 
 .nav-logo:hover .logo-icon::after {
-    width: 16px;
-    opacity: 1;
-    animation: exhaust-flicker 0.4s ease-in-out infinite alternate;
+    width: 10px;
+    opacity: 0.7;
+    animation: streak-2 0.5s ease-in-out infinite 0.15s;
 }
 
 .nav-logo:hover .logo-icon {
-    animation: rocket-fly 0.6s ease-in-out infinite;
-    filter: drop-shadow(0 0 8px rgba(255, 140, 0, 0.5));
+    animation: rocket-drift 2s ease-in-out infinite;
+    filter: drop-shadow(0 1px 4px rgba(255, 140, 0, 0.3));
 }
 
-@keyframes rocket-fly {
+@keyframes rocket-drift {
     0%   { transform: translate(0, 0); }
-    50%  { transform: translate(2px, -2px); }
+    50%  { transform: translate(1px, -1px); }
     100% { transform: translate(0, 0); }
 }
 
-@keyframes exhaust-flicker {
-    0%   { width: 12px; opacity: 0.6; }
-    100% { width: 18px; opacity: 1; }
+@keyframes streak-1 {
+    0%   { width: 0; opacity: 0; }
+    50%  { opacity: 0.6; }
+    100% { width: 14px; opacity: 0; }
+}
+
+@keyframes streak-2 {
+    0%   { width: 0; opacity: 0; }
+    50%  { opacity: 0.4; }
+    100% { width: 10px; opacity: 0; }
+}
+
+.nav-logo .logo-icon .streak-3 {
+    position: absolute;
+    bottom: 1px;
+    left: 0px;
+    height: 1px;
+    width: 0;
+    opacity: 0;
+    background: linear-gradient(to left, rgba(255, 180, 60, 0.4), transparent);
+    transform: rotate(-45deg);
+    transform-origin: right center;
+    pointer-events: none;
+}
+
+.nav-logo:hover .logo-icon .streak-3 {
+    animation: streak-3 0.6s ease-in-out infinite 0.3s;
+}
+
+@keyframes streak-3 {
+    0%   { width: 0; opacity: 0; }
+    50%  { opacity: 0.35; }
+    100% { width: 8px; opacity: 0; }
 }
 
 .nav-actions {
@@ -697,7 +742,7 @@ body {
 <!-- Navigation -->
 <nav class="nav-bar">
     <a href="#/" class="nav-logo">
-        <span class="logo-icon">🚀</span>
+        <span class="logo-icon">🚀<span class="streak-3"></span></span>
         <span>bootloader.live</span>
     </a>
     <div class="nav-actions">
