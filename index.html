@@ -823,6 +823,38 @@ const POSTS = [
         file: 'blog.md'
     },
     {
+        slug: 'agentic-swe-the-tradestation-mcp-delivery-case-study',
+        title: 'Two Builders, 115 Stories, and an AI Team',
+        date: '2025-10-31',
+        excerpt: 'Two software builders. Sixty-one calendar days. The deliverable: a production MCP service with OAuth 2.1 authentication for TradeStation\'s trading platform — 115 Jira stories closed, 133 merge requests merged.',
+        tags: ['Agents', 'Case Study'],
+        file: 'blog.md'
+    },
+    {
+        slug: 'caveman-series-mini-swe-agent',
+        title: 'One Tool, One Loop, One Done Marker',
+        date: '2025-09-25',
+        excerpt: 'Strip an AI coding agent to its minimum. One tool: bash. One control flow: loop until done. One completion signal: a marker string in the output. No function-calling framework, no tool registry, no planner module.',
+        tags: ['Agents', 'Architecture'],
+        file: 'blog.md'
+    },
+    {
+        slug: 'k8s-cache-data-layered-protection',
+        title: 'Four Layers Between a Token Cache and a Breach',
+        date: '2025-10-30',
+        excerpt: 'A DragonFlyDB pod sits in a Kubernetes namespace. No authentication between it and the MCP-server pods that use it. No network policy restricting access. Tokens stored in plaintext.',
+        tags: ['Security', 'Kubernetes'],
+        file: 'blog.md'
+    },
+    {
+        slug: 'tradestation-mcp-workflows-and-tool-enhancement',
+        title: 'When 39 Tools Is 30 Too Many',
+        date: '2025-09-29',
+        excerpt: 'A TradeStation MCP server exposes 39 endpoints. Market data, portfolio management, order execution, option chains, news, fundamentals, symbol lookup. An LLM agent loading all these tool definitions burns thousands of context tokens before doing any actual work.',
+        tags: ['MCP', 'Workflow'],
+        file: 'blog.md'
+    },
+    {
         slug: 'mcp-tool-search-lazy-loading',
         title: "When Your AI's Plugin System Eats Its Own Brain",
         date: '2026-02-15',
