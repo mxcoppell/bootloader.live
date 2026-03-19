@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>One Tool, One Loop, One Done Marker — bootloader.live</title>
+    <meta name="description" content="Strip an AI coding agent to its minimum. One tool: bash. One control flow: loop until done. One completion signal: a marker string in the output. No function-calling framework, no tool registry, no planner module.">
+    <link rel="canonical" href="https://bootloader.live/posts/caveman-series-mini-swe-agent/">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="One Tool, One Loop, One Done Marker">
+    <meta property="og:description" content="Strip an AI coding agent to its minimum. One tool: bash. One control flow: loop until done. One completion signal: a marker string in the output. No function-calling framework, no tool registry, no planner module.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://bootloader.live/posts/caveman-series-mini-swe-agent/">
+    <meta property="og:site_name" content="bootloader.live">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="One Tool, One Loop, One Done Marker">
+    <meta name="twitter:description" content="Strip an AI coding agent to its minimum. One tool: bash. One control flow: loop until done. One completion signal: a marker string in the output. No function-calling framework, no tool registry, no planner module.">
+
+    <!-- JSON-LD -->
+    <script type="application/ld+json">
+    {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "One Tool, One Loop, One Done Marker",
+    "description": "Strip an AI coding agent to its minimum. One tool: bash. One control flow: loop until done. One completion signal: a marker string in the output. No function-calling framework, no tool registry, no planner module.",
+    "datePublished": "2025-09-25",
+    "url": "https://bootloader.live/posts/caveman-series-mini-swe-agent/",
+    "author": {
+        "@type": "Person",
+        "name": "Michael Xie"
+    },
+    "keywords": "Agents, Architecture",
+    "publisher": {
+        "@type": "Person",
+        "name": "Michael Xie"
+    }
+}
+    </script>
+
+    <style>
+        body {
+            font-family: 'Newsreader', Georgia, serif;
+            max-width: 740px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            background: #222222;
+            color: #e6edf3;
+            line-height: 1.7;
+        }
+        a { color: #58a6ff; }
+        pre { background: #2a2a2a; padding: 1rem; border-radius: 6px; overflow-x: auto; }
+        code { font-size: 0.9em; }
+        img { max-width: 100%; height: auto; }
+        h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        .meta { color: #8b949e; font-size: 0.9rem; margin-bottom: 2rem; }
+    </style>
+</head>
+<body>
+    <script>window.location.replace('https://bootloader.live/#/post/caveman-series-mini-swe-agent');</script>
+
+    <article>
+        <h1>One Tool, One Loop, One Done Marker</h1>
+        <div class="meta">September 25, 2025</div>
+        <h1>One Tool, One Loop, One Done Marker</h1>
+<p>Strip an AI coding agent to its minimum. One tool: bash. One control flow: loop until done. One completion signal: a marker string in the output. No function-calling framework, no tool registry, no planner module.</p>
+<p>This is mini-swe-agent — roughly 200 lines of Python that solves real coding tasks by doing the simplest thing that could possibly work.</p>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;The&amp;nbsp;Loop&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>The agent receives a task. It asks the model for one bash command. It runs that command in a subprocess. It reads the output. It asks for the next command. This repeats until the model outputs a DONE marker — a specific string like <code>COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT</code> — as the first line of its response.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(Receive Task) --&gt; B(Ask Model for&lt;br/&gt;Bash Command)
+    B --&gt; C(Run Command&lt;br/&gt;in Subprocess)
+    C --&gt; D(Capture Output&lt;br/&gt;&amp; Return Code)
+    D --&gt; E(DONE Marker&lt;br/&gt;Found?)
+    E --&gt;|No| B
+    E --&gt;|Yes| F(Return&lt;br/&gt;Final Result)
+
+    classDef dark fill:#1a1a2e,color:#fff,stroke:#16213e,stroke-width:2px
+    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
+    classDef blue fill:#1565c0,color:#fff,stroke:#0d47a1,stroke-width:2px
+
+    class A dark
+    class B,C,D teal
+    class E dark
+    class F blue
+</code></pre>
+<p>That is the entire architecture. No routing logic, no chain-of-thought orchestration, no multi-agent coordination. The model sees the full conversation history each iteration and decides what to do next based on everything that has happened so far.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;The&amp;nbsp;Prompt&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Every iteration sends the complete conversation to the model. The messages array starts with a system prompt and the task description, then grows by two messages per cycle: the model&#39;s bash command (assistant role) and the execution output (user role, labeled as an observation).</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(System Prompt) --&gt; B(Task Message)
+    B --&gt; C(Command 1)
+    C --&gt; D(Observation 1)
+    D --&gt; E(Command 2)
+    E --&gt; F(Observation 2)
+    F --&gt; G(Command N...)
+    G --&gt; H(Observation N...)
+
+    classDef dark fill:#1a1a2e,color:#fff,stroke:#16213e,stroke-width:2px
+    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
+
+    class A,B dark
+    class C,D,E,F,G,H teal
+</code></pre>
+<p>By step 10, the model sees the system prompt, the task, and 20 additional messages — 10 commands and 10 observations. The context grows linearly. The model processes everything from scratch each time, which is simple but expensive: a 50-step task sends the full history 50 times.</p>
+<p>The system prompt is a Jinja2 template that renders with runtime variables — task description, step limit, cost limit, and working directory. The observation template wraps each command output with the return code, so the model knows whether a command succeeded or failed without parsing stderr.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Error&amp;nbsp;Paths&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Three things break the loop. Format errors: the model returns something other than a single bash code block — the agent sends an error message back and lets the model retry. Timeouts: a command runs longer than the configured limit — the agent kills the process and reports what happened. Limit violations: step count or inference cost exceeds the ceiling — the agent stops and returns whatever it has.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(Model Response) --&gt; B(Valid Format?)
+    B --&gt;|No| C(Format Error&lt;br/&gt;Send Feedback)
+    C --&gt; D(Model Retries)
+    B --&gt;|Yes| E(Run Command)
+    E --&gt; F(Timed Out?)
+    F --&gt;|Yes| G(Kill Process&lt;br/&gt;Report Timeout)
+    F --&gt;|No| H(Check Limits)
+    H --&gt;|Exceeded| I(Stop Agent)
+    H --&gt;|OK| J(Continue Loop)
+
+    classDef dark fill:#1a1a2e,color:#fff,stroke:#16213e,stroke-width:2px
+    classDef red fill:#c62828,color:#fff,stroke:#b71c1c,stroke-width:2px
+    classDef orange fill:#e65100,color:#fff,stroke:#bf360c,stroke-width:2px
+    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
+
+    class A dark
+    class B dark
+    class C,G red
+    class D,J teal
+    class E dark
+    class F dark
+    class H orange
+    class I red
+</code></pre>
+<p>Format errors are recoverable — the model gets feedback and adjusts. Timeouts are informational — the model sees what happened and can try a different approach. Limit violations are terminal. The DONE marker is the only clean exit. If the model never outputs it, the loop runs until a limit stops it.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Why&amp;nbsp;Simple&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Three components carry all the weight. The model decides what to do — it is the reasoning engine. The environment executes bash commands — it is the hands. The agent manages the loop, validates format, enforces limits, and assembles messages — it is the coordinator.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(Model&lt;br/&gt;Reasoning) --&gt; B(Agent&lt;br/&gt;Coordination)
+    B --&gt; C(Environment&lt;br/&gt;Execution)
+    C --&gt; B
+
+    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
+    classDef blue fill:#1565c0,color:#fff,stroke:#0d47a1,stroke-width:2px
+    classDef dark fill:#1a1a2e,color:#fff,stroke:#16213e,stroke-width:2px
+
+    class A teal
+    class B dark
+    class C blue
+</code></pre>
+<p>This decomposition is the same one used by every agent framework, just without the abstraction layers. Claude Code uses dozens of tools and sophisticated routing, but underneath it follows the same pattern: model generates action, environment executes, agent coordinates. The simplicity of mini-swe-agent makes this visible.</p>
+<p>One tool works because bash is universal. File reads, writes, searches, compilations, test runs, git operations — all reachable through a single interface. The model does not need a curated tool menu. It needs a shell.</p>
+<hr>
+<p>The pattern behind every AI coding agent is the same loop: observe, decide, act, observe again. Complexity comes from adding tools, routing, and parallelism — but the core loop does not change. Understanding the minimum viable agent makes the sophisticated ones legible, not mysterious — it strips away scaffolding to reveal the mechanism underneath.</p>
+<hr>
+<p><strong>References</strong></p>
+<ol>
+<li>SWE-agent. &quot;Mini SWE Agent.&quot; <a href="https://github.com/SWE-agent/mini-swe-agent">github.com/SWE-agent/mini-swe-agent</a>.</li>
+<li>Jimenez, Carlos et al. &quot;SWE-bench: Can Language Models Resolve Real-World GitHub Issues?&quot; <a href="https://arxiv.org/abs/2310.06770">arxiv.org</a>.</li>
+</ol>
+
+    </article>
+
+    <p><a href="https://bootloader.live">← Back to bootloader.live</a></p>
+
+    <script>window.goatcounter={no_onload:true};</script>
+    <script data-goatcounter="https://mxcoppell.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

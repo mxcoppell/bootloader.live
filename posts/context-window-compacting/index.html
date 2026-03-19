@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Context Compacting Problem — bootloader.live</title>
+    <meta name="description" content="Three hours into a refactor. Forty files touched, tests passing. Then the context window fills up. The agent compacts — summarizing hours of work into a few paragraphs. When it resumes, it repeats itself.">
+    <link rel="canonical" href="https://bootloader.live/posts/context-window-compacting/">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="The Context Compacting Problem">
+    <meta property="og:description" content="Three hours into a refactor. Forty files touched, tests passing. Then the context window fills up. The agent compacts — summarizing hours of work into a few paragraphs. When it resumes, it repeats itself.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://bootloader.live/posts/context-window-compacting/">
+    <meta property="og:site_name" content="bootloader.live">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="The Context Compacting Problem">
+    <meta name="twitter:description" content="Three hours into a refactor. Forty files touched, tests passing. Then the context window fills up. The agent compacts — summarizing hours of work into a few paragraphs. When it resumes, it repeats itself.">
+
+    <!-- JSON-LD -->
+    <script type="application/ld+json">
+    {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "The Context Compacting Problem",
+    "description": "Three hours into a refactor. Forty files touched, tests passing. Then the context window fills up. The agent compacts — summarizing hours of work into a few paragraphs. When it resumes, it repeats itself.",
+    "datePublished": "2026-03-18",
+    "url": "https://bootloader.live/posts/context-window-compacting/",
+    "author": {
+        "@type": "Person",
+        "name": "Michael Xie"
+    },
+    "keywords": "Context, Agents",
+    "publisher": {
+        "@type": "Person",
+        "name": "Michael Xie"
+    }
+}
+    </script>
+
+    <style>
+        body {
+            font-family: 'Newsreader', Georgia, serif;
+            max-width: 740px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            background: #222222;
+            color: #e6edf3;
+            line-height: 1.7;
+        }
+        a { color: #58a6ff; }
+        pre { background: #2a2a2a; padding: 1rem; border-radius: 6px; overflow-x: auto; }
+        code { font-size: 0.9em; }
+        img { max-width: 100%; height: auto; }
+        h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        .meta { color: #8b949e; font-size: 0.9rem; margin-bottom: 2rem; }
+    </style>
+</head>
+<body>
+    <script>window.location.replace('https://bootloader.live/#/post/context-window-compacting');</script>
+
+    <article>
+        <h1>The Context Compacting Problem</h1>
+        <div class="meta">March 18, 2026</div>
+        <h1>The Context Compacting Problem</h1>
+<p>Three hours into a refactor. Forty files touched, tests passing, the agent halfway through integrating a new API. Then the context window fills up. The agent compacts — summarizing three hours of work into a few paragraphs. When it resumes, it re-reads a file it edited twenty minutes ago. Tries a fix it already rejected. Asks a question you answered an hour earlier.</p>
+<p>This is context compacting. Every AI coding agent does it. None of them do it well enough.</p>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;The&amp;nbsp;Problem&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Context windows are finite. Coding sessions are not. A 200K-token window sounds enormous until you see where those tokens go. In a measured six-turn debugging session with Codex CLI, tool outputs — file reads, error messages, search results — consumed 79% of all tokens. Assistant reasoning took 13%. User messages took 4%.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(Agent Context&lt;br/&gt;After 6 Turns) --&gt; B(Tool Outputs&lt;br/&gt;79.3%)
+    A --&gt; C(Assistant&lt;br/&gt;13.2%)
+    A --&gt; D(User + Metadata&lt;br/&gt;7.5%)
+    B -.-&gt;|compaction| E(Deleted&lt;br/&gt;0% Survives)
+
+    classDef dark fill:#1a1a2e,color:#fff,stroke:#16213e,stroke-width:2px
+    classDef red fill:#c62828,color:#fff,stroke:#b71c1c,stroke-width:2px
+    classDef orange fill:#e65100,color:#fff,stroke:#bf360c,stroke-width:2px
+    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
+
+    class A dark
+    class B red
+    class C orange
+    class D teal
+    class E red
+</code></pre>
+<p>The bulk of an agent&#39;s context is ephemeral output that loses relevance within a few turns. But when compacting fires, it cannot always distinguish a stale grep result from the error message that holds the key to the bug.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;The&amp;nbsp;Pipeline&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Every tool follows the same five stages. Trigger. Select. Summarize. Replace. Continue.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(Trigger&lt;br/&gt;Token Threshold) --&gt; B(Select&lt;br/&gt;What to Compress)
+    B --&gt; C(Summarize&lt;br/&gt;LLM or Encryption)
+    C --&gt; D(Replace&lt;br/&gt;Summary Swaps History)
+    D --&gt; E(Continue&lt;br/&gt;Agent Resumes)
+
+    classDef dark fill:#1a1a2e,color:#fff,stroke:#16213e,stroke-width:2px
+    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
+    classDef blue fill:#1565c0,color:#fff,stroke:#0d47a1,stroke-width:2px
+
+    class A dark
+    class B dark
+    class C teal
+    class D teal
+    class E blue
+</code></pre>
+<p>The trigger is where tools diverge most. Gemini CLI compacts at 50% of its context window — the most aggressive threshold, firing while the model still has strong attention across all content. Claude Code fires at ~83.5%. Codex CLI&#39;s source code reveals the formula <code>(context_window * 9) / 10</code> — a hard 90%. Copilot waits until 95%.</p>
+<p>Selection follows a universal pattern: tool outputs die first. They&#39;re the largest, lowest-value content. After pruning, older conversation turns get summarized while system instructions — CLAUDE.md, <code>.cursorrules</code>, AGENTS.md — are always protected. Every tool preserves these files across compaction.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;The&amp;nbsp;Landscape&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Here is how the major coding agents handle compacting. No rankings — just what each tool does.</p>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Trigger</th>
+<th>Strategy</th>
+<th>Manual Command</th>
+<th>Persistent Memory</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Claude Code</strong></td>
+<td>~83.5%</td>
+<td>LLM summary (<code>&lt;summary&gt;</code> tags)</td>
+<td><code>/compact [focus]</code></td>
+<td>CLAUDE.md (re-read from disk)</td>
+</tr>
+<tr>
+<td><strong>Cursor</strong></td>
+<td>Near capacity</td>
+<td>RL-trained self-summary + history-as-files</td>
+<td><code>/compress</code></td>
+<td><code>.cursorrules</code></td>
+</tr>
+<tr>
+<td><strong>Copilot</strong></td>
+<td>95%</td>
+<td>LLM summary + checkpoint snapshots</td>
+<td><code>/compact</code></td>
+<td><code>copilot-instructions.md</code></td>
+</tr>
+<tr>
+<td><strong>Codex CLI</strong></td>
+<td>90%</td>
+<td>Encrypted opaque blob (OpenAI) / LLM (others)</td>
+<td><code>/compact</code></td>
+<td>AGENTS.md</td>
+</tr>
+<tr>
+<td><strong>Gemini CLI</strong></td>
+<td>50%</td>
+<td>Two-pass LLM with self-correction</td>
+<td><code>/compress</code></td>
+<td>GEMINI.md + <code>/memory</code></td>
+</tr>
+<tr>
+<td><strong>Cline</strong></td>
+<td>80% or window-40K</td>
+<td>LLM summary (advanced) / truncation (weak)</td>
+<td>auto or <code>/new</code></td>
+<td><code>.clinerules</code></td>
+</tr>
+<tr>
+<td><strong>OpenCode</strong></td>
+<td>~85-90%</td>
+<td>LLM summary (configurable model)</td>
+<td>auto only</td>
+<td>Config files</td>
+</tr>
+</tbody></table>
+<pre><code class="language-mermaid">flowchart TD
+    A(Context Fills Up) --&gt; B(LLM Summary&lt;br/&gt;Claude Code / Copilot / Cline)
+    A --&gt; C(Encrypted Blob&lt;br/&gt;Codex CLI)
+    A --&gt; D(RL Trained&lt;br/&gt;Cursor)
+    A --&gt; E(Two Pass Verify&lt;br/&gt;Gemini CLI)
+
+    classDef dark fill:#1a1a2e,color:#fff,stroke:#16213e,stroke-width:2px
+    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
+    classDef blue fill:#1565c0,color:#fff,stroke:#0d47a1,stroke-width:2px
+    classDef orange fill:#e65100,color:#fff,stroke:#bf360c,stroke-width:2px
+
+    class A dark
+    class B teal
+    class C orange
+    class D blue
+    class E blue
+</code></pre>
+<p>The earlier you compact, the better the summary quality (models degrade before hitting their hard limit), but the more usable context you waste. There is no consensus on the right number.</p>
+<p>Three innovations stand out. <strong>Codex CLI</strong> uses encrypted server-side compression for OpenAI models — not a readable summary but an opaque blob the model decodes internally. <strong>Cursor</strong> trained self-summarization into their Composer 1.5 agent via reinforcement learning, producing summaries compact enough to sustain 170-turn sessions. <strong>Gemini CLI</strong> runs two-pass summarization where the model critiques and refines its own summary, with prompt injection defenses built into the compression prompt.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;A&amp;nbsp;Real&amp;nbsp;Example&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Codex CLI&#39;s compacting code is open source. What follows is the LOCAL compaction path — the fallback used for non-OpenAI models. For OpenAI models, the full conversation (including all tool outputs) is sent to a server-side <code>/responses/compact</code> endpoint that returns an encrypted blob. The server sees everything. But the local path reveals how a typical LLM-based summarizer actually works — and where information dies.</p>
+<p>The session: read <code>src/auth.rs</code>, analyze the bug, run a failing test, apply a patch adding <code>cache::invalidate(&amp;decoded.sub)</code> at line 47, check callers in <code>mobile.rs</code> and <code>web.rs</code>, run regression tests. Total: 1,670 tokens across 25 items.</p>
+<p>When compacting triggers, this function runs:</p>
+<pre><code class="language-rust">pub(crate) fn collect_user_messages(items: &amp;[ResponseItem]) -&gt; Vec&lt;String&gt; {
+    items.iter().filter_map(|item| match parse_turn_item(item) {
+        Some(TurnItem::UserMessage(user)) =&gt; {
+            if is_summary_message(&amp;user.message()) {
+                None  // skip previous compaction summaries
+            } else {
+                Some(user.message())
+            }
+        }
+        _ =&gt; None,  // ALL other item types dropped here
+    }).collect()
+}
+</code></pre>
+<p>That <code>_ =&gt; None</code> silently drops every tool result, every assistant message, every tool call. The summarizer LLM receives only the five user messages — &quot;fix the auth bug,&quot; &quot;run the tests,&quot; &quot;apply the fix,&quot; &quot;check other callers,&quot; &quot;run regression.&quot; It never sees the file contents, the error messages, or the patch. It cannot preserve what it cannot see.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(Before: 1,670 Tokens&lt;br/&gt;25 Items) --&gt; B(collect_user_messages&lt;br/&gt;Keeps 5 User Messages)
+    B --&gt; C(Summarizer LLM&lt;br/&gt;Sees Only 71 Tokens)
+    C --&gt; D(After: 229 Tokens&lt;br/&gt;13.7% Retained)
+    D --&gt; E(Second Compact&lt;br/&gt;115 Tokens / 6.9%)
+
+    classDef dark fill:#1a1a2e,color:#fff,stroke:#16213e,stroke-width:2px
+    classDef orange fill:#e65100,color:#fff,stroke:#bf360c,stroke-width:2px
+    classDef red fill:#c62828,color:#fff,stroke:#b71c1c,stroke-width:2px
+
+    class A dark
+    class B orange
+    class C orange
+    class D red
+    class E red
+</code></pre>
+<p>After the first compaction, 2 of 5 ground-truth facts survived: the <code>cache::invalidate</code> fix and the <code>test_concurrent_refresh</code> failure. The fix location (line 47), the regression test content, and the fact that <code>mobile.rs</code> also calls the buggy path were all gone. After the second compaction, zero of 5 survived. In a separate incident, a Codex user working on an Eclipse JDT test saw 23 file edits across 54 minutes of work — then, after compaction at 211K tokens, the agent denied having touched any files.</p>
+<p>The irony is in the code itself. The summary prefix tells the next model: &quot;You also have access to the state of the tools that were used.&quot; By the time it reads this, <code>collect_user_messages()</code> has already discarded every tool state.</p>
+<p>The issue author prototyped a fix: a pre-compaction snapshot that scans tool results by type (patches weighted 1.0, test output 0.95, file content 0.80) and packs the highest-priority facts into a fixed 2,000-token budget appended after the summary. Weighted fact recall went from 15.2% to 100%. An 84.8% improvement from 2K extra tokens — roughly 10% overhead on a 20K post-compaction context.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;What&amp;nbsp;Gets&amp;nbsp;Lost&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Factory.ai evaluated compaction quality across 36,611 production messages — and scored highest in its own benchmark. No provider scored above 3.70 out of 5.0 overall. File tracking — the ability to report which files were modified — topped out at 2.45 out of 5.0. Agents that compress their history cannot reliably remember what they changed.</p>
+<p>What dies first follows a predictable order: exact numbers and error codes, then code snippets, then reasoning chains, then constraints, then architectural decisions. What survives: high-level goals, current file state, and next steps. By the third compaction round, only a vague outline remains.</p>
+<p>The failure pattern this creates: the re-reading loop. The agent searches for information. Context fills. It compacts, losing the results. It searches again for the same information it just lost. One Codex CLI user reported the agent compacting repeatedly for two hours without patching a single file.</p>
+<p>JetBrains published at NeurIPS 2025 that simple observation masking — replacing old tool outputs with placeholder text, no LLM involved — matched full LLM summarization quality on SWE-bench at 52% lower cost. The implication: the industry may be over-investing in expensive summarization when the simplest approach works equally well.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Recovery&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>What happens after compacting determines whether the session recovers or spirals.</p>
+<p><strong>Claude Code re-reads CLAUDE.md from disk</strong> after every compaction — not from the summary, from the actual file. The system prompt survives compaction because it is architecturally separate from conversation history — compaction only summarizes conversation turns, not the system prompt. Custom &quot;Compact Instructions&quot; in CLAUDE.md control what the summary preserves. <code>PostCompact</code> hooks can inject additional context after compaction. And the <code>pause_after_compaction</code> API returns control to the client so it can add content before the model continues.</p>
+<p>There is a catch. A user on GitHub issue #6354 tested systematically: after <code>/clear</code>, injected instructions were followed. After <code>/compact</code>, the same instructions were ignored — the model continued the thread described in the summary instead. The compaction summary appears to create conversational momentum that overrides re-injected instructions. The re-injection works at the infrastructure level. It doesn&#39;t always work at the behavior level.</p>
+<p><strong>Cursor saves the full conversation as a searchable file.</strong> If the summary missed something, the agent greps the history and pulls the detail back. Nothing is permanently destroyed — just moved from active context to storage.</p>
+<p><strong>Copilot writes checkpoint snapshots</strong> to <code>~/.copilot/session-state/</code> before every compaction. Combined with its agentic memory system — which stores facts with citations validated against the current branch — this gives it a two-layer recovery mechanism.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(Compaction Fires) --&gt; B(Summary Generated)
+    B --&gt; C(System Prompt&lt;br/&gt;Cached Separately)
+    B --&gt; D(CLAUDE.md&lt;br/&gt;Re-read from Disk)
+    B --&gt; E(PostCompact Hook&lt;br/&gt;Injects Context)
+    B --&gt; F(History File&lt;br/&gt;Searchable on Disk)
+
+    classDef dark fill:#1a1a2e,color:#fff,stroke:#16213e,stroke-width:2px
+    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
+    classDef blue fill:#1565c0,color:#fff,stroke:#0d47a1,stroke-width:2px
+
+    class A dark
+    class B dark
+    class C teal
+    class D teal
+    class E blue
+    class F blue
+</code></pre>
+<p><strong>Agent teams are the weak point.</strong> In Claude Code, subagent transcripts are stored in separate files and survive parent compaction. But the parent&#39;s awareness of the team does not. After compaction, the lead agent continues as if no team exists — it cannot message teammates, coordinate tasks, or acknowledge the team. The data is on disk (team config at <code>~/.claude/teams/</code>), but nothing triggers a re-read of team configuration after compaction. One user described it as &quot;the number 1 most frequent bug I hit with Agent Teams.&quot; Another reported that after 4 compactions, the lead lost its &quot;project manager&quot; role constraint and started doing implementation work directly — the summary preserved the concept of &quot;use sub-agents&quot; but lost the specific role boundary.</p>
+<p>The current workaround: store team state in CLAUDE.md or a dedicated MEMORY.md file that gets re-read automatically. As one practitioner put it: &quot;Context compaction becomes a non-issue because the critical state was never in-context to begin with.&quot;</p>
+<p>Sub-agent delegation is itself a compacting mitigation. Each sub-agent works in a fresh context window. Only the final summary returns to the parent — typically 1-2K tokens instead of the 50K+ of intermediate tool calls and file reads. The verbose output stays quarantined. This prevents the parent context from ever growing to compaction size in the first place.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;What&amp;nbsp;Works&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>The tools that handle compacting best don&#39;t build better summarizers. They build architectures where less needs to be summarized.</p>
+<p><strong>Put durable context in instruction files.</strong> CLAUDE.md, <code>.cursorrules</code>, AGENTS.md, <code>copilot-instructions.md</code> — these survive every compaction because they&#39;re re-read from disk, not from the conversation. Project constraints, coding conventions, architectural decisions — anything you&#39;d be upset to lose belongs here.</p>
+<p><strong>Use sub-agents for heavy lifting.</strong> File reads, test runs, code searches — anything that produces large tool output should happen in a sub-agent&#39;s isolated context. The parent stays lean.</p>
+<p><strong>Use PostCompact hooks to re-inject critical state.</strong> Claude Code&#39;s <code>PostCompact</code> hook fires after compaction completes. Anything written to stdout enters the context. Use this to remind the agent of active tasks, team state, or constraints the summary may have dropped.</p>
+<p><strong>Compact proactively.</strong> Compacting at 40-60% capacity produces better summaries than waiting for 90-95%. The model has stronger attention across all content when it&#39;s not at capacity. Gemini CLI&#39;s 50% threshold reflects this.</p>
+<p><strong>Start fresh when the agent loops.</strong> If it re-reads files it just edited or re-proposes solutions it already tried, that&#39;s the re-reading loop. More compaction rounds won&#39;t fix it. Start a new session with a clear handoff instead.</p>
+<hr>
+<p>The pattern is universal: every tool that runs long enough needs a way to forget gracefully. The industry is converging on an uncomfortable insight — the best compaction is the compaction you don&#39;t need. Short, focused sessions. File-based state that survives any number of compactions. Sub-agents that keep parent contexts lean. The tools that handle long sessions best don&#39;t build better summarizers — they build architectures where less needs to be remembered in the first place.</p>
+<hr>
+<p><strong>References</strong></p>
+<ol>
+<li>Anthropic. &quot;Automatic context compaction.&quot; <a href="https://platform.claude.com/docs/en/build-with-claude/compaction">platform.claude.com/docs/en/build-with-claude/compaction</a>.</li>
+<li>OpenAI. &quot;Compaction guide.&quot; <a href="https://developers.openai.com/api/docs/guides/compaction">developers.openai.com/api/docs/guides/compaction</a>.</li>
+<li>Cursor. &quot;Self-summarization.&quot; <a href="https://cursor.com/blog/self-summarization">cursor.com/blog/self-summarization</a>.</li>
+<li>Cursor. &quot;Dynamic context discovery.&quot; <a href="https://cursor.com/blog/dynamic-context-discovery">cursor.com/blog/dynamic-context-discovery</a>.</li>
+<li>JetBrains Research. &quot;Efficient context management for LLM-powered agents.&quot; <a href="https://blog.jetbrains.com/research/2025/12/efficient-context-management/">blog.jetbrains.com/research/2025/12/efficient-context-management</a>.</li>
+<li>Factory.ai. &quot;Evaluating context compression.&quot; <a href="https://factory.ai/news/evaluating-compression">factory.ai/news/evaluating-compression</a>.</li>
+<li>GitHub. &quot;Building an agentic memory system for Copilot.&quot; <a href="https://github.blog/ai-and-ml/github-copilot/building-an-agentic-memory-system-for-github-copilot/">github.blog/ai-and-ml/github-copilot/building-an-agentic-memory-system-for-github-copilot</a>.</li>
+<li>OpenAI Codex CLI. &quot;Issue #14589: Compaction silently discards all tool outputs.&quot; <a href="https://github.com/openai/codex/issues/14589">github.com/openai/codex/issues/14589</a>.</li>
+<li>Anthropic. &quot;Effective context engineering for agents.&quot; <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents">anthropic.com/engineering/effective-context-engineering-for-ai-agents</a>.</li>
+<li>Claude Code. &quot;Issue #23620: Agent team lost on compaction.&quot; <a href="https://github.com/anthropics/claude-code/issues/23620">github.com/anthropics/claude-code/issues/23620</a>.</li>
+<li>Morph. &quot;Compaction vs summarization.&quot; <a href="https://www.morphllm.com/compaction-vs-summarization">morphllm.com/compaction-vs-summarization</a>.</li>
+<li>Badlogic. &quot;Compaction research across 4 tools.&quot; <a href="https://gist.github.com/badlogic/cd2ef65b0697c4dbe2d13fbecb0a0a5f">gist.github.com/badlogic/cd2ef65b0697c4dbe2d13fbecb0a0a5f</a>.</li>
+<li>Chroma Research. &quot;Context rot.&quot; <a href="https://research.trychroma.com/context-rot">research.trychroma.com/context-rot</a>.</li>
+<li>Claude Code. &quot;Hooks guide.&quot; <a href="https://code.claude.com/docs/en/hooks-guide">code.claude.com/docs/en/hooks-guide</a>.</li>
+</ol>
+
+    </article>
+
+    <p><a href="https://bootloader.live">← Back to bootloader.live</a></p>
+
+    <script>window.goatcounter={no_onload:true};</script>
+    <script data-goatcounter="https://mxcoppell.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

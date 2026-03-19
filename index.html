@@ -5,7 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>bootloader.live — AI Productivity</title>
     <meta name="description" content="Practical writing on AI-assisted development, MCP tools, and developer productivity.">
+    <link rel="canonical" href="https://bootloader.live/">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="bootloader.live — AI Productivity">
+    <meta property="og:description" content="Practical writing on AI-assisted development, MCP tools, and developer productivity.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://bootloader.live/">
+    <meta property="og:site_name" content="bootloader.live">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="bootloader.live — AI Productivity">
+    <meta name="twitter:description" content="Practical writing on AI-assisted development, MCP tools, and developer productivity.">
+
+    <!-- JSON-LD -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "bootloader.live",
+        "url": "https://bootloader.live/",
+        "description": "Practical writing on AI-assisted development, MCP tools, and developer productivity."
+    }
+    </script>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1193,6 +1217,16 @@ function renderLanding() {
     });
 }
 
+// ─── Meta Tag Updates ───────────────────────────────────
+function updateMetaTag(name, content, attr) {
+    attr = attr || 'name';
+    var selector = 'meta[' + attr + '="' + name + '"]';
+    var el = document.querySelector(selector);
+    if (el) {
+        el.setAttribute('content', content);
+    }
+}
+
 // ─── Navigation ─────────────────────────────────────────
 var currentView = 'landing';
 var postCache = {};
@@ -1205,6 +1239,12 @@ function showLanding() {
     document.getElementById('toc-toggle').classList.remove('visible');
     document.getElementById('toc-panel').classList.remove('open');
     document.title = 'bootloader.live \u2014 AI Productivity';
+    updateMetaTag('description', 'Practical writing on AI-assisted development, MCP tools, and developer productivity.');
+    updateMetaTag('og:title', 'bootloader.live \u2014 AI Productivity', 'property');
+    updateMetaTag('og:description', 'Practical writing on AI-assisted development, MCP tools, and developer productivity.', 'property');
+    updateMetaTag('og:url', 'https://bootloader.live/', 'property');
+    updateMetaTag('twitter:title', 'bootloader.live \u2014 AI Productivity');
+    updateMetaTag('twitter:description', 'Practical writing on AI-assisted development, MCP tools, and developer productivity.');
     window.scrollTo(0, 0);
 }
 
@@ -1218,6 +1258,12 @@ async function showPost(slug) {
 
     document.getElementById('post-title').textContent = post.title;
     document.title = post.title + ' \u2014 bootloader.live';
+    updateMetaTag('description', post.excerpt);
+    updateMetaTag('og:title', post.title, 'property');
+    updateMetaTag('og:description', post.excerpt, 'property');
+    updateMetaTag('og:url', 'https://bootloader.live/#/post/' + post.slug, 'property');
+    updateMetaTag('twitter:title', post.title);
+    updateMetaTag('twitter:description', post.excerpt);
 
     var body = document.getElementById('post-body');
     body.textContent = '';
@@ -1323,6 +1369,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
 window.addEventListener('hashchange', handleRoute);
 </script>
+
+<!-- GoatCounter (privacy-friendly analytics, no cookies) -->
+<script>
+    window.goatcounter = {
+        path: function() {
+            return location.pathname + location.hash;
+        }
+    };
+</script>
+<script data-goatcounter="https://mxcoppell.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
 
 </body>
 </html>

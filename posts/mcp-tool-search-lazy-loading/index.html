@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>When Your AI&#039;s Plugin System Eats Its Own Brain — bootloader.live</title>
+    <meta name="description" content="Five MCP servers configured. Context window already one-third gone before you type anything. The more tools you add, the less room your AI has to actually work.">
+    <link rel="canonical" href="https://bootloader.live/posts/mcp-tool-search-lazy-loading/">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="When Your AI&#039;s Plugin System Eats Its Own Brain">
+    <meta property="og:description" content="Five MCP servers configured. Context window already one-third gone before you type anything. The more tools you add, the less room your AI has to actually work.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://bootloader.live/posts/mcp-tool-search-lazy-loading/">
+    <meta property="og:site_name" content="bootloader.live">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="When Your AI&#039;s Plugin System Eats Its Own Brain">
+    <meta name="twitter:description" content="Five MCP servers configured. Context window already one-third gone before you type anything. The more tools you add, the less room your AI has to actually work.">
+
+    <!-- JSON-LD -->
+    <script type="application/ld+json">
+    {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "When Your AI's Plugin System Eats Its Own Brain",
+    "description": "Five MCP servers configured. Context window already one-third gone before you type anything. The more tools you add, the less room your AI has to actually work.",
+    "datePublished": "2026-02-15",
+    "url": "https://bootloader.live/posts/mcp-tool-search-lazy-loading/",
+    "author": {
+        "@type": "Person",
+        "name": "Michael Xie"
+    },
+    "keywords": "MCP, Context Window",
+    "publisher": {
+        "@type": "Person",
+        "name": "Michael Xie"
+    }
+}
+    </script>
+
+    <style>
+        body {
+            font-family: 'Newsreader', Georgia, serif;
+            max-width: 740px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            background: #222222;
+            color: #e6edf3;
+            line-height: 1.7;
+        }
+        a { color: #58a6ff; }
+        pre { background: #2a2a2a; padding: 1rem; border-radius: 6px; overflow-x: auto; }
+        code { font-size: 0.9em; }
+        img { max-width: 100%; height: auto; }
+        h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        .meta { color: #8b949e; font-size: 0.9rem; margin-bottom: 2rem; }
+    </style>
+</head>
+<body>
+    <script>window.location.replace('https://bootloader.live/#/post/mcp-tool-search-lazy-loading');</script>
+
+    <article>
+        <h1>When Your AI&#039;s Plugin System Eats Its Own Brain</h1>
+        <div class="meta">February 15, 2026</div>
+        <h1>When Your AI&#39;s Plugin System Eats Its Own Brain</h1>
+<p>Five MCP (Model Context Protocol) servers configured. Context window already one-third gone before you type anything. The more tools you add, the less room your AI has to actually work.</p>
+<p>This is the biggest pain point in MCP today. And it finally has a fix.</p>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;The&amp;nbsp;Problem&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>MCP requires all tool definitions to be pre-loaded into the context window at session start. Tool names, parameter details, descriptions — everything gets packed in so the AI knows what&#39;s available.</p>
+<p>Each tool costs hundreds of tokens (the units that measure how much text fits in the AI&#39;s working memory). A single MCP server might expose 10-30 tools. Stack a few servers and you&#39;re burning tens of thousands of tokens on definitions the AI may never use in that session.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(MCP Session Starts) --&gt; B(Pre-load ALL&lt;br/&gt;Tool Definitions)
+    B --&gt; C(Context Window&lt;br/&gt;Shrinks)
+    C --&gt; D(Less Room&lt;br/&gt;for Actual Work)
+
+    classDef dark fill:#1a1a2e,color:#fff,stroke:#16213e,stroke-width:2px
+    classDef red fill:#c62828,color:#fff,stroke:#b71c1c,stroke-width:2px
+    classDef orange fill:#e65100,color:#fff,stroke:#bf360c,stroke-width:2px
+    classDef grey fill:#455a64,color:#fff,stroke:#37474f,stroke-width:2px
+
+    class A dark
+    class B orange
+    class C red
+    class D red
+</code></pre>
+<p>This is a design shortcut baked into the protocol. MCP was built when 5-10 tools was normal. Pre-loading worked fine. But the tool count grew fast. Users now run 50+ tools across multiple servers, and the &quot;load everything&quot; approach breaks down. One GitHub issue reported 54% of context consumed before the first prompt.</p>
+<p>The community put it well: MCP makes AI more capable while shrinking its brain.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;The&amp;nbsp;Fix&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Claude Code introduced a feature called <strong>Tool Search</strong> — the first MCP client to tackle this problem. Instead of dumping every tool definition into context at startup, it loads a compact index and discovers tools on demand.</p>
+<p>It kicks in automatically when MCP tool definitions exceed 10% of the context window. Below that threshold, everything loads normally — no change for lightweight setups.</p>
+<p>Here&#39;s the flow: startup loads only tool names and brief hints. When you give a task, the AI searches the index for relevant tools. Only matched tools get their full definitions loaded. The AI can search multiple times, try different keywords, and refine results.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(Old Approach:&lt;br/&gt;Pre-load Everything) --&gt; B(36% of Context&lt;br/&gt;Consumed by Definitions)
+    B -.-&gt;|Tool Search| C(New Approach:&lt;br/&gt;Load Index Only)
+    C --&gt; D(Search for Tools&lt;br/&gt;on Demand)
+    D --&gt; E(~4% of Context Used&lt;br/&gt;95% Freed)
+
+    classDef dark fill:#1a1a2e,color:#fff,stroke:#16213e,stroke-width:2px
+    classDef red fill:#c62828,color:#fff,stroke:#b71c1c,stroke-width:2px
+    classDef orange fill:#e65100,color:#fff,stroke:#bf360c,stroke-width:2px
+    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
+    classDef blue fill:#1565c0,color:#fff,stroke:#0d47a1,stroke-width:2px
+
+    class A red
+    class B orange
+    class C teal
+    class D teal
+    class E blue
+</code></pre>
+<p>In Claude Code, you configure this with the <code>ENABLE_TOOL_SEARCH</code> environment variable:</p>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>auto</code></td>
+<td>Activates at 10% of context (default)</td>
+</tr>
+<tr>
+<td><code>auto:5</code></td>
+<td>Custom threshold — here, 5%</td>
+</tr>
+<tr>
+<td><code>true</code></td>
+<td>Always on</td>
+</tr>
+<tr>
+<td><code>false</code></td>
+<td>Disabled</td>
+</tr>
+</tbody></table>
+<p>The result: a setup that previously consumed 36% of context for tool definitions now uses about 4%. Over 95% of the window freed for actual work.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Skills&amp;nbsp;vs&amp;nbsp;Tools&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Since Tool Search implements lazy loading, you might ask: don&#39;t skills already do this?</p>
+<p>Yes — but they solve different problems. <strong>Skills</strong> are playbooks. They&#39;re markdown files that teach your AI <em>how</em> to approach tasks. A skill might describe how to generate a GIF that meets Slack&#39;s size limits, or how to run a deployment pipeline. Skills don&#39;t give the AI new abilities — they make it smarter with what it already has.</p>
+<p><strong>Tools</strong> (via MCP) are capabilities. They give the AI entirely new powers: calling external APIs, querying databases, operating third-party services. Without the MCP server, these actions aren&#39;t possible.</p>
+<p>Skills are the instruction manual. Tools are the equipment.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(Skills&lt;br/&gt;How to Do Things) ---|Complementary| B(Tools&lt;br/&gt;What You Can Do)
+    A --&gt; C(Playbooks &amp;&lt;br/&gt;Workflows)
+    B --&gt; D(APIs &amp;&lt;br/&gt;External Services)
+
+    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
+    classDef blue fill:#1565c0,color:#fff,stroke:#0d47a1,stroke-width:2px
+    classDef grey fill:#455a64,color:#fff,stroke:#37474f,stroke-width:2px
+
+    class A teal
+    class B blue
+    class C teal
+    class D blue
+</code></pre>
+<p>The interesting part: skills can wrap tools. Many developers cut context usage by wrapping MCP functionality in a skill. With Tool Search, this workaround matters less — but both remain complementary.</p>
+<p>This pattern applies broadly. Cursor separates rules from tools. VS Code has task runners and extensions. Any system that separates &quot;how to do things&quot; from &quot;what you can do&quot; uses this same distinction.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;What&amp;nbsp;This&amp;nbsp;Means&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p><strong>If you use Claude Code</strong>, there&#39;s nothing to do. Tool Search activates automatically. You&#39;ll just notice more context available — longer conversations, more complex tasks, fewer interruptions. No other MCP client — Cursor, Windsurf, Cline, VS Code Copilot — has an equivalent feature yet.</p>
+<p><strong>If you build MCP servers</strong>, one thing changes in Claude Code: your <code>server instructions</code> field matters now. In search mode, the AI needs to know <em>when</em> to look for your tools. Clear instructions — &quot;this server handles database queries&quot; or &quot;use this for CI/CD operations&quot; — help the AI find your tools at the right moment. Vague or missing instructions mean your tools get buried.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(Tool Search) --&gt; B(Users)
+    A --&gt; C(MCP Developers)
+    B --&gt; D(Automatic —&lt;br/&gt;More Room to Work)
+    C --&gt; E(Descriptions Are&lt;br/&gt;Your SEO Now)
+
+    classDef dark fill:#1a1a2e,color:#fff,stroke:#16213e,stroke-width:2px
+    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
+    classDef blue fill:#1565c0,color:#fff,stroke:#0d47a1,stroke-width:2px
+    classDef orange fill:#e65100,color:#fff,stroke:#bf360c,stroke-width:2px
+
+    class A dark
+    class B teal
+    class C blue
+    class D teal
+    class E orange
+</code></pre>
+<p>Think of it like SEO. Before, tools sat on the shelf in plain view. Now they need to be discoverable.</p>
+<hr>
+<p>The pattern is universal: load the catalog up front, load the full details on demand. Claude Code is the first client to ship it, but every MCP client faces the same ceiling. As tool counts grow, the bottleneck shifts from the AI model to the infrastructure around it. Tool Search doesn&#39;t make the AI smarter — it removes a ceiling that was making it artificially dumber.</p>
+<hr>
+<p><strong>References</strong></p>
+<ol>
+<li>Anthropic. &quot;Scale with MCP Tool Search.&quot; <a href="https://code.claude.com/docs/en/mcp#scale-with-mcp-tool-search">Claude Code Documentation</a>.</li>
+<li>GitHub Issue #7336. &quot;Lazy Loading for MCP Servers and Tools.&quot; <a href="https://github.com/anthropics/claude-code/issues/7336">github.com/anthropics/claude-code/issues/7336</a>.</li>
+<li>Thariq. Announcement on X. <a href="https://x.com/thariq212/status/2011523109871108570">x.com/thariq212/status/2011523109871108570</a>.</li>
+</ol>
+
+    </article>
+
+    <p><a href="https://bootloader.live">← Back to bootloader.live</a></p>
+
+    <script>window.goatcounter={no_onload:true};</script>
+    <script data-goatcounter="https://mxcoppell.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

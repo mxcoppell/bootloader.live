@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Designing MCP Tools for Large Trading Data — bootloader.live</title>
+    <meta name="description" content="A TradeStation account with 200 positions generates 120,000 characters of JSON. The data does not fit. The problem is not the volume \u2014 it&#039;s that the tool sends everything at once.">
+    <link rel="canonical" href="https://bootloader.live/posts/design-mcp-tools-for-large-dataset/">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Designing MCP Tools for Large Trading Data">
+    <meta property="og:description" content="A TradeStation account with 200 positions generates 120,000 characters of JSON. The data does not fit. The problem is not the volume \u2014 it&#039;s that the tool sends everything at once.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://bootloader.live/posts/design-mcp-tools-for-large-dataset/">
+    <meta property="og:site_name" content="bootloader.live">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Designing MCP Tools for Large Trading Data">
+    <meta name="twitter:description" content="A TradeStation account with 200 positions generates 120,000 characters of JSON. The data does not fit. The problem is not the volume \u2014 it&#039;s that the tool sends everything at once.">
+
+    <!-- JSON-LD -->
+    <script type="application/ld+json">
+    {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Designing MCP Tools for Large Trading Data",
+    "description": "A TradeStation account with 200 positions generates 120,000 characters of JSON. The data does not fit. The problem is not the volume \\u2014 it's that the tool sends everything at once.",
+    "datePublished": "2025-09-25",
+    "url": "https://bootloader.live/posts/design-mcp-tools-for-large-dataset/",
+    "author": {
+        "@type": "Person",
+        "name": "Michael Xie"
+    },
+    "keywords": "MCP, Data Design",
+    "publisher": {
+        "@type": "Person",
+        "name": "Michael Xie"
+    }
+}
+    </script>
+
+    <style>
+        body {
+            font-family: 'Newsreader', Georgia, serif;
+            max-width: 740px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            background: #222222;
+            color: #e6edf3;
+            line-height: 1.7;
+        }
+        a { color: #58a6ff; }
+        pre { background: #2a2a2a; padding: 1rem; border-radius: 6px; overflow-x: auto; }
+        code { font-size: 0.9em; }
+        img { max-width: 100%; height: auto; }
+        h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        .meta { color: #8b949e; font-size: 0.9rem; margin-bottom: 2rem; }
+    </style>
+</head>
+<body>
+    <script>window.location.replace('https://bootloader.live/#/post/design-mcp-tools-for-large-dataset');</script>
+
+    <article>
+        <h1>Designing MCP Tools for Large Trading Data</h1>
+        <div class="meta">September 25, 2025</div>
+        <h1>Designing MCP Tools for Large Trading Data</h1>
+<p>A TradeStation account with 200 positions generates 120,000 characters of JSON. ChatGPT&#39;s plugin limit is 100,000 characters. The data does not fit. And this is a single account — professional traders manage 50 to 500 positions across multiple accounts, plus open orders and trade history.</p>
+<p>The instinct is to truncate. Send less data, strip fields, compress output. But truncation is the wrong frame. The problem is not the volume of data — it is that the tool sends everything at once instead of what the user actually needs right now.</p>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Scale&amp;nbsp;Problem&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Each position contains roughly 600 characters of JSON — symbol, quantity, market value, P&amp;L, margin requirements, timestamps. Multiply by 200 positions and you get 120KB of raw data. Current LLM limits make this unworkable:</p>
+<table>
+<thead>
+<tr>
+<th>Platform</th>
+<th>Limit</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ChatGPT Plugins</td>
+<td>100,000 characters</td>
+</tr>
+<tr>
+<td>GPT-4</td>
+<td>~24,000 words (32k tokens)</td>
+</tr>
+<tr>
+<td>Claude</td>
+<td>Works best under 50k tokens</td>
+</tr>
+</tbody></table>
+<p>Most MCP tool implementations treat every query the same way: fetch all positions, serialize to JSON, return the blob. The LLM either chokes on the size or wastes its context window parsing fields the user never asked about.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(200 Positions&lt;br/&gt;120KB JSON) --&gt; B(Single Tool Call&lt;br/&gt;Return Everything)
+    B --&gt; C(Exceeds LLM&lt;br/&gt;Context Limit)
+    C --&gt; D(Truncated Response&lt;br/&gt;or Failure)
+
+    classDef dark fill:#1a1a2e,color:#fff,stroke:#16213e,stroke-width:2px
+    classDef red fill:#c62828,color:#fff,stroke:#b71c1c,stroke-width:2px
+    classDef orange fill:#e65100,color:#fff,stroke:#bf360c,stroke-width:2px
+
+    class A dark
+    class B orange
+    class C red
+    class D red
+</code></pre>
+<p>The fix is structural. Instead of one tool that returns everything, split the data into tiers that match how traders actually think — dashboard first, then drill down.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Tiered&amp;nbsp;Design&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Traders need 5 to 7 data points in the first 30 seconds. This cognitive limit (the 5 plus-or-minus 2 rule from psychology) maps directly to a progressive disclosure pattern: show the summary, then the filtered list, then the full record.</p>
+<p><strong>Tier 1 — Overview</strong> returns portfolio health in under 5KB. Total value, P&amp;L, top gainers and losers, concentration risk. Enough to answer &quot;How am I doing?&quot; without touching individual positions.</p>
+<p><strong>Tier 2 — Lists</strong> returns paginated, filtered subsets at 10-20KB per page. The user asks for losing positions, options expiring this week, or the 20 largest holdings. Server-side sorting and filtering keep the response predictable.</p>
+<p><strong>Tier 3 — Details</strong> returns the complete record for 1-10 specific symbols at 2-5KB per item. Every field, every metric. This only fires when the user explicitly drills into a position.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(User Query) --&gt; B(Tier 1: Overview&lt;br/&gt;Under 5KB)
+    B -.-&gt;|Need specifics?| C(Tier 2: Filtered List&lt;br/&gt;10-20KB per page)
+    C -.-&gt;|Need full record?| D(Tier 3: Detail&lt;br/&gt;2-5KB per item)
+    D --&gt; E(Complete Response&lt;br/&gt;Within LLM Limits)
+
+    classDef dark fill:#1a1a2e,color:#fff,stroke:#16213e,stroke-width:2px
+    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
+    classDef blue fill:#1565c0,color:#fff,stroke:#0d47a1,stroke-width:2px
+
+    class A dark
+    class B teal
+    class C teal
+    class D teal
+    class E blue
+</code></pre>
+<p>The key design choice: each tier is a separate MCP tool, not a parameter on a single tool. The LLM picks the right tier based on the user&#39;s question. &quot;What&#39;s my P&amp;L?&quot; triggers Tier 1. &quot;Show losing positions&quot; triggers Tier 2. &quot;Details on AAPL&quot; triggers Tier 3. The LLM never loads data the user did not ask for.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Data&amp;nbsp;Flow&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Here is what Tier 2 looks like in practice — the list tool with pagination, filtering, and server-side sorting:</p>
+<pre><code class="language-json">{
+  &quot;tool&quot;: &quot;list_positions&quot;,
+  &quot;parameters&quot;: {
+    &quot;account_id&quot;: &quot;31000261&quot;,
+    &quot;filter&quot;: &quot;losing&quot;,
+    &quot;sort_by&quot;: &quot;unrealized_pl&quot;,
+    &quot;limit&quot;: 20,
+    &quot;offset&quot;: 0
+  },
+  &quot;response&quot;: {
+    &quot;total_count&quot;: 31,
+    &quot;returned_count&quot;: 20,
+    &quot;has_more&quot;: true,
+    &quot;next_offset&quot;: 20
+  }
+}
+</code></pre>
+<p>Three design choices matter here. First, default limit of 20 items — enough to be useful, small enough to fit any context window. Second, offset-based pagination so the LLM can request the next page. Third, server-side sorting because LLMs make arithmetic errors when sorting large datasets themselves.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(Raw API Response&lt;br/&gt;120KB All Positions) --&gt; B(Server-Side&lt;br/&gt;Filter &amp; Sort)
+    B --&gt; C(Paginate&lt;br/&gt;20 Items Default)
+    C --&gt; D(Return 10-20KB&lt;br/&gt;With Pagination Metadata)
+    D -.-&gt;|User asks for more| C
+
+    classDef dark fill:#1a1a2e,color:#fff,stroke:#16213e,stroke-width:2px
+    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
+    classDef blue fill:#1565c0,color:#fff,stroke:#0d47a1,stroke-width:2px
+    classDef orange fill:#e65100,color:#fff,stroke:#bf360c,stroke-width:2px
+
+    class A dark
+    class B teal
+    class C teal
+    class D blue
+</code></pre>
+<p>The same pattern extends to orders and trade history. For time-sensitive data like orders, the tool prioritizes urgency — stop losses near trigger price, large pending orders — before returning the full list. For historical data, period summaries come first, raw trade lists only on request.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Smart&amp;nbsp;Defaults&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Progressive disclosure only works if the tools respond fast enough to feel conversational. Caching fills that gap. Identical queries get cached for 30-60 seconds — long enough to avoid redundant API calls during a conversation, short enough to reflect market moves.</p>
+<p>Smart defaults adapt to context. During market hours, tools return real-time prices and active orders. After hours, they shift to summaries and next-day preparation. Near options expiration, they surface expiring contracts without being asked.</p>
+<p>When a response would still exceed limits — 450 positions with no filter applied — the tool returns structured guidance instead of failing silently:</p>
+<pre><code class="language-json">{
+  &quot;error&quot;: &quot;response_too_large&quot;,
+  &quot;message&quot;: &quot;450 positions exceed limit. Please add filters.&quot;,
+  &quot;suggestions&quot;: [&quot;filter by account&quot;, &quot;use pagination&quot;]
+}
+</code></pre>
+<p><strong>If you build MCP tools for any data-heavy domain</strong>, the three-tier split applies directly. Financial data, inventory systems, monitoring dashboards — any domain where the raw dataset exceeds LLM context limits benefits from separating overview, list, and detail into distinct tools.</p>
+<p><strong>If you use AI assistants with trading platforms</strong>, ask whether the integration paginates and filters server-side, or whether it dumps everything into the prompt. The difference determines whether the tool works with 20 positions or 200.</p>
+<hr>
+<p>The pattern is not about trading data — it is about respecting two constraints at once. Humans process 5 to 7 items before losing the thread. LLMs process a fixed window before losing the context. Progressive disclosure is not a workaround for limited AI — it is how information should flow when both the reader and the machine have finite attention.</p>
+<hr>
+<p><strong>References</strong></p>
+<ol>
+<li>TradeStation API Documentation. &quot;Get Positions.&quot; <a href="https://api.tradestation.com/docs/specification/get-accounts-accountid-positions">tradestation.com</a></li>
+<li>Miller, George A. &quot;The Magical Number Seven, Plus or Minus Two.&quot; Psychological Review, 1956.</li>
+<li>Anthropic. &quot;Model Context Protocol Specification.&quot; <a href="https://modelcontextprotocol.io">modelcontextprotocol.io</a></li>
+<li>OpenAI. &quot;ChatGPT Plugins Documentation.&quot; <a href="https://platform.openai.com/docs/plugins">platform.openai.com</a></li>
+</ol>
+
+    </article>
+
+    <p><a href="https://bootloader.live">← Back to bootloader.live</a></p>
+
+    <script>window.goatcounter={no_onload:true};</script>
+    <script data-goatcounter="https://mxcoppell.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

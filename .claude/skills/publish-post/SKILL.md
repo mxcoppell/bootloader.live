@@ -75,7 +75,17 @@ Open `index.html` and find the `const POSTS = [` array. Add a new entry:
 
 The array is auto-sorted by date at runtime, so insertion position does not matter.
 
-### 6. Verify
+### 6. Run Build
+
+Regenerate pre-rendered SEO pages, sitemap, and llms.txt:
+
+```bash
+node build.js
+```
+
+This updates `posts/<slug>/index.html`, `sitemap.xml`, and `llms.txt` with the new post.
+
+### 7. Verify
 
 Start a local server and confirm the post renders correctly:
 
@@ -83,20 +93,49 @@ Start a local server and confirm the post renders correctly:
 python3 -m http.server 8080 &
 ```
 
-Navigate to `http://localhost:8080/#/post/<slug>` and verify:
+Use `npx agent-browser` to verify:
+
+```bash
+npx agent-browser open http://localhost:8080/#/post/<slug> && npx agent-browser wait --load networkidle && npx agent-browser wait 2000 && npx agent-browser screenshot /tmp/<slug>-post.png
+```
+
+Check the screenshot for:
 - Content renders with correct text and formatting
 - Mermaid diagrams display (if any)
-- Tables have correct dark/light theme colors
-- Back navigation works
-- Post appears in the landing page list at the correct date position
+- Title and date are correct
 
-Kill the server after verification.
+Also verify the landing page:
 
-### 7. Report
+```bash
+npx agent-browser open http://localhost:8080/ && npx agent-browser wait --load networkidle && npx agent-browser wait 1000 && npx agent-browser screenshot /tmp/<slug>-landing.png
+```
+
+Check that the post appears at the correct date position on the landing page.
+
+Close browser and kill server after verification:
+
+```bash
+npx agent-browser close 2>/dev/null; kill %1 2>/dev/null
+```
+
+### 8. Commit and Push
+
+Stage the new post directory, updated index.html, and generated SEO files, then commit and push:
+
+```bash
+git add posts/<slug>/ index.html sitemap.xml llms.txt
+git commit -m 'Publish "<title>" blog post'
+git push
+```
+
+Use the post title from the H1 heading in the commit message.
+
+### 9. Report
 
 Output a summary:
 - Post title
 - Publication date
-- URL path: `/#/post/<slug>`
+- SPA URL: `/#/post/<slug>`
+- SEO URL: `https://bootloader.live/posts/<slug>/`
 - Number of mermaid diagrams (if any)
 - Any issues found during verification

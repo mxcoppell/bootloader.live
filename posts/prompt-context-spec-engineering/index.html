@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three Ways to Talk to an AI (and Why You Keep Picking the Wrong One) — bootloader.live</title>
+    <meta name="description" content="Three engineering disciplines have emerged. They look similar from the outside, but they solve fundamentally different problems.">
+    <link rel="canonical" href="https://bootloader.live/posts/prompt-context-spec-engineering/">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Three Ways to Talk to an AI (and Why You Keep Picking the Wrong One)">
+    <meta property="og:description" content="Three engineering disciplines have emerged. They look similar from the outside, but they solve fundamentally different problems.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://bootloader.live/posts/prompt-context-spec-engineering/">
+    <meta property="og:site_name" content="bootloader.live">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Three Ways to Talk to an AI (and Why You Keep Picking the Wrong One)">
+    <meta name="twitter:description" content="Three engineering disciplines have emerged. They look similar from the outside, but they solve fundamentally different problems.">
+
+    <!-- JSON-LD -->
+    <script type="application/ld+json">
+    {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Three Ways to Talk to an AI (and Why You Keep Picking the Wrong One)",
+    "description": "Three engineering disciplines have emerged. They look similar from the outside, but they solve fundamentally different problems.",
+    "datePublished": "2025-07-31",
+    "url": "https://bootloader.live/posts/prompt-context-spec-engineering/",
+    "author": {
+        "@type": "Person",
+        "name": "Michael Xie"
+    },
+    "keywords": "Prompt Engineering, Context",
+    "publisher": {
+        "@type": "Person",
+        "name": "Michael Xie"
+    }
+}
+    </script>
+
+    <style>
+        body {
+            font-family: 'Newsreader', Georgia, serif;
+            max-width: 740px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            background: #222222;
+            color: #e6edf3;
+            line-height: 1.7;
+        }
+        a { color: #58a6ff; }
+        pre { background: #2a2a2a; padding: 1rem; border-radius: 6px; overflow-x: auto; }
+        code { font-size: 0.9em; }
+        img { max-width: 100%; height: auto; }
+        h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        .meta { color: #8b949e; font-size: 0.9rem; margin-bottom: 2rem; }
+    </style>
+</head>
+<body>
+    <script>window.location.replace('https://bootloader.live/#/post/prompt-context-spec-engineering');</script>
+
+    <article>
+        <h1>Three Ways to Talk to an AI (and Why You Keep Picking the Wrong One)</h1>
+        <div class="meta">July 31, 2025</div>
+        <h1>Three Ways to Talk to an AI (and Why You Keep Picking the Wrong One)</h1>
+<p>You ask the model to refactor a function. It ignores half your constraints. You add more detail to the prompt, reword it three times, sprinkle in &quot;think step by step.&quot; Still wrong. The problem was never your wording. The problem was that the model didn&#39;t have what it needed to succeed — and no amount of prompt tweaking would fix that.</p>
+<p>Three engineering disciplines have emerged around this gap. They look similar from the outside, but they solve fundamentally different problems.</p>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Three&amp;nbsp;Layers&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p><strong>Prompt engineering</strong> is what most people start with: crafting the text string you send to a model. Zero-shot, few-shot, chain-of-thought, role assignment. It works well for simple, self-contained tasks — a single question, a quick transformation, a format conversion. The entire problem fits inside one message.</p>
+<p><strong>Context engineering</strong> is what you graduate to when prompts stop working. It&#39;s the system around the prompt: what data gets retrieved, which tools are available, how conversation history is managed, what gets injected into the context window before the model ever sees your request. Context engineering treats the AI interaction as an architecture problem, not a copywriting problem.</p>
+<p><strong>Specification engineering</strong> is the newest layer. Instead of optimizing how you ask or what surrounds the ask, you focus on defining exactly what you want — success criteria, edge cases, constraints, output format. It comes from the recognition that as models get smarter, the bottleneck shifts from clever prompting to clear requirements. OpenAI&#39;s Model Spec formalized this idea.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(Prompt Engineering) --&gt; B(Craft the Message)
+    B --&gt; C(Single-Turn Tasks)
+    D(Context Engineering) --&gt; E(Build the System)
+    E --&gt; F(Multi-Step Workflows)
+    G(Specification Engineering) --&gt; I(Define Requirements)
+    I --&gt; J(Consistent Results)
+
+    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
+    classDef blue fill:#1565c0,color:#fff,stroke:#0d47a1,stroke-width:2px
+    classDef orange fill:#e65100,color:#fff,stroke:#bf360c,stroke-width:2px
+
+    class A,B,C teal
+    class D,E,F blue
+    class G,I,J orange
+</code></pre>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Breaking&amp;nbsp;Points&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>The failure modes tell you which discipline you actually need.</p>
+<p>Bad prompt engineering looks like wrong tone, ignored instructions, inconsistent formatting. You&#39;re saying the right thing in the wrong way. The fix is technique: better structure, examples, explicit constraints within the message itself.</p>
+<p>Bad context engineering looks like the model forgetting why it&#39;s in the conversation. Outputs go generic or unhinged. RAG retrieval breaks. Tool chaining fails. The model had the right instructions but the wrong information — or too much of it. The fix is architectural: what fills the context window and why.</p>
+<p>Bad specification engineering looks like outputs that are technically correct but miss the point. The model did what you asked, just not what you meant. Edge cases slip through. Results vary between runs. The fix is requirements: defining what &quot;done&quot; looks like before you start.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(Wrong Tone /&lt;br/&gt;Ignored Instructions) -.-&gt;|Fix with| B(Prompt Engineering)
+    C(Model Forgets Context /&lt;br/&gt;Generic Output) -.-&gt;|Fix with| D(Context Engineering)
+    E(Correct but Wrong /&lt;br/&gt;Missed Edge Cases) -.-&gt;|Fix with| F(Specification Engineering)
+
+    classDef red fill:#c62828,color:#fff,stroke:#b71c1c,stroke-width:2px
+    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
+    classDef blue fill:#1565c0,color:#fff,stroke:#0d47a1,stroke-width:2px
+    classDef orange fill:#e65100,color:#fff,stroke:#bf360c,stroke-width:2px
+
+    class A,C,E red
+    class B teal
+    class D blue
+    class F orange
+</code></pre>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;How&amp;nbsp;They&amp;nbsp;Stack&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>These aren&#39;t competing approaches. They&#39;re layers.</p>
+<p>Specification engineering sits on top: you define what you want and how to measure success. Context engineering sits in the middle: you build the system that feeds the model the right information, tools, and history. Prompt engineering sits at the bottom: you craft the actual message the model receives.</p>
+<p>A coding assistant illustrates the stack. The specification says &quot;refactor this code to follow team conventions, preserve comments, maintain test coverage.&quot; The context system retrieves the style guide, pulls in the test suite, loads relevant files. The prompt structures the actual request with examples and format instructions.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(Specification Layer) --&gt; B(Define Success Criteria&lt;br/&gt;&amp; Constraints)
+    B --&gt; C(Context Layer)
+    C --&gt; D(Retrieve Data, Tools,&lt;br/&gt;&amp; History)
+    D --&gt; E(Prompt Layer)
+    E --&gt; F(Craft the Actual&lt;br/&gt;Message)
+    F --&gt; G(Model Response)
+
+    classDef orange fill:#e65100,color:#fff,stroke:#bf360c,stroke-width:2px
+    classDef blue fill:#1565c0,color:#fff,stroke:#0d47a1,stroke-width:2px
+    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
+    classDef dark fill:#1a1a2e,color:#fff,stroke:#16213e,stroke-width:2px
+
+    class A,B orange
+    class C,D blue
+    class E,F teal
+    class G dark
+</code></pre>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Pick&amp;nbsp;Your&amp;nbsp;Layer&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p><strong>If you&#39;re a developer</strong> building production AI features, context engineering is where most of your time should go. The system around the model matters more than the words inside the prompt. Retrieval pipelines, tool selection, memory management — these determine whether your AI works reliably or just demos well.</p>
+<p><strong>If you&#39;re a power user</strong> of AI coding tools — Claude Code, Cursor, Copilot — specification engineering pays the highest returns. These tools already handle context for you. Your leverage is in writing clear requirements: CLAUDE.md files, project rules, task definitions that leave no ambiguity about what &quot;done&quot; means.</p>
+<p><strong>If you&#39;re just getting started</strong>, prompt engineering is the right entry point. Learn few-shot examples, chain-of-thought reasoning, and explicit formatting instructions. But recognize the ceiling. When your prompts keep failing despite rewrites, the problem has moved up the stack.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(Building AI Products) --&gt; B(Context Engineering&lt;br/&gt;Design the System)
+    C(Using AI Tools Daily) --&gt; D(Specification Engineering&lt;br/&gt;Define Requirements)
+    E(Getting Started) --&gt; F(Prompt Engineering&lt;br/&gt;Learn the Basics)
+    F -.-&gt;|Hit the Ceiling| B
+
+    classDef dark fill:#1a1a2e,color:#fff,stroke:#16213e,stroke-width:2px
+    classDef blue fill:#1565c0,color:#fff,stroke:#0d47a1,stroke-width:2px
+    classDef orange fill:#e65100,color:#fff,stroke:#bf360c,stroke-width:2px
+    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
+
+    class A dark
+    class B blue
+    class C dark
+    class D orange
+    class E dark
+    class F teal
+</code></pre>
+<hr>
+<p>The pattern is universal across every AI tool, not just one vendor&#39;s ecosystem. The discipline is not prompt optimization — it is system design. The question was never &quot;how do I ask better questions.&quot; It was &quot;does the model have what it needs to answer.&quot;</p>
+<hr>
+<p><strong>References</strong></p>
+<ol>
+<li>Paulo César. &quot;Prompt Engineering is Dead, Spec Writing is the New Superpower.&quot; <a href="https://medium.com/@paulocsb/prompt-engineering-is-dead-spec-writing-is-the-new-superpower-ee532894121e">Medium</a>.</li>
+<li>OpenAI. &quot;Introducing the Model Spec.&quot; <a href="https://openai.com/index/introducing-the-model-spec/">openai.com</a>.</li>
+<li>Addyo. &quot;Context Engineering: Bringing Engineering Discipline to Prompts.&quot; <a href="https://addyo.substack.com/p/context-engineering-bringing-engineering">Substack</a>.</li>
+<li>Phil Schmid. &quot;The New Skill in AI is Not Prompting, It&#39;s Context Engineering.&quot; <a href="https://www.philschmid.de/context-engineering">philschmid.de</a>.</li>
+</ol>
+
+    </article>
+
+    <p><a href="https://bootloader.live">← Back to bootloader.live</a></p>
+
+    <script>window.goatcounter={no_onload:true};</script>
+    <script data-goatcounter="https://mxcoppell.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

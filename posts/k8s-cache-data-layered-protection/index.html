@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Four Layers Between a Token Cache and a Breach — bootloader.live</title>
+    <meta name="description" content="A DragonFlyDB pod sits in a Kubernetes namespace. No authentication between it and the MCP-server pods that use it. No network policy restricting access. Tokens stored in plaintext.">
+    <link rel="canonical" href="https://bootloader.live/posts/k8s-cache-data-layered-protection/">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Four Layers Between a Token Cache and a Breach">
+    <meta property="og:description" content="A DragonFlyDB pod sits in a Kubernetes namespace. No authentication between it and the MCP-server pods that use it. No network policy restricting access. Tokens stored in plaintext.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://bootloader.live/posts/k8s-cache-data-layered-protection/">
+    <meta property="og:site_name" content="bootloader.live">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Four Layers Between a Token Cache and a Breach">
+    <meta name="twitter:description" content="A DragonFlyDB pod sits in a Kubernetes namespace. No authentication between it and the MCP-server pods that use it. No network policy restricting access. Tokens stored in plaintext.">
+
+    <!-- JSON-LD -->
+    <script type="application/ld+json">
+    {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Four Layers Between a Token Cache and a Breach",
+    "description": "A DragonFlyDB pod sits in a Kubernetes namespace. No authentication between it and the MCP-server pods that use it. No network policy restricting access. Tokens stored in plaintext.",
+    "datePublished": "2025-10-30",
+    "url": "https://bootloader.live/posts/k8s-cache-data-layered-protection/",
+    "author": {
+        "@type": "Person",
+        "name": "Michael Xie"
+    },
+    "keywords": "Security, Kubernetes",
+    "publisher": {
+        "@type": "Person",
+        "name": "Michael Xie"
+    }
+}
+    </script>
+
+    <style>
+        body {
+            font-family: 'Newsreader', Georgia, serif;
+            max-width: 740px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            background: #222222;
+            color: #e6edf3;
+            line-height: 1.7;
+        }
+        a { color: #58a6ff; }
+        pre { background: #2a2a2a; padding: 1rem; border-radius: 6px; overflow-x: auto; }
+        code { font-size: 0.9em; }
+        img { max-width: 100%; height: auto; }
+        h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        .meta { color: #8b949e; font-size: 0.9rem; margin-bottom: 2rem; }
+    </style>
+</head>
+<body>
+    <script>window.location.replace('https://bootloader.live/#/post/k8s-cache-data-layered-protection');</script>
+
+    <article>
+        <h1>Four Layers Between a Token Cache and a Breach</h1>
+        <div class="meta">October 30, 2025</div>
+        <h1>Four Layers Between a Token Cache and a Breach</h1>
+<p>A DragonFlyDB pod sits in a Kubernetes namespace. No authentication between it and the MCP-server pods that use it. No network policy restricting access. Tokens stored in plaintext. Shell access enabled on every pod in the namespace.</p>
+<p>Any pod can read every cached token. Any developer with namespace access can shell in and dump them. One compromised pod, one curious insider, and every user&#39;s OAuth access token is exposed.</p>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;The&amp;nbsp;Exposure&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>The cache holds OAuth access tokens, refresh tokens, and client credentials for a trading platform. Each token grants direct access to a user&#39;s brokerage account. The current architecture has four open paths to those tokens.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(MCP-Server Pods) --&gt;|No Auth| B(DragonFlyDB)
+    C(Other Pods&lt;br/&gt;in Namespace) --&gt;|No Network&lt;br/&gt;Policy| B
+    D(Developers &amp;&lt;br/&gt;SREs) --&gt;|Shell&lt;br/&gt;Access| B
+    B --&gt; E(Plaintext Tokens&lt;br/&gt;in Memory)
+
+    classDef orange fill:#e65100,color:#fff,stroke:#bf360c,stroke-width:2px
+    classDef red fill:#c62828,color:#fff,stroke:#b71c1c,stroke-width:2px
+
+    class A,C,D orange
+    class B red
+    class E red
+</code></pre>
+<p>No network segmentation means any pod connects to the cache through default Kubernetes networking. No authentication means connections require zero credentials. Shell access means SREs and developers routinely log into pods for debugging — and every token is one command away. Plaintext storage means whoever reaches the data reads it immediately.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Attack&amp;nbsp;Paths&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Four vectors lead to the same outcome: a mass token leak granting full customer account access.</p>
+<p>Direct insider access — shell into the DragonFlyDB pod or any MCP-server pod and extract tokens from memory. Compromised MCP-server — remote code execution chains into unauthenticated cache queries. Lateral movement — compromise any pod in the namespace, then pivot to the cache through unrestricted networking. Unauthorized deployment — spin up a new pod in the namespace and connect directly to the cache.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(Insider&lt;br/&gt;Shell Access) --&gt; E(Mass Token&lt;br/&gt;Leak)
+    B(Compromised&lt;br/&gt;MCP Pod) --&gt; E
+    C(Lateral Movement&lt;br/&gt;from Any Pod) --&gt; E
+    D(Rogue Pod&lt;br/&gt;Deployment) --&gt; E
+
+    classDef red fill:#c62828,color:#fff,stroke:#b71c1c,stroke-width:2px
+    classDef orange fill:#e65100,color:#fff,stroke:#bf360c,stroke-width:2px
+
+    class A,B,C,D orange
+    class E red
+</code></pre>
+<p>Each vector exploits a different gap. Insider access bypasses network controls entirely. Compromised pods bypass authentication that was never required. Lateral movement exploits missing segmentation. All four converge on the same unprotected cache.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Four&amp;nbsp;Layers&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>No single control blocks every vector. Defense requires layers that overlap.</p>
+<p><strong>Layer 1 — NetworkPolicy.</strong> Restricts DragonFlyDB access to MCP-server pods only using label-based ingress rules. Blocks lateral movement, unauthorized pods, and accidental deployments from reaching the cache.</p>
+<p><strong>Layer 2 — Authentication.</strong> Enforces credentials between MCP-server and DragonFlyDB. Even with network access, an attacker needs valid credentials to query the cache.</p>
+<p><strong>Layer 3 — Distroless images.</strong> Removes shell binaries and debugging tools from all pods. Eliminates interactive shell access as an attack path entirely.</p>
+<p><strong>Layer 4 — AES-CBC encryption.</strong> Encrypts tokens at rest in the cache with a random initialization vector per encryption operation. Identical tokens produce different ciphertext, preventing pattern detection. Protects against storage-layer attacks: backups, snapshots, memory dumps to disk.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(Threat Actor) --&gt; B(Layer 1:&lt;br/&gt;NetworkPolicy)
+    B --&gt; C(Layer 2:&lt;br/&gt;Authentication)
+    C --&gt; D(Layer 3:&lt;br/&gt;Distroless)
+    D --&gt; E(Layer 4:&lt;br/&gt;AES-CBC)
+    E --&gt; F(Protected&lt;br/&gt;Token Cache)
+
+    classDef red fill:#c62828,color:#fff,stroke:#b71c1c,stroke-width:2px
+    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
+    classDef blue fill:#1565c0,color:#fff,stroke:#0d47a1,stroke-width:2px
+
+    class A red
+    class B,C,D,E teal
+    class F blue
+</code></pre>
+<p>Together, the four layers reduce the attack surface by 75-80%. NetworkPolicy handles network-level threats. Auth handles credential-level threats. Distroless handles interactive access. Encryption handles data at rest. Each layer blocks a different class of attack that the others miss.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;What&amp;nbsp;Remains&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Residual risks require process controls, not infrastructure changes.</p>
+<p>A sophisticated insider with RBAC access to Kubernetes secrets can extract auth credentials and the encryption key directly. Application-level remote code execution can query the cache through the legitimate MCP-server code path, bypassing network and auth layers. Memory dumps of running processes capture tokens in their decrypted state.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(RBAC Secret&lt;br/&gt;Access) --&gt; D(Residual&lt;br/&gt;Risk)
+    B(Application&lt;br/&gt;Level RCE) --&gt; D
+    C(Process Memory&lt;br/&gt;Dumps) --&gt; D
+    D --&gt; E(RBAC Restriction&lt;br/&gt;&amp; Vault)
+    D --&gt; F(WAF &amp; Runtime&lt;br/&gt;Monitoring)
+    D --&gt; G(OS-Level&lt;br/&gt;Hardening)
+
+    classDef orange fill:#e65100,color:#fff,stroke:#bf360c,stroke-width:2px
+    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
+
+    class A,B,C orange
+    class D orange
+    class E,F,G teal
+</code></pre>
+<p>These gaps close through RBAC restriction, secret management systems like Vault, runtime security monitoring, and credential rotation. The required attacker sophistication shifts from &quot;shell into any pod&quot; to &quot;compromise the secret management chain&quot; — a fundamentally different threat level.</p>
+<hr>
+<p>The pattern applies to any in-memory cache holding sensitive tokens in a shared-tenancy environment. No single layer is sufficient. Each blocks a different class of attack, and the residual risk shifts from infrastructure exploitation to organizational process failure. Layered defense does not eliminate risk — it raises the cost of compromise until the remaining vectors require capabilities that infrastructure alone cannot provide.</p>
+<hr>
+<p><strong>References</strong></p>
+<ol>
+<li>Kubernetes. &quot;Network Policies.&quot; <a href="https://kubernetes.io/docs/concepts/services-networking/network-policies/">kubernetes.io</a>.</li>
+<li>Google. &quot;Distroless Container Images.&quot; <a href="https://github.com/GoogleContainerTools/distroless">github.com/GoogleContainerTools/distroless</a>.</li>
+<li>NIST. &quot;Recommendation for Block Cipher Modes of Operation.&quot; <a href="https://csrc.nist.gov/publications/detail/sp/800-38a/final">csrc.nist.gov</a>.</li>
+</ol>
+
+    </article>
+
+    <p><a href="https://bootloader.live">← Back to bootloader.live</a></p>
+
+    <script>window.goatcounter={no_onload:true};</script>
+    <script data-goatcounter="https://mxcoppell.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

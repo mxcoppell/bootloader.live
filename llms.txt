@@ -1,0 +1,27 @@
+# bootloader.live
+
+> Practical writing on AI-assisted development, MCP tools, and developer productivity.
+
+This blog covers AI-assisted software development, MCP (Model Context Protocol) tools, developer productivity, and agentic workflows.
+
+## Posts
+
+- [Spec-Driven Agentic Development — A Lifecycle Analysis](https://bootloader.live/posts/spec-driven-agentic-dev/): Constitution written. Specifications approved. Plan generated. Then a bug surfaces that invalidates three upstream requirements. This is the lifecycle tension at the heart of spec-driven agentic development.
+- [The Context Compacting Problem](https://bootloader.live/posts/context-window-compacting/): Three hours into a refactor. Forty files touched, tests passing. Then the context window fills up. The agent compacts — summarizing hours of work into a few paragraphs. When it resumes, it repeats itself.
+- [When Your AI's Plugin System Eats Its Own Brain](https://bootloader.live/posts/mcp-tool-search-lazy-loading/): Five MCP servers configured. Context window already one-third gone before you type anything. The more tools you add, the less room your AI has to actually work.
+- [Two Builders, 115 Stories, and an AI Team](https://bootloader.live/posts/agentic-swe-the-tradestation-mcp-delivery-case-study/): Two software builders. Sixty-one calendar days. The deliverable: a production MCP service with OAuth 2.1 authentication for TradeStation's trading platform — 115 Jira stories closed, 133 merge requests merged.
+- [Four Layers Between a Token Cache and a Breach](https://bootloader.live/posts/k8s-cache-data-layered-protection/): A DragonFlyDB pod sits in a Kubernetes namespace. No authentication between it and the MCP-server pods that use it. No network policy restricting access. Tokens stored in plaintext.
+- [When 39 Tools Is 30 Too Many](https://bootloader.live/posts/tradestation-mcp-workflows-and-tool-enhancement/): A TradeStation MCP server exposes 39 endpoints. Market data, portfolio management, order execution, option chains, news, fundamentals, symbol lookup. An LLM agent loading all these tool definitions burns thousands of context tokens before doing any actual work.
+- [One Tool, One Loop, One Done Marker](https://bootloader.live/posts/caveman-series-mini-swe-agent/): Strip an AI coding agent to its minimum. One tool: bash. One control flow: loop until done. One completion signal: a marker string in the output. No function-calling framework, no tool registry, no planner module.
+- [Designing MCP Tools for Large Trading Data](https://bootloader.live/posts/design-mcp-tools-for-large-dataset/): A TradeStation account with 200 positions generates 120,000 characters of JSON. The data does not fit. The problem is not the volume \u2014 it's that the tool sends everything at once.
+- [Picking an MCP SDK When Half of Them Aren't Ready](https://bootloader.live/posts/mcp-sdk-readiness-2025-08-07/): You want to build an MCP server. You pick a language, find the SDK, start wiring up tools \u2014 and three hours later discover the SDK doesn't support authentication.
+- [Cursor AI Editor vs VSCode+Roo: Which AI Workflow Fits Your Development Style](https://bootloader.live/posts/compare-cursor-vscode-roo/): The choice between Cursor and VSCode+Roo is not about features. It's about whether your tool fights your workflow or disappears into it.
+- [Cursor AI's 2025 Billing Model](https://bootloader.live/posts/cursor-billing-model-20250805/): "My Cursor bill jumped from $20 to $180 last month." Cursor's June 2025 billing overhaul replaced a simple request-count system with usage-based credits.
+- [What Makes an AI Agent an Agent](https://bootloader.live/posts/what-is-agent/): A chatbot answers questions. An agent does the work. The difference is not intelligence \u2014 it is a loop.
+- [AI Collaboration: When Teams Stop Typing and Start Directing](https://bootloader.live/posts/claude-code-team-experience/): Designers shipping complex features solo. Marketing people building Figma plugins. Research sessions compressed from an hour to ten minutes.
+- [Three Ways to Talk to an AI (and Why You Keep Picking the Wrong One)](https://bootloader.live/posts/prompt-context-spec-engineering/): Three engineering disciplines have emerged. They look similar from the outside, but they solve fundamentally different problems.
+
+## Links
+
+- Homepage: https://bootloader.live
+- Sitemap: https://bootloader.live/sitemap.xml

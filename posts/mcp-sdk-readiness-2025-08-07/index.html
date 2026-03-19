@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Picking an MCP SDK When Half of Them Aren&#039;t Ready — bootloader.live</title>
+    <meta name="description" content="You want to build an MCP server. You pick a language, find the SDK, start wiring up tools \u2014 and three hours later discover the SDK doesn&#039;t support authentication.">
+    <link rel="canonical" href="https://bootloader.live/posts/mcp-sdk-readiness-2025-08-07/">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Picking an MCP SDK When Half of Them Aren&#039;t Ready">
+    <meta property="og:description" content="You want to build an MCP server. You pick a language, find the SDK, start wiring up tools \u2014 and three hours later discover the SDK doesn&#039;t support authentication.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://bootloader.live/posts/mcp-sdk-readiness-2025-08-07/">
+    <meta property="og:site_name" content="bootloader.live">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Picking an MCP SDK When Half of Them Aren&#039;t Ready">
+    <meta name="twitter:description" content="You want to build an MCP server. You pick a language, find the SDK, start wiring up tools \u2014 and three hours later discover the SDK doesn&#039;t support authentication.">
+
+    <!-- JSON-LD -->
+    <script type="application/ld+json">
+    {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Picking an MCP SDK When Half of Them Aren't Ready",
+    "description": "You want to build an MCP server. You pick a language, find the SDK, start wiring up tools \\u2014 and three hours later discover the SDK doesn't support authentication.",
+    "datePublished": "2025-08-07",
+    "url": "https://bootloader.live/posts/mcp-sdk-readiness-2025-08-07/",
+    "author": {
+        "@type": "Person",
+        "name": "Michael Xie"
+    },
+    "keywords": "MCP, SDK",
+    "publisher": {
+        "@type": "Person",
+        "name": "Michael Xie"
+    }
+}
+    </script>
+
+    <style>
+        body {
+            font-family: 'Newsreader', Georgia, serif;
+            max-width: 740px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            background: #222222;
+            color: #e6edf3;
+            line-height: 1.7;
+        }
+        a { color: #58a6ff; }
+        pre { background: #2a2a2a; padding: 1rem; border-radius: 6px; overflow-x: auto; }
+        code { font-size: 0.9em; }
+        img { max-width: 100%; height: auto; }
+        h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        .meta { color: #8b949e; font-size: 0.9rem; margin-bottom: 2rem; }
+    </style>
+</head>
+<body>
+    <script>window.location.replace('https://bootloader.live/#/post/mcp-sdk-readiness-2025-08-07');</script>
+
+    <article>
+        <h1>Picking an MCP SDK When Half of Them Aren&#039;t Ready</h1>
+        <div class="meta">August 7, 2025</div>
+        <h1>Picking an MCP SDK When Half of Them Aren&#39;t Ready</h1>
+<p>You want to build an MCP server. You pick a language, find the SDK, start wiring up tools — and three hours later discover the SDK doesn&#39;t support authentication, the API is marked unstable, and the last release was a preview. The protocol has ten SDKs. Two are production-grade. The rest are somewhere between &quot;almost&quot; and &quot;not yet.&quot;</p>
+<p>Here&#39;s where each one actually stands as of August 2025.</p>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;The&amp;nbsp;Landscape&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>MCP launched in November 2024. Nine months later, the ecosystem has 10+ SDK implementations across every major language, backed by Anthropic, Microsoft, Google, JetBrains, and Spring AI. The current specification is <strong>2025-06-18</strong>, and it added OAuth 2.1, elicitation, and structured output — features that separate the mature SDKs from the rest.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(MCP Launch&lt;br/&gt;Nov 2024) --&gt; B(10+ SDKs&lt;br/&gt;Across Languages)
+    B --&gt; C(2025-06-18 Spec&lt;br/&gt;OAuth, Elicitation)
+    C --&gt; D(2 Production-Ready)
+    C --&gt; E(3 Still Developing)
+
+    classDef dark fill:#1a1a2e,color:#fff,stroke:#16213e,stroke-width:2px
+    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
+    classDef orange fill:#e65100,color:#fff,stroke:#bf360c,stroke-width:2px
+    classDef blue fill:#1565c0,color:#fff,stroke:#0d47a1,stroke-width:2px
+
+    class A dark
+    class B blue
+    class C blue
+    class D teal
+    class E orange
+</code></pre>
+<p>The gap between &quot;has an SDK&quot; and &quot;the SDK is ready&quot; is the entire problem. Language support exists. Feature parity does not.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;The&amp;nbsp;Tiers&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Not all SDKs are equal. Compliance with the 2025-06-18 specification breaks them into three tiers.</p>
+<table>
+<thead>
+<tr>
+<th>SDK</th>
+<th>Version</th>
+<th>Spec Compliance</th>
+<th>Tier</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Python</strong></td>
+<td>1.17.0+</td>
+<td>95%</td>
+<td>Production</td>
+</tr>
+<tr>
+<td><strong>TypeScript</strong></td>
+<td>1.17.1</td>
+<td>90%</td>
+<td>Production</td>
+</tr>
+<tr>
+<td><strong>C#</strong></td>
+<td>0.3.0-preview</td>
+<td>85%</td>
+<td>Enterprise Preview</td>
+</tr>
+<tr>
+<td><strong>Java</strong></td>
+<td>In development</td>
+<td>75%</td>
+<td>Enterprise Preview</td>
+</tr>
+<tr>
+<td><strong>Go</strong></td>
+<td>Pre-release</td>
+<td>60%</td>
+<td>Development</td>
+</tr>
+</tbody></table>
+<p>Python and TypeScript implement everything: tools, resources, prompts, roots, sampling, OAuth 2.1, elicitation, streamable HTTP. The C# SDK covers the same ground but ships as a preview — Microsoft is behind it, and the .NET integration is solid, but breaking changes are still possible. Java has Spring Boot patterns locked in but gaps in elicitation. Go is explicitly unstable, missing authentication entirely.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(Python &amp; TypeScript&lt;br/&gt;Full Compliance) --&gt; B(All Core Primitives)
+    A --&gt; C(OAuth 2.1 + Elicitation)
+    A --&gt; D(Streamable HTTP)
+    E(C# &amp; Java&lt;br/&gt;Partial Compliance) --&gt; F(Core Primitives Complete)
+    E -.-&gt;|Missing| G(Elicitation Gaps)
+    I(Go&lt;br/&gt;Early Stage) -.-&gt;|Missing| J(No Auth, No HTTP)
+
+    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
+    classDef orange fill:#e65100,color:#fff,stroke:#bf360c,stroke-width:2px
+    classDef red fill:#c62828,color:#fff,stroke:#b71c1c,stroke-width:2px
+    classDef blue fill:#1565c0,color:#fff,stroke:#0d47a1,stroke-width:2px
+
+    class A teal
+    class B teal
+    class C teal
+    class D teal
+    class E orange
+    class F blue
+    class G orange
+    class I red
+    class J red
+</code></pre>
+<p>The feature that draws the sharpest line is <strong>OAuth 2.1</strong>. Any production deployment behind authentication needs it. Python, TypeScript, C#, and Java have it. Go does not.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Adoption&amp;nbsp;Gap&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Stars and downloads tell a different story than compliance scores. Python has the most GitHub stars (17,200) but TypeScript has the deepest dependency graph — 9,867 NPM packages depend on it. That means more production code runs on the TypeScript SDK than any other.</p>
+<table>
+<thead>
+<tr>
+<th>SDK</th>
+<th>GitHub Stars</th>
+<th>Package Dependents</th>
+<th>Signal</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>TypeScript</td>
+<td>9.1k</td>
+<td>9,867 NPM packages</td>
+<td>Widest production use</td>
+</tr>
+<tr>
+<td>Python</td>
+<td>17.2k</td>
+<td>High PyPI volume</td>
+<td>Reference implementation</td>
+</tr>
+<tr>
+<td>C#</td>
+<td>3k</td>
+<td>163k NuGet downloads</td>
+<td>Enterprise adoption</td>
+</tr>
+<tr>
+<td>Go</td>
+<td>1.4k</td>
+<td>400+ (community SDKs)</td>
+<td>Community outpaces official</td>
+</tr>
+</tbody></table>
+<p>The Go row is worth noting. The official SDK is pre-release, but community alternatives like <code>mcp-golang</code> and <code>mcp-go</code> already have hundreds of dependent packages. Developers aren&#39;t waiting for the official version — they&#39;re building anyway.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(TypeScript&lt;br/&gt;9,867 Dependents) --&gt; B(Production&lt;br/&gt;Leader)
+    C(Python&lt;br/&gt;17.2k Stars) --&gt; D(Reference&lt;br/&gt;Implementation)
+    E(Go Official&lt;br/&gt;Pre-release) -.-&gt;|Community fills gap| F(400+ Packages&lt;br/&gt;on Alt SDKs)
+
+    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
+    classDef blue fill:#1565c0,color:#fff,stroke:#0d47a1,stroke-width:2px
+    classDef orange fill:#e65100,color:#fff,stroke:#bf360c,stroke-width:2px
+
+    class A teal
+    class B teal
+    class C blue
+    class D blue
+    class E orange
+    class F orange
+</code></pre>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;How&amp;nbsp;to&amp;nbsp;Choose&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p><strong>If you&#39;re starting a new MCP server</strong>, use Python or TypeScript. Both are 1.x, both cover the full spec, both have large communities finding bugs before you do. Python&#39;s FastMCP framework is particularly good for rapid prototyping.</p>
+<p><strong>If you&#39;re in a .NET or Java shop</strong>, the C# and Java SDKs are viable for internal tooling. Pin your versions. Expect some churn in the API surface.</p>
+<p><strong>If you need Go</strong>, evaluate the community SDKs (<code>mcp-golang</code>, <code>mcp-go</code>) over the official one. The official SDK targets a stable release in August 2025, but the community versions already have production mileage.</p>
+<p><strong>If you&#39;re evaluating Kotlin or Swift</strong>, wait. Both are in early development. Kotlin is interesting for its multiplatform ambitions (JVM, WebAssembly, iOS), but neither is ready for production work.</p>
+<hr>
+<p>The pattern here is not about languages — it is about institutional momentum. The SDKs with corporate backing and large contributor bases converge on the spec fastest. The rest get there eventually, but &quot;eventually&quot; matters when you&#39;re choosing a foundation. Picking an SDK is not picking a language — it is picking a maintenance trajectory.</p>
+<hr>
+<p><strong>References</strong></p>
+<ol>
+<li>Model Context Protocol. &quot;MCP Specification (2025-06-18).&quot; <a href="https://spec.modelcontextprotocol.io/">spec.modelcontextprotocol.io</a>.</li>
+<li>Anthropic. &quot;Model Context Protocol Documentation.&quot; <a href="https://modelcontextprotocol.io/">modelcontextprotocol.io</a>.</li>
+<li>GitHub. &quot;modelcontextprotocol/python-sdk.&quot; <a href="https://github.com/modelcontextprotocol/python-sdk">github.com/modelcontextprotocol/python-sdk</a>.</li>
+<li>GitHub. &quot;modelcontextprotocol/typescript-sdk.&quot; <a href="https://github.com/modelcontextprotocol/typescript-sdk">github.com/modelcontextprotocol/typescript-sdk</a>.</li>
+<li>GitHub. &quot;modelcontextprotocol/csharp-sdk.&quot; <a href="https://github.com/modelcontextprotocol/csharp-sdk">github.com/modelcontextprotocol/csharp-sdk</a>.</li>
+</ol>
+
+    </article>
+
+    <p><a href="https://bootloader.live">← Back to bootloader.live</a></p>
+
+    <script>window.goatcounter={no_onload:true};</script>
+    <script data-goatcounter="https://mxcoppell.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

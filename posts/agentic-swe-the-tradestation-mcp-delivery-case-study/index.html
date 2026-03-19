@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two Builders, 115 Stories, and an AI Team — bootloader.live</title>
+    <meta name="description" content="Two software builders. Sixty-one calendar days. The deliverable: a production MCP service with OAuth 2.1 authentication for TradeStation&#039;s trading platform — 115 Jira stories closed, 133 merge requests merged.">
+    <link rel="canonical" href="https://bootloader.live/posts/agentic-swe-the-tradestation-mcp-delivery-case-study/">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Two Builders, 115 Stories, and an AI Team">
+    <meta property="og:description" content="Two software builders. Sixty-one calendar days. The deliverable: a production MCP service with OAuth 2.1 authentication for TradeStation&#039;s trading platform — 115 Jira stories closed, 133 merge requests merged.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://bootloader.live/posts/agentic-swe-the-tradestation-mcp-delivery-case-study/">
+    <meta property="og:site_name" content="bootloader.live">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Two Builders, 115 Stories, and an AI Team">
+    <meta name="twitter:description" content="Two software builders. Sixty-one calendar days. The deliverable: a production MCP service with OAuth 2.1 authentication for TradeStation&#039;s trading platform — 115 Jira stories closed, 133 merge requests merged.">
+
+    <!-- JSON-LD -->
+    <script type="application/ld+json">
+    {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Two Builders, 115 Stories, and an AI Team",
+    "description": "Two software builders. Sixty-one calendar days. The deliverable: a production MCP service with OAuth 2.1 authentication for TradeStation's trading platform — 115 Jira stories closed, 133 merge requests merged.",
+    "datePublished": "2025-10-31",
+    "url": "https://bootloader.live/posts/agentic-swe-the-tradestation-mcp-delivery-case-study/",
+    "author": {
+        "@type": "Person",
+        "name": "Michael Xie"
+    },
+    "keywords": "Agents, Case Study",
+    "publisher": {
+        "@type": "Person",
+        "name": "Michael Xie"
+    }
+}
+    </script>
+
+    <style>
+        body {
+            font-family: 'Newsreader', Georgia, serif;
+            max-width: 740px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            background: #222222;
+            color: #e6edf3;
+            line-height: 1.7;
+        }
+        a { color: #58a6ff; }
+        pre { background: #2a2a2a; padding: 1rem; border-radius: 6px; overflow-x: auto; }
+        code { font-size: 0.9em; }
+        img { max-width: 100%; height: auto; }
+        h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        .meta { color: #8b949e; font-size: 0.9rem; margin-bottom: 2rem; }
+    </style>
+</head>
+<body>
+    <script>window.location.replace('https://bootloader.live/#/post/agentic-swe-the-tradestation-mcp-delivery-case-study');</script>
+
+    <article>
+        <h1>Two Builders, 115 Stories, and an AI Team</h1>
+        <div class="meta">October 31, 2025</div>
+        <h1>Two Builders, 115 Stories, and an AI Team</h1>
+<p>Two software builders. Sixty-one calendar days. The deliverable: a production MCP service with OAuth 2.1 authentication for TradeStation&#39;s trading platform — 115 Jira stories closed, 133 merge requests merged.</p>
+<p>This was not assisted coding. It was a full operating model where AI agents performed sustained work across every delivery phase while humans held accountability for every decision.</p>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;The&amp;nbsp;Numbers&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>The core team closed 115 out of 130 stories — 88.5% completion for the beta production release. Merge velocity averaged 2.18 requests per calendar day across five two-week sprints. Sprint velocity hit roughly 23 stories per cycle — a pace that would strain a team twice the size under traditional delivery. No external contractors. No borrowed headcount. Two people and a fleet of specialized AI agents covering planning, research, architecture, implementation, debugging, and DevOps.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(2-Person Team) --&gt; B(AI Agent Fleet)
+    B --&gt; C(115 Stories&lt;br/&gt;Closed)
+    B --&gt; D(133 Merge&lt;br/&gt;Requests)
+    C --&gt; E(Production&lt;br/&gt;MCP Service)
+    D --&gt; E
+
+    classDef dark fill:#1a1a2e,color:#fff,stroke:#16213e,stroke-width:2px
+    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
+    classDef blue fill:#1565c0,color:#fff,stroke:#0d47a1,stroke-width:2px
+
+    class A dark
+    class B teal
+    class C,D teal
+    class E blue
+</code></pre>
+<p>Agents participated in every phase: requirements analysis, Jira story creation, architecture documents, code implementation, test generation, CI/CD configuration, and handoff documentation. Humans reviewed architecture, enforced security standards, and signed off on every merge. Agents handled volume. Humans handled judgment.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;The&amp;nbsp;Model&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Agentic SWE means AI agents do sustained, multi-step work — not one-shot code suggestions — across planning, design, implementation, and documentation. Humans act as supervisors, approvers, and escalation paths. The team redesigned the delivery workflow around this split instead of bolting an agent onto the existing process.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(Humans) --&gt; B(Architecture&lt;br/&gt;Review)
+    A --&gt; C(Security&lt;br/&gt;Approval)
+    A --&gt; D(Merge&lt;br/&gt;Sign-off)
+    E(Agents) --&gt; F(Research &amp;&lt;br/&gt;Docs)
+    E --&gt; G(Code &amp;&lt;br/&gt;Tests)
+    E --&gt; H(CI/CD &amp;&lt;br/&gt;Deploy Config)
+    B --&gt; I(Production&lt;br/&gt;Service)
+    C --&gt; I
+    D --&gt; I
+    F --&gt; I
+    G --&gt; I
+    H --&gt; I
+
+    classDef blue fill:#1565c0,color:#fff,stroke:#0d47a1,stroke-width:2px
+    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
+    classDef dark fill:#1a1a2e,color:#fff,stroke:#16213e,stroke-width:2px
+
+    class A blue
+    class B,C,D blue
+    class E teal
+    class F,G,H teal
+    class I dark
+</code></pre>
+<p>All project context lived in GitLab — architecture docs, API contracts, auth models, nonfunctional requirements. Agents read and wrote shared context there rather than creating side-channel documents. Every commit and merge request had a named human owner. Four hard rules governed the process: no merge without human review, no ticket closure without PM sign-off, no auth change without security approval, no deployment unless the runbook was updated.</p>
+<p>The phrase that captured it: &quot;The agent proposes; a human disposes.&quot;</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;The&amp;nbsp;Guardrails&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Assume each agent step succeeds 99% of the time. After 10 steps, cumulative success drops to 90.4%. After 50: 60.5%. After 100: 36.6%. After 500: less than 1%.</p>
+<p>The math is 0.99 raised to the power of steps taken. Errors compound because each wrong assumption propagates downstream. Context pollution accelerates the decay — failed attempts remain in conversation history, degrading future decisions.</p>
+<p>The fix is human checkpoints at critical milestones — design review before implementation, security review before deployment, architecture approval before structural changes. Each checkpoint resets the error chain by catching drift before it compounds. Nearly half the 61-day timeline was consumed by these human review cycles — cross-department security approvals, architecture sign-offs, stakeholder alignment. The agents could have moved faster. The guardrails were the bottleneck, and that was the right tradeoff.</p>
+<p>The team anchored this with a specification-centric workflow. Agents referenced central documents — requirements, architecture decisions, API contracts — not conversation history. Short-term agent context stayed focused and disposable. Long-term memory lived in the spec. Agent conversations could be reset without losing project continuity.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;The&amp;nbsp;Cost&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Total inference cost: 2,541 USD on AWS Bedrock Claude models. Per story: 22.10 USD. Per merge request: 19.10 USD.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(Total Spend&lt;br/&gt;2,541 USD) --&gt; B(Opus 11%&lt;br/&gt;280 USD)
+    A --&gt; C(Sonnet 89%&lt;br/&gt;2,261 USD)
+    B --&gt; D(Too Expensive&lt;br/&gt;for Iteration)
+    C --&gt; E(Optimal for&lt;br/&gt;Most Tasks)
+    D -.-&gt;|Optimize| F(Future Target&lt;br/&gt;Under 1,000 USD)
+    E --&gt; F
+
+    classDef dark fill:#1a1a2e,color:#fff,stroke:#16213e,stroke-width:2px
+    classDef red fill:#c62828,color:#fff,stroke:#b71c1c,stroke-width:2px
+    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
+    classDef blue fill:#1565c0,color:#fff,stroke:#0d47a1,stroke-width:2px
+
+    class A dark
+    class B red
+    class C teal
+    class D red
+    class E teal
+    class F blue
+</code></pre>
+<p>The higher figure reflects methodology experimentation — different models, agent configurations, and workflow patterns tested across 61 days. Claude Opus (280 USD, 11% of total spend) proved too expensive for iteration cycles without justifying its quality premium over Sonnet for most tasks. The estimated optimized cost for future projects: under 1,000 USD total, a 60% reduction, or roughly 9 USD per story. Default to Sonnet, reserve expensive models for genuinely complex reasoning, and reuse proven workflow patterns. At 9 USD per story, the marginal cost of a well-specified feature is negligible.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;The&amp;nbsp;Result&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>The TradeStation MCP service built through this process went on to win industry recognition — evaluated across 300+ variables among 14 U.S. online brokerages:</p>
+<ul>
+<li>🏆 <strong>#1 Innovation Award</strong> — StockBrokers.com 2026 Annual Industry Awards</li>
+<li>🥇 <strong>Best in Class</strong> — Active Traders</li>
+<li>🥇 <strong>Best in Class</strong> — Advanced Trading</li>
+<li>🥇 <strong>Best in Class</strong> — Options Trading</li>
+<li>🥇 <strong>Best in Class</strong> — Futures Trading</li>
+</ul>
+<hr>
+<p>Agents handle volume and velocity. Humans handle judgment and accountability. The math works when guardrails reset error accumulation and specifications anchor long-term context. Agentic SWE does not replace engineers — it restructures how engineering capacity is deployed.</p>
+<hr>
+<p><strong>References</strong></p>
+<ol>
+<li>McKinsey &amp; Company. &quot;The Agentic Organization: Contours of the Next Paradigm.&quot; <a href="https://www.mckinsey.com/capabilities/mckinsey-digital/our-insights/the-agentic-organization">mckinsey.com</a>.</li>
+<li>arXiv. &quot;Impact of Generative AI on Software Engineering Productivity.&quot; <a href="https://arxiv.org">arxiv.org</a>.</li>
+<li>Anthropic. &quot;Model Context Protocol Specification.&quot; <a href="https://modelcontextprotocol.io">modelcontextprotocol.io</a>.</li>
+<li>StockBrokers.com. &quot;TradeStation Securities Wins #1 Innovation Award — 2026 Annual Industry Awards.&quot; <a href="https://www.tradestation.com/press-and-news/tradestation-securities-wins-number-1-innovation-award-in-stockbrokerscom-2026-annual-industry-awards/">tradestation.com</a>.</li>
+</ol>
+
+    </article>
+
+    <p><a href="https://bootloader.live">← Back to bootloader.live</a></p>
+
+    <script>window.goatcounter={no_onload:true};</script>
+    <script data-goatcounter="https://mxcoppell.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

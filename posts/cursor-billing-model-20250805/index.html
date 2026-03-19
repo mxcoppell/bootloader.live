@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cursor AI&#039;s 2025 Billing Model — bootloader.live</title>
+    <meta name="description" content="&quot;My Cursor bill jumped from $20 to $180 last month.&quot; Cursor&#039;s June 2025 billing overhaul replaced a simple request-count system with usage-based credits.">
+    <link rel="canonical" href="https://bootloader.live/posts/cursor-billing-model-20250805/">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Cursor AI&#039;s 2025 Billing Model">
+    <meta property="og:description" content="&quot;My Cursor bill jumped from $20 to $180 last month.&quot; Cursor&#039;s June 2025 billing overhaul replaced a simple request-count system with usage-based credits.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://bootloader.live/posts/cursor-billing-model-20250805/">
+    <meta property="og:site_name" content="bootloader.live">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Cursor AI&#039;s 2025 Billing Model">
+    <meta name="twitter:description" content="&quot;My Cursor bill jumped from $20 to $180 last month.&quot; Cursor&#039;s June 2025 billing overhaul replaced a simple request-count system with usage-based credits.">
+
+    <!-- JSON-LD -->
+    <script type="application/ld+json">
+    {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Cursor AI's 2025 Billing Model",
+    "description": "\"My Cursor bill jumped from $20 to $180 last month.\" Cursor's June 2025 billing overhaul replaced a simple request-count system with usage-based credits.",
+    "datePublished": "2025-08-05",
+    "url": "https://bootloader.live/posts/cursor-billing-model-20250805/",
+    "author": {
+        "@type": "Person",
+        "name": "Michael Xie"
+    },
+    "keywords": "Cursor, Pricing",
+    "publisher": {
+        "@type": "Person",
+        "name": "Michael Xie"
+    }
+}
+    </script>
+
+    <style>
+        body {
+            font-family: 'Newsreader', Georgia, serif;
+            max-width: 740px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            background: #222222;
+            color: #e6edf3;
+            line-height: 1.7;
+        }
+        a { color: #58a6ff; }
+        pre { background: #2a2a2a; padding: 1rem; border-radius: 6px; overflow-x: auto; }
+        code { font-size: 0.9em; }
+        img { max-width: 100%; height: auto; }
+        h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        .meta { color: #8b949e; font-size: 0.9rem; margin-bottom: 2rem; }
+    </style>
+</head>
+<body>
+    <script>window.location.replace('https://bootloader.live/#/post/cursor-billing-model-20250805');</script>
+
+    <article>
+        <h1>Cursor AI&#039;s 2025 Billing Model</h1>
+        <div class="meta">August 5, 2025</div>
+        <h1>Cursor AI&#39;s 2025 Billing Model</h1>
+<p>&quot;My Cursor bill jumped from $20 to $180 last month.&quot; Cursor&#39;s June 2025 billing overhaul replaced a simple request-count system with usage-based credits. Thousands of developers got surprise charges. Here&#39;s what actually changed, what each plan costs, and how to pick the right one.</p>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;What&amp;nbsp;Changed&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Before June 2025, Pro gave you 500 &quot;fast&quot; requests and unlimited &quot;slow&quot; requests per month. You always got an answer — sometimes you just waited longer. The new model scrapped that entirely. Now every plan gets a dollar-denominated usage pool: $20 for Pro, $200 for Ultra. Once you burn through it, you either stop or pay overages at API cost plus a 20% markup.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(Old Model:&lt;br/&gt;500 Fast Requests&lt;br/&gt;+ Unlimited Slow) --&gt; B(Predictable but&lt;br/&gt;Opaque Costs)
+    B -.-&gt;|June 2025| C(New Model:&lt;br/&gt;Dollar-Based&lt;br/&gt;Usage Pool)
+    C --&gt; D(Pro: $20 Credit&lt;br/&gt;Ultra: $200 Credit)
+    D --&gt; E(Overages at&lt;br/&gt;API Cost + 20%)
+
+    classDef dark fill:#1a1a2e,color:#fff,stroke:#16213e,stroke-width:2px
+    classDef red fill:#c62828,color:#fff,stroke:#b71c1c,stroke-width:2px
+    classDef orange fill:#e65100,color:#fff,stroke:#bf360c,stroke-width:2px
+    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
+    classDef blue fill:#1565c0,color:#fff,stroke:#0d47a1,stroke-width:2px
+
+    class A dark
+    class B orange
+    class C teal
+    class D blue
+    class E orange
+</code></pre>
+<p>The shift matters because &quot;unlimited slow&quot; masked real costs. Under the old system, heavy users consumed expensive API calls that Cursor absorbed. The new model passes that cost through. Cursor&#39;s CEO acknowledged the rollout was poorly communicated and offered refunds for charges between June 16 and July 4, 2025.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Plan&amp;nbsp;Breakdown&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Five plans now exist. Here&#39;s what matters for each.</p>
+<table>
+<thead>
+<tr>
+<th>Plan</th>
+<th>Monthly Cost</th>
+<th>What You Get</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Hobby</strong></td>
+<td>Free</td>
+<td>Limited agent requests, limited tab completions</td>
+</tr>
+<tr>
+<td><strong>Pro</strong></td>
+<td>$20 ($192/yr)</td>
+<td>~225 Sonnet 4 requests, unlimited tabs, background agents</td>
+</tr>
+<tr>
+<td><strong>Ultra</strong></td>
+<td>$200 ($2,400/yr)</td>
+<td>~4,500 Sonnet 4 requests, 20x Pro usage, priority features</td>
+</tr>
+<tr>
+<td><strong>Teams</strong></td>
+<td>$40/user ($384/yr)</td>
+<td>Privacy mode org-wide, admin dashboard, SSO</td>
+</tr>
+<tr>
+<td><strong>Enterprise</strong></td>
+<td>$65/user (annual only)</td>
+<td>1,000 pooled requests/seat, spending caps, SCIM</td>
+</tr>
+</tbody></table>
+<p>Enterprise requires 25 seats minimum ($19,500/year). All other plans get a 20% discount for annual billing.</p>
+<p>The request counts above assume Sonnet 4 at roughly $0.089 per request. Cheaper models stretch further; expensive ones burn faster. Different models, different math.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(Your Monthly&lt;br/&gt;Usage Pool) --&gt; B(Sonnet 4&lt;br/&gt;~$0.089/req)
+    A --&gt; C(GPT-4o&lt;br/&gt;~$0.04/req)
+    B --&gt; D(Pro: ~225 Requests&lt;br/&gt;Ultra: ~4,500)
+    C --&gt; E(Pro: ~500 Requests&lt;br/&gt;Ultra: ~5,000)
+    D --&gt; F(Pool Exhausted:&lt;br/&gt;Pay Overage or Wait)
+    E --&gt; F
+
+    classDef dark fill:#1a1a2e,color:#fff,stroke:#16213e,stroke-width:2px
+    classDef orange fill:#e65100,color:#fff,stroke:#bf360c,stroke-width:2px
+    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
+    classDef blue fill:#1565c0,color:#fff,stroke:#0d47a1,stroke-width:2px
+    classDef red fill:#c62828,color:#fff,stroke:#b71c1c,stroke-width:2px
+
+    class A dark
+    class B teal
+    class C teal
+    class D blue
+    class E blue
+    class F red
+</code></pre>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Budget&amp;nbsp;Drains&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Not everything costs the same. Agent requests (chat, code generation, debugging) draw from your pool. Background agents — automated assistants that run in isolated VMs while you work — draw from it too, and they draw fast. Active background agents can consume $40+ per hour because they fire requests continuously without waiting for you.</p>
+<p>Tab completions are unlimited on Pro and Ultra. They don&#39;t touch your usage pool. Bugbot (the code review assistant) does count toward usage on Pro.</p>
+<p><strong>If you&#39;re a solo developer</strong>, the danger zone is background agents. They only run with Max Mode models, which forces usage-based billing. Set spend limits when you first enable them. Monitor the billing dashboard. Disable them in Settings if you don&#39;t need continuous automated analysis.</p>
+<p><strong>If you&#39;re a team lead</strong>, Enterprise&#39;s pooled model changes the math. One thousand requests per seat per month, shared across the team. Heavy users draw from light users&#39; surplus. You get a real-time dashboard, spending caps, and the option to toggle overages on or off.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(Agent Requests) --&gt; B(Draws from&lt;br/&gt;Usage Pool)
+    C(Background Agents) --&gt; B
+    D(Tab Completions) --&gt; E(Unlimited on&lt;br/&gt;Pro/Ultra)
+    B --&gt; F(Pool Empty?)
+    F --&gt; G(Enable Overage:&lt;br/&gt;API + 20% Markup)
+    F --&gt; H(Wait for&lt;br/&gt;Monthly Reset)
+
+    classDef dark fill:#1a1a2e,color:#fff,stroke:#16213e,stroke-width:2px
+    classDef red fill:#c62828,color:#fff,stroke:#b71c1c,stroke-width:2px
+    classDef orange fill:#e65100,color:#fff,stroke:#bf360c,stroke-width:2px
+    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
+    classDef blue fill:#1565c0,color:#fff,stroke:#0d47a1,stroke-width:2px
+
+    class A dark
+    class C dark
+    class D dark
+    class B orange
+    class E teal
+    class F red
+    class G orange
+    class H blue
+</code></pre>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Picking&amp;nbsp;a&amp;nbsp;Plan&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>The decision is simpler than the pricing page suggests.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(How Many&lt;br/&gt;Requests/Month?) --&gt; B(Under 225)
+    A --&gt; C(225 to 500)
+    A --&gt; D(Over 500)
+    B --&gt; E(Pro at $20)
+    C --&gt; F(Pro + Overages&lt;br/&gt;vs. Ultra at $200)
+    D --&gt; G(Ultra at $200)
+    F --&gt; H(Calculate: Would&lt;br/&gt;Overages Exceed $180?)
+    H --&gt; E
+    H --&gt; G
+
+    classDef dark fill:#1a1a2e,color:#fff,stroke:#16213e,stroke-width:2px
+    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
+    classDef blue fill:#1565c0,color:#fff,stroke:#0d47a1,stroke-width:2px
+    classDef orange fill:#e65100,color:#fff,stroke:#bf360c,stroke-width:2px
+
+    class A dark
+    class B teal
+    class C orange
+    class D orange
+    class E teal
+    class F orange
+    class G blue
+    class H dark
+</code></pre>
+<p><strong>If you&#39;re a light user</strong> (under 225 Sonnet 4 requests), Pro at $20 covers you. Unlimited tab completions and background agent access included.</p>
+<p><strong>If you&#39;re in the gray zone</strong> (225-500 requests), do the math. Pro overages cost API price plus 20%. If your typical overage would exceed $180, Ultra is cheaper. If not, stay on Pro.</p>
+<p><strong>If you&#39;re a heavy user</strong> (500+ requests), Ultra at $200 gives you roughly 4,500 Sonnet 4 requests and priority access to new features.</p>
+<p><strong>If you&#39;re managing a team</strong>, Enterprise&#39;s pooled model and spending caps matter more than per-seat cost. The admin dashboard and SCIM integration justify the premium over Teams for organizations above 25 seats.</p>
+<hr>
+<p>The pattern here is not unique to Cursor — it&#39;s the entire AI tooling industry shifting from flat-rate to consumption-based pricing. GitHub Copilot, Windsurf, and others face the same pressure: AI inference costs real money per request, and &quot;unlimited&quot; plans are unsustainable as usage grows. The question for any AI coding tool is not whether usage-based billing arrives, but how transparently it gets communicated when it does.</p>
+<hr>
+<p><strong>References</strong></p>
+<ol>
+<li>Cursor. &quot;Pricing.&quot; <a href="https://cursor.com/pricing">cursor.com/pricing</a>.</li>
+<li>Cursor. &quot;Enterprise Plan Details.&quot; <a href="https://cursor.com/enterprise">cursor.com/enterprise</a>.</li>
+<li>Cursor CEO response on billing changes, June-July 2025 refund period.</li>
+</ol>
+
+    </article>
+
+    <p><a href="https://bootloader.live">← Back to bootloader.live</a></p>
+
+    <script>window.goatcounter={no_onload:true};</script>
+    <script data-goatcounter="https://mxcoppell.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

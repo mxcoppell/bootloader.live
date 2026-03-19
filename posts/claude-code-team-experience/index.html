@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Collaboration: When Teams Stop Typing and Start Directing — bootloader.live</title>
+    <meta name="description" content="Designers shipping complex features solo. Marketing people building Figma plugins. Research sessions compressed from an hour to ten minutes.">
+    <link rel="canonical" href="https://bootloader.live/posts/claude-code-team-experience/">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="AI Collaboration: When Teams Stop Typing and Start Directing">
+    <meta property="og:description" content="Designers shipping complex features solo. Marketing people building Figma plugins. Research sessions compressed from an hour to ten minutes.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://bootloader.live/posts/claude-code-team-experience/">
+    <meta property="og:site_name" content="bootloader.live">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="AI Collaboration: When Teams Stop Typing and Start Directing">
+    <meta name="twitter:description" content="Designers shipping complex features solo. Marketing people building Figma plugins. Research sessions compressed from an hour to ten minutes.">
+
+    <!-- JSON-LD -->
+    <script type="application/ld+json">
+    {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "AI Collaboration: When Teams Stop Typing and Start Directing",
+    "description": "Designers shipping complex features solo. Marketing people building Figma plugins. Research sessions compressed from an hour to ten minutes.",
+    "datePublished": "2025-07-31",
+    "url": "https://bootloader.live/posts/claude-code-team-experience/",
+    "author": {
+        "@type": "Person",
+        "name": "Michael Xie"
+    },
+    "keywords": "Teams, Claude Code",
+    "publisher": {
+        "@type": "Person",
+        "name": "Michael Xie"
+    }
+}
+    </script>
+
+    <style>
+        body {
+            font-family: 'Newsreader', Georgia, serif;
+            max-width: 740px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            background: #222222;
+            color: #e6edf3;
+            line-height: 1.7;
+        }
+        a { color: #58a6ff; }
+        pre { background: #2a2a2a; padding: 1rem; border-radius: 6px; overflow-x: auto; }
+        code { font-size: 0.9em; }
+        img { max-width: 100%; height: auto; }
+        h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        .meta { color: #8b949e; font-size: 0.9rem; margin-bottom: 2rem; }
+    </style>
+</head>
+<body>
+    <script>window.location.replace('https://bootloader.live/#/post/claude-code-team-experience');</script>
+
+    <article>
+        <h1>AI Collaboration: When Teams Stop Typing and Start Directing</h1>
+        <div class="meta">July 31, 2025</div>
+        <h1>AI Collaboration: When Teams Stop Typing and Start Directing</h1>
+<p>Designers shipping complex features solo. Marketing people building Figma plugins. Research sessions compressed from an hour to ten minutes. Security engineers resolving problems 3x faster than before.</p>
+<p>None of this required hiring. It required changing how people work <em>with</em> AI — choosing the right collaboration mode for each task, not defaulting to one approach for everything.</p>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Three&amp;nbsp;Modes&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Most teams treat AI as a single tool with a single interaction pattern. But architecture decisions carry different risk than writing unit tests, and exploring a new codebase is nothing like grinding through data processing. Three collaboration patterns keep emerging.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(Development Task) --&gt; B(Synchronous Mode&lt;br/&gt;Human leads, AI advises)
+    A --&gt; C(Asynchronous Mode&lt;br/&gt;AI executes, human reviews)
+    A --&gt; D(Mixed Exploration&lt;br/&gt;Human and AI learn together)
+    B --&gt; E(Architecture &amp; Core Systems&lt;br/&gt;60-80% success)
+    C --&gt; F(Repetitive &amp; Well-Defined&lt;br/&gt;30-90% success)
+    D --&gt; G(New Tech &amp; Unfamiliar Code&lt;br/&gt;70-90% success)
+
+    classDef dark fill:#1a1a2e,color:#fff,stroke:#16213e,stroke-width:2px
+    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
+    classDef blue fill:#1565c0,color:#fff,stroke:#0d47a1,stroke-width:2px
+    classDef orange fill:#e65100,color:#fff,stroke:#bf360c,stroke-width:2px
+
+    class A dark
+    class B,C,D teal
+    class E orange
+    class F,G blue
+</code></pre>
+<p><strong>Synchronous</strong> is for high-stakes work. You lead the thinking, AI catches blind spots. &quot;I&#39;m planning approach A&quot; — and the AI asks whether you&#39;ve considered cold-start problems.</p>
+<p><strong>Asynchronous</strong> is for execution. Hand AI a clear objective and go do something else. Teams report 70% of routine coding works this way.</p>
+<p><strong>Mixed exploration</strong> is for learning. Start broad, drill down. Weeks of knowledge absorption compress into a single session.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Restart&amp;nbsp;Often&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>When AI goes wrong, the instinct is to fix it — add more instructions, correct the output, nudge it back on track. This instinct is wrong.</p>
+<p>Errors contaminate the context window. The bad output stays in memory, biasing every subsequent response. Corrections consume tokens that could carry useful information. The conversation spirals.</p>
+<p>The better move: reset to the last checkpoint and start fresh. Like a slot machine — the cost of a new pull is low, and each attempt is independent.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(Git Commit&lt;br/&gt;Save Checkpoint) --&gt; B(AI Works&lt;br/&gt;30-45 Minutes)
+    B --&gt; C{Evaluate Results}
+    C --&gt;|Good| D(Accept &amp; Continue)
+    C -.-&gt;|Poor| E(Git Reset&lt;br/&gt;Start Fresh)
+    E --&gt; A
+
+    classDef dark fill:#1a1a2e,color:#fff,stroke:#16213e,stroke-width:2px
+    classDef red fill:#c62828,color:#fff,stroke:#b71c1c,stroke-width:2px
+    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
+    classDef orange fill:#e65100,color:#fff,stroke:#bf360c,stroke-width:2px
+
+    class A dark
+    class B teal
+    class C orange
+    class D teal
+    class E red
+</code></pre>
+<p>This only works with frequent commits. The checkpoint is the safety net. Without it, restarting means losing real work.</p>
+<p>Two more techniques compound the effect. <strong>Dual agent specialization</strong> — split competing objectives across separate AI conversations. One agent writes headlines, another writes body copy. Each optimizes for a single goal instead of compromising across all of them. <strong>Visual-driven development</strong> — paste screenshots instead of describing UIs in text. A screenshot carries layout, colors, spacing, and state without lossy compression through language.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Strategy&amp;nbsp;Match&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>The collaboration mode matters less than getting the match right. Low-complexity tasks paired with synchronous mode waste human attention. High-complexity tasks run asynchronously produce unreliable results.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(Low Complexity&lt;br/&gt;Docs, Tests, Formatting) --&gt; B(Full AI Autonomy&lt;br/&gt;Async Mode)
+    C(Medium Complexity&lt;br/&gt;Features, Bug Fixes) --&gt; D(Flexible Approach&lt;br/&gt;Try and Restart)
+    E(High Complexity&lt;br/&gt;Architecture, Security) --&gt; F(Human-Led&lt;br/&gt;Sync Mode)
+
+    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
+    classDef orange fill:#e65100,color:#fff,stroke:#bf360c,stroke-width:2px
+    classDef red fill:#c62828,color:#fff,stroke:#b71c1c,stroke-width:2px
+    classDef blue fill:#1565c0,color:#fff,stroke:#0d47a1,stroke-width:2px
+
+    class A teal
+    class B blue
+    class C orange
+    class D blue
+    class E red
+    class F blue
+</code></pre>
+<p><strong>If you&#39;re an individual contributor</strong>, start with async mode on a low-complexity task — documentation or test coverage. Build the checkpoint habit before attempting anything high-stakes.</p>
+<p><strong>If you&#39;re a team lead</strong>, the biggest lever is project documentation. A doc describing structure, coding standards, and common patterns gives AI the context it needs to work autonomously. Without it, every async task starts from scratch.</p>
+<p><strong>If you&#39;re exploring new technology</strong>, mixed mode compresses ramp-up dramatically. Ask what the architecture looks like, drill into specifics, implement with guidance. Research teams report 80% reductions in learning time.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;The&amp;nbsp;Deeper&amp;nbsp;Shift&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>The real change is not in the tooling. Three assumptions shift when teams adopt these patterns.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(Old Model&lt;br/&gt;One Approach for All Tasks) -.-&gt;|Shift| B(New Model&lt;br/&gt;Mode Matches Task)
+    C(Perfectionism&lt;br/&gt;100% Success Required) -.-&gt;|Shift| D(Probabilistic Thinking&lt;br/&gt;Cheap Restarts)
+    E(Individual Efficiency) -.-&gt;|Shift| F(Dissolved Boundaries&lt;br/&gt;Non-Engineers Ship Code)
+
+    classDef red fill:#c62828,color:#fff,stroke:#b71c1c,stroke-width:2px
+    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
+
+    class A,C,E red
+    class B,D,F teal
+</code></pre>
+<hr>
+<p>The pattern is universal: match the collaboration mode to the task, not the other way around. This is not about AI writing more code — it is about humans spending less time on execution and more time on decisions that require judgment, context, and taste.</p>
+<hr>
+<p><strong>References</strong></p>
+<ol>
+<li>Anthropic. &quot;How Anthropic teams use Claude Code.&quot; <em>Anthropic Blog</em>, July 24, 2025. <a href="https://www.anthropic.com/news/how-anthropic-teams-use-claude-code">anthropic.com/news/how-anthropic-teams-use-claude-code</a></li>
+<li>Anthropic internal team data: Research team 80% learning time reduction, Security Engineering 3x faster resolution, Growth Marketing ad generation from hours to minutes, Data Infrastructure 20-minute savings on Kubernetes cluster issues.</li>
+</ol>
+
+    </article>
+
+    <p><a href="https://bootloader.live">← Back to bootloader.live</a></p>
+
+    <script>window.goatcounter={no_onload:true};</script>
+    <script data-goatcounter="https://mxcoppell.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

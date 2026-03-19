@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>When 39 Tools Is 30 Too Many — bootloader.live</title>
+    <meta name="description" content="A TradeStation MCP server exposes 39 endpoints. Market data, portfolio management, order execution, option chains, news, fundamentals, symbol lookup. An LLM agent loading all these tool definitions burns thousands of context tokens before doing any actual work.">
+    <link rel="canonical" href="https://bootloader.live/posts/tradestation-mcp-workflows-and-tool-enhancement/">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="When 39 Tools Is 30 Too Many">
+    <meta property="og:description" content="A TradeStation MCP server exposes 39 endpoints. Market data, portfolio management, order execution, option chains, news, fundamentals, symbol lookup. An LLM agent loading all these tool definitions burns thousands of context tokens before doing any actual work.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://bootloader.live/posts/tradestation-mcp-workflows-and-tool-enhancement/">
+    <meta property="og:site_name" content="bootloader.live">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="When 39 Tools Is 30 Too Many">
+    <meta name="twitter:description" content="A TradeStation MCP server exposes 39 endpoints. Market data, portfolio management, order execution, option chains, news, fundamentals, symbol lookup. An LLM agent loading all these tool definitions burns thousands of context tokens before doing any actual work.">
+
+    <!-- JSON-LD -->
+    <script type="application/ld+json">
+    {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "When 39 Tools Is 30 Too Many",
+    "description": "A TradeStation MCP server exposes 39 endpoints. Market data, portfolio management, order execution, option chains, news, fundamentals, symbol lookup. An LLM agent loading all these tool definitions burns thousands of context tokens before doing any actual work.",
+    "datePublished": "2025-09-29",
+    "url": "https://bootloader.live/posts/tradestation-mcp-workflows-and-tool-enhancement/",
+    "author": {
+        "@type": "Person",
+        "name": "Michael Xie"
+    },
+    "keywords": "MCP, Workflow",
+    "publisher": {
+        "@type": "Person",
+        "name": "Michael Xie"
+    }
+}
+    </script>
+
+    <style>
+        body {
+            font-family: 'Newsreader', Georgia, serif;
+            max-width: 740px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            background: #222222;
+            color: #e6edf3;
+            line-height: 1.7;
+        }
+        a { color: #58a6ff; }
+        pre { background: #2a2a2a; padding: 1rem; border-radius: 6px; overflow-x: auto; }
+        code { font-size: 0.9em; }
+        img { max-width: 100%; height: auto; }
+        h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        .meta { color: #8b949e; font-size: 0.9rem; margin-bottom: 2rem; }
+    </style>
+</head>
+<body>
+    <script>window.location.replace('https://bootloader.live/#/post/tradestation-mcp-workflows-and-tool-enhancement');</script>
+
+    <article>
+        <h1>When 39 Tools Is 30 Too Many</h1>
+        <div class="meta">September 29, 2025</div>
+        <h1>When 39 Tools Is 30 Too Many</h1>
+<p>A TradeStation MCP server exposes 39 endpoints. Market data, portfolio management, order execution, option chains, news, fundamentals, symbol lookup. An LLM agent loading all these tool definitions burns thousands of context tokens before doing any actual work.</p>
+<p>The problem is not the breadth of functionality. It is that 39 separate tools force the LLM to navigate a menu that no human would tolerate either.</p>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Too&amp;nbsp;Many&amp;nbsp;Tools&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Each tool definition costs hundreds of tokens — name, description, parameters, types. At 39 endpoints, the definitions alone consume 10-20% of the context window. But the bigger cost is cognitive: the LLM must select the right tool from a long, ambiguous list for every action.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(39 Tool&lt;br/&gt;Definitions) --&gt; B(Thousands of&lt;br/&gt;Context Tokens)
+    A --&gt; C(Ambiguous&lt;br/&gt;Tool Names)
+    B --&gt; D(Less Room&lt;br/&gt;for Actual Work)
+    C --&gt; D
+
+    classDef dark fill:#1a1a2e,color:#fff,stroke:#16213e,stroke-width:2px
+    classDef orange fill:#e65100,color:#fff,stroke:#bf360c,stroke-width:2px
+    classDef red fill:#c62828,color:#fff,stroke:#b71c1c,stroke-width:2px
+
+    class A dark
+    class B,C orange
+    class D red
+</code></pre>
+<p>Consider the overlap. <code>get-orders</code> versus <code>get-orders-by-id</code> versus <code>get-historical-orders</code> versus <code>get-historical-orders-by-id</code> — four endpoints that could be one with optional parameters. <code>confirm-order</code> and <code>confirm-group-order</code> do the same thing for single-leg and multi-leg trades. <code>get-balances</code> and <code>get-balances-bod</code> differ only in the time reference. <code>search-for-symbols</code> and <code>suggest-symbols</code> serve the same purpose with slightly different matching logic.</p>
+<p>This redundancy reflects an API built for traditional REST consumers where explicit endpoints are idiomatic. But LLMs navigate tools by description, not by URL pattern. Fewer, smarter tools serve them better.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;When&amp;nbsp;to&amp;nbsp;Merge&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Three patterns signal that tools should be merged.</p>
+<p><strong>Same data, different filters.</strong> <code>get-orders</code> and <code>get-historical-orders</code> both return orders — one current, one past. A single <code>get-orders</code> endpoint with an optional date range and status filter covers both. Fold in the by-ID variants with an optional ID parameter: four endpoints become one.</p>
+<p><strong>Same action, different arity.</strong> <code>confirm-order</code> validates a single trade. <code>confirm-group-order</code> validates a multi-leg spread. A unified <code>confirm-order</code> that accepts either a single order object or an array of legs eliminates the choice. Same for the corresponding place endpoints.</p>
+<p><strong>Same entity, different snapshots.</strong> <code>get-balances</code> returns current balances. <code>get-balances-bod</code> returns the beginning-of-day snapshot. One endpoint with a <code>when</code> parameter — current, BOD, or a specific date — replaces both.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(get-orders) --&gt; E(Unified&lt;br/&gt;get-orders)
+    B(get-orders-by-id) --&gt; E
+    C(get-historical&lt;br/&gt;-orders) --&gt; E
+    D(get-historical&lt;br/&gt;-orders-by-id) --&gt; E
+
+    classDef red fill:#c62828,color:#fff,stroke:#b71c1c,stroke-width:2px
+    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
+
+    class A,B,C,D red
+    class E teal
+</code></pre>
+<p>The same logic applies to symbol lookup: <code>search-for-symbols</code> and <code>suggest-symbols</code> merge into a single <code>lookup-symbol</code> that handles exact matches and fuzzy suggestions based on the input.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;When&amp;nbsp;to&amp;nbsp;Split&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Merging reduces tool count. Splitting reduces response size. Both serve the same goal.</p>
+<p>The option chain is the clearest case. <code>get-option-chain-snapshot</code> returns every strike across every expiration for a symbol — potentially thousands of contracts in a single response. An LLM rarely needs all of them. The existing split into separate endpoints for expirations, strikes, and quotes makes sense here because each query narrows the data before the next.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(Full Option&lt;br/&gt;Chain) --&gt; B(Pick Expiration)
+    B --&gt; C(Pick Strikes)
+    C --&gt; D(Get Quotes for&lt;br/&gt;Specific Contracts)
+
+    classDef red fill:#c62828,color:#fff,stroke:#b71c1c,stroke-width:2px
+    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
+    classDef blue fill:#1565c0,color:#fff,stroke:#0d47a1,stroke-width:2px
+
+    class A red
+    class B,C teal
+    class D blue
+</code></pre>
+<p>The principle: split when the full dataset exceeds what an LLM can usefully process in one response. Keep tools granular when each step meaningfully narrows the next query. The option chain flow — pick expiration, then strikes, then quotes — mirrors how a trader actually thinks. This is the opposite of the merge pattern. Merging reduces ambiguity in tool selection. Splitting reduces volume in tool output.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;The&amp;nbsp;Sweet&amp;nbsp;Spot&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Some tools can be dropped entirely. News and fundamentals data are available through web search and external APIs. If the LLM agent has internet access, dedicated endpoints for these duplicate what it already reaches. Static reference data — available order routes, activation trigger types, crypto symbol lists — changes rarely enough to be embedded in the agent&#39;s instructions rather than fetched at runtime.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A(39 Tools) --&gt; B(Merge&lt;br/&gt;Overlapping)
+    B --&gt; C(Split&lt;br/&gt;Oversized)
+    C --&gt; D(Deprecate&lt;br/&gt;Duplicated)
+    D --&gt; E(Focused&lt;br/&gt;Tool Set)
+
+    classDef red fill:#c62828,color:#fff,stroke:#b71c1c,stroke-width:2px
+    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
+    classDef blue fill:#1565c0,color:#fff,stroke:#0d47a1,stroke-width:2px
+
+    class A red
+    class B,C,D teal
+    class E blue
+</code></pre>
+<p>The remaining tools are the ones only the MCP server can provide: account positions, balances, order execution, real-time quotes. These are the endpoints where the server adds unique value that no external source replaces.</p>
+<p>The target is not a specific number. It is the point where every remaining tool is both necessary and unambiguous — where the LLM never hesitates between two tools for the same task, and no single tool returns more data than the model can process.</p>
+<hr>
+<p>The pattern applies to any API designed for LLM consumption. Merge when tools overlap in purpose. Split when tools overwhelm in output. Deprecate when external sources duplicate the data. Tool count is not a feature — it is a tax on every interaction, and the right API surface is not the one with the most endpoints but the one where every tool earns its context window cost.</p>
+<hr>
+<p><strong>References</strong></p>
+<ol>
+<li>Anthropic. &quot;Model Context Protocol Specification.&quot; <a href="https://modelcontextprotocol.io">modelcontextprotocol.io</a>.</li>
+<li>TradeStation. &quot;API Documentation.&quot; <a href="https://api.tradestation.com/docs/specification">api.tradestation.com</a>.</li>
+<li>GitHub Issue #7336. &quot;Lazy Loading for MCP Servers and Tools.&quot; <a href="https://github.com/anthropics/claude-code/issues/7336">github.com/anthropics/claude-code/issues/7336</a>.</li>
+</ol>
+
+    </article>
+
+    <p><a href="https://bootloader.live">← Back to bootloader.live</a></p>
+
+    <script>window.goatcounter={no_onload:true};</script>
+    <script data-goatcounter="https://mxcoppell.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
