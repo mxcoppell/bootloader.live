@@ -6,6 +6,7 @@ This blog covers AI-assisted software development, MCP (Model Context Protocol) 
 
 ## Posts
 
+- [The Operating System Your AI Agent Is Missing](https://bootloader.live/posts/agent-harness-engineering/): An agent completes 49 steps perfectly. Step 50, it rewrites the database schema. No crash, no error — just drift. The model scored 95% on every benchmark. What failed was everything around it.
 - [Spec-Driven Agentic Development — A Lifecycle Analysis](https://bootloader.live/posts/spec-driven-agentic-dev/): Constitution written. Specifications approved. Plan generated. Then a bug surfaces that invalidates three upstream requirements. This is the lifecycle tension at the heart of spec-driven agentic development.
 - [The Context Compacting Problem](https://bootloader.live/posts/context-window-compacting/): Three hours into a refactor. Forty files touched, tests passing. Then the context window fills up. The agent compacts — summarizing hours of work into a few paragraphs. When it resumes, it repeats itself.
 - [When Your AI's Plugin System Eats Its Own Brain](https://bootloader.live/posts/mcp-tool-search-lazy-loading/): Five MCP servers configured. Context window already one-third gone before you type anything. The more tools you add, the less room your AI has to actually work.
