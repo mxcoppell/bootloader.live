@@ -27,13 +27,12 @@ function parsePosts() {
     for (const block of matches) {
         const post = {};
 
-        // Extract simple string fields (handles both 'single' and "double" quotes)
+        // Extract simple string fields (handles escaped quotes in both 'single' and "double" quoted values)
         const simpleField = (name) => {
-            // Try single-quoted first, then double-quoted
-            const reSingle = new RegExp(name + "\\s*:\\s*'([^']*)'");
-            const reDouble = new RegExp(name + '\\s*:\\s*"([^"]*)"');
+            const reSingle = new RegExp(name + "\\s*:\\s*'((?:[^'\\\\]|\\\\.)*)'");
+            const reDouble = new RegExp(name + '\\s*:\\s*"((?:[^"\\\\]|\\\\.)*)"');
             const m = block.match(reSingle) || block.match(reDouble);
-            return m ? m[1] : '';
+            return m ? m[1].replace(/\\'/g, "'").replace(/\\"/g, '"') : '';
         };
 
         post.slug = simpleField('slug');
@@ -68,14 +67,27 @@ function renderMarkdown(mdContent) {
     return marked.parse(mdContent);
 }
 
+// ─── Extract first image from markdown ────────────────
+function extractFirstImage(mdContent, slug) {
+    const match = mdContent.match(/!\[[^\]]*\]\(([^)]+)\)/);
+    if (match) {
+        const src = match[1];
+        if (!src.startsWith('http')) {
+            return SITE_URL + '/posts/' + slug + '/' + src;
+        }
+        return src;
+    }
+    return null;
+}
+
 // ─── Generate pre-rendered post page ───────────────────
-function generatePostPage(post, renderedHtml) {
+function generatePostPage(post, renderedHtml, imageUrl) {
     const postUrl = SITE_URL + '/posts/' + post.slug + '/';
     const escapedTitle = escapeHtml(post.title);
     const escapedExcerpt = escapeHtml(post.excerpt);
     const keywords = (post.tags || []).join(', ');
 
-    const jsonLd = JSON.stringify({
+    const jsonLdObj = {
         '@context': 'https://schema.org',
         '@type': 'BlogPosting',
         headline: post.title,
@@ -85,7 +97,9 @@ function generatePostPage(post, renderedHtml) {
         author: { '@type': 'Person', name: 'Michael Xie' },
         keywords: keywords,
         publisher: { '@type': 'Person', name: 'Michael Xie' }
-    }, null, 4);
+    };
+    if (imageUrl) jsonLdObj.image = imageUrl;
+    const jsonLd = JSON.stringify(jsonLdObj, null, 4);
 
     return '<!DOCTYPE html>\n'
 + '<html lang="en">\n'
@@ -103,11 +117,14 @@ function generatePostPage(post, renderedHtml) {
 + '    <meta property="og:type" content="article">\n'
 + '    <meta property="og:url" content="' + postUrl + '">\n'
 + '    <meta property="og:site_name" content="' + SITE_NAME + '">\n'
++ (imageUrl ? '    <meta property="og:image" content="' + imageUrl + '">\n' : '')
++ (imageUrl ? '    <meta property="og:image:alt" content="' + escapedTitle + '">\n' : '')
 + '\n'
 + '    <!-- Twitter Card -->\n'
-+ '    <meta name="twitter:card" content="summary">\n'
++ '    <meta name="twitter:card" content="' + (imageUrl ? 'summary_large_image' : 'summary') + '">\n'
 + '    <meta name="twitter:title" content="' + escapedTitle + '">\n'
 + '    <meta name="twitter:description" content="' + escapedExcerpt + '">\n'
++ (imageUrl ? '    <meta name="twitter:image" content="' + imageUrl + '">\n' : '')
 + '\n'
 + '    <!-- JSON-LD -->\n'
 + '    <script type="application/ld+json">\n'
@@ -218,10 +235,11 @@ function main() {
 
         const md = fs.readFileSync(mdPath, 'utf-8');
         const renderedHtml = renderMarkdown(md);
+        const imageUrl = extractFirstImage(md, post.slug);
 
         const outDir = path.join(__dirname, 'posts', post.slug);
         const outPath = path.join(outDir, 'index.html');
-        fs.writeFileSync(outPath, generatePostPage(post, renderedHtml));
+        fs.writeFileSync(outPath, generatePostPage(post, renderedHtml, imageUrl));
         console.log('  + posts/' + post.slug + '/index.html');
         generated++;
     }

@@ -96,7 +96,7 @@ python3 -m http.server 8080 &
 Use `npx agent-browser` to verify:
 
 ```bash
-npx agent-browser open http://localhost:8080/#/post/<slug> && npx agent-browser wait --load networkidle && npx agent-browser wait 2000 && npx agent-browser screenshot /tmp/<slug>-post.png
+npx agent-browser open http://localhost:8080/posts/<slug>/ && npx agent-browser wait --load networkidle && npx agent-browser wait 2000 && npx agent-browser screenshot /tmp/<slug>-post.png
 ```
 
 Check the screenshot for:
@@ -135,7 +135,6 @@ Use the post title from the H1 heading in the commit message.
 Output a summary:
 - Post title
 - Publication date
-- SPA URL: `/#/post/<slug>`
-- SEO URL: `https://bootloader.live/posts/<slug>/`
+- URL: `https://bootloader.live/posts/<slug>/`
 - Number of mermaid diagrams (if any)
 - Any issues found during verification

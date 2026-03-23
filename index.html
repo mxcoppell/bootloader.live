@@ -1210,7 +1210,11 @@ function renderLanding() {
     POSTS.forEach(function(post) {
         var card = document.createElement('a');
         card.className = 'post-card';
-        card.href = '#/post/' + post.slug;
+        card.href = '/posts/' + post.slug + '/';
+        card.addEventListener('click', function(e) {
+            e.preventDefault();
+            showPost(post.slug);
+        });
 
         var dateDiv = document.createElement('div');
         dateDiv.className = 'post-card-date';
@@ -1255,7 +1259,7 @@ function updateMetaTag(name, content, attr) {
 var currentView = 'landing';
 var postCache = {};
 
-function showLanding() {
+function showLanding(skipPush) {
     currentView = 'landing';
     document.getElementById('landing-view').classList.remove('hidden');
     document.getElementById('post-view').classList.remove('active');
@@ -1269,12 +1273,19 @@ function showLanding() {
     updateMetaTag('og:url', 'https://bootloader.live/', 'property');
     updateMetaTag('twitter:title', 'bootloader.live \u2014 AI Productivity');
     updateMetaTag('twitter:description', 'Practical writing on AI-assisted development, MCP tools, and developer productivity.');
+    if (!skipPush && location.pathname !== '/') {
+        history.pushState({ view: 'landing' }, '', '/');
+    }
     window.scrollTo(0, 0);
 }
 
-async function showPost(slug) {
+async function showPost(slug, skipPush) {
     var post = POSTS.find(function(p) { return p.slug === slug; });
     if (!post) { showLanding(); return; }
+
+    if (!skipPush) {
+        history.pushState({ view: 'post', slug: slug }, '', '/posts/' + slug + '/');
+    }
 
     currentView = 'post';
     document.getElementById('landing-view').classList.add('hidden');
@@ -1285,7 +1296,7 @@ async function showPost(slug) {
     updateMetaTag('description', post.excerpt);
     updateMetaTag('og:title', post.title, 'property');
     updateMetaTag('og:description', post.excerpt, 'property');
-    updateMetaTag('og:url', 'https://bootloader.live/#/post/' + post.slug, 'property');
+    updateMetaTag('og:url', 'https://bootloader.live/posts/' + post.slug + '/', 'property');
     updateMetaTag('twitter:title', post.title);
     updateMetaTag('twitter:description', post.excerpt);
 
@@ -1301,7 +1312,7 @@ async function showPost(slug) {
         md = postCache[slug];
     } else {
         try {
-            var resp = await fetch('posts/' + slug + '/' + post.file);
+            var resp = await fetch('/posts/' + slug + '/' + post.file);
             md = await resp.text();
             postCache[slug] = md;
         } catch (e) {
@@ -1327,7 +1338,7 @@ async function showPost(slug) {
     timeSpan.textContent = readingTime(md);
     metaEl.appendChild(timeSpan);
 
-    var basePath = 'posts/' + slug + '/';
+    var basePath = '/posts/' + slug + '/';
     var sanitizedHtml = renderMarkdown(md, basePath);
 
     body.textContent = '';
@@ -1344,16 +1355,17 @@ async function showPost(slug) {
     document.querySelector('.post-content').classList.add('fade-in');
 }
 
-// ─── Handle Hash Changes ────────────────────────────────
+// ─── Handle Hash Changes (backward-compat for old /#/post/ URLs) ────
 function handleRoute() {
     var hash = location.hash || '#/';
     if (hash === '#/' || hash === '#' || hash === '') {
-        showLanding();
+        showLanding(true);
     } else if (hash.startsWith('#/post/')) {
         var slug = hash.replace('#/post/', '');
-        showPost(slug);
+        showPost(slug, true);
+        history.replaceState({ view: 'post', slug: slug }, '', '/posts/' + slug + '/');
     } else {
-        showLanding();
+        showLanding(true);
     }
 }
 
@@ -1365,15 +1377,22 @@ document.addEventListener('DOMContentLoaded', function() {
     // mermaid init happens in renderMermaidDiagrams (matching mdp)
 
     renderLanding();
-    handleRoute();
+
+    // Route based on pathname first (clean URLs), then fall back to hash routing
+    var pathMatch = location.pathname.match(/^\/posts\/([^/]+)\/?$/);
+    if (pathMatch) {
+        showPost(pathMatch[1], true);
+    } else {
+        handleRoute();
+    }
 
     window.addEventListener('scroll', updateReadingProgress);
 
     // Event listeners
     document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
     document.getElementById('toc-toggle').addEventListener('click', toggleToc);
-    document.getElementById('back-btn-top').addEventListener('click', function() { location.hash = '#/'; });
-    document.getElementById('back-btn-bottom').addEventListener('click', function() { location.hash = '#/'; });
+    document.getElementById('back-btn-top').addEventListener('click', function() { showLanding(); });
+    document.getElementById('back-btn-bottom').addEventListener('click', function() { showLanding(); });
 
     document.addEventListener('click', function(e) {
         var panel = document.getElementById('toc-panel');
@@ -1385,12 +1404,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
-            if (currentView === 'post') { location.hash = '#/'; }
+            if (currentView === 'post') { showLanding(); }
             document.getElementById('toc-panel').classList.remove('open');
         }
     });
 });
 
+// Browser back/forward navigation
+window.addEventListener('popstate', function(e) {
+    if (e.state && e.state.view === 'post') {
+        showPost(e.state.slug, true);
+    } else if (e.state && e.state.view === 'landing') {
+        showLanding(true);
+    } else {
+        var pathMatch = location.pathname.match(/^\/posts\/([^/]+)\/?$/);
+        if (pathMatch) {
+            showPost(pathMatch[1], true);
+        } else {
+            handleRoute();
+        }
+    }
+});
+
+// Keep hashchange listener for backward-compat with old /#/post/ URLs
 window.addEventListener('hashchange', handleRoute);
 </script>
 
@@ -1398,7 +1434,7 @@ window.addEventListener('hashchange', handleRoute);
 <script>
     window.goatcounter = {
         path: function() {
-            return location.pathname + location.hash;
+            return location.pathname;
         }
     };
 </script>
