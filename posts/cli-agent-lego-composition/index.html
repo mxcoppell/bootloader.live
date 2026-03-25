@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Building Complex Agents from Simple CLI Blocks — bootloader.live</title>
+    <meta name="description" content="You have a coding agent that edits files, runs tests, and commits to git. It handles tasks one at a time, in one terminal, for one person. What if that same agent could receive tasks from your phone, work on three things simultaneously, and build its own tools?">
+    <link rel="canonical" href="https://bootloader.live/posts/cli-agent-lego-composition/">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Building Complex Agents from Simple CLI Blocks">
+    <meta property="og:description" content="You have a coding agent that edits files, runs tests, and commits to git. It handles tasks one at a time, in one terminal, for one person. What if that same agent could receive tasks from your phone, work on three things simultaneously, and build its own tools?">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://bootloader.live/posts/cli-agent-lego-composition/">
+    <meta property="og:site_name" content="bootloader.live">
+    <meta property="og:image" content="https://bootloader.live/posts/cli-agent-lego-composition/images/atomic-unit-sketch.jpg">
+    <meta property="og:image:alt" content="Building Complex Agents from Simple CLI Blocks">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Building Complex Agents from Simple CLI Blocks">
+    <meta name="twitter:description" content="You have a coding agent that edits files, runs tests, and commits to git. It handles tasks one at a time, in one terminal, for one person. What if that same agent could receive tasks from your phone, work on three things simultaneously, and build its own tools?">
+    <meta name="twitter:image" content="https://bootloader.live/posts/cli-agent-lego-composition/images/atomic-unit-sketch.jpg">
+
+    <!-- JSON-LD -->
+    <script type="application/ld+json">
+    {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Building Complex Agents from Simple CLI Blocks",
+    "description": "You have a coding agent that edits files, runs tests, and commits to git. It handles tasks one at a time, in one terminal, for one person. What if that same agent could receive tasks from your phone, work on three things simultaneously, and build its own tools?",
+    "datePublished": "2026-03-24",
+    "url": "https://bootloader.live/posts/cli-agent-lego-composition/",
+    "author": {
+        "@type": "Person",
+        "name": "Michael Xie"
+    },
+    "keywords": "Agents, Architecture",
+    "publisher": {
+        "@type": "Person",
+        "name": "Michael Xie"
+    },
+    "image": "https://bootloader.live/posts/cli-agent-lego-composition/images/atomic-unit-sketch.jpg"
+}
+    </script>
+
+    <style>
+        body {
+            font-family: 'Newsreader', Georgia, serif;
+            max-width: 740px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            background: #222222;
+            color: #e6edf3;
+            line-height: 1.7;
+        }
+        a { color: #58a6ff; }
+        pre { background: #2a2a2a; padding: 1rem; border-radius: 6px; overflow-x: auto; }
+        code { font-size: 0.9em; }
+        img { max-width: 100%; height: auto; }
+        h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        .meta { color: #8b949e; font-size: 0.9rem; margin-bottom: 2rem; }
+    </style>
+</head>
+<body>
+    <script>window.location.replace('https://bootloader.live/#/post/cli-agent-lego-composition');</script>
+
+    <article>
+        <h1>Building Complex Agents from Simple CLI Blocks</h1>
+        <div class="meta">March 24, 2026</div>
+        <h1>Building Complex Agents from Simple CLI Blocks</h1>
+<p>You have a coding agent that edits files, runs tests, and commits to git. It handles tasks one at a time, in one terminal, for one person. You close the terminal, the agent is gone.</p>
+<p>What if that same agent could receive tasks from your phone, work on three things simultaneously in isolated branches, build its own tools when it spots a pattern, and remember what it learned last week? Not by rewriting it from scratch — but by stacking the agent you already have.</p>
+<p>This is not Claude Code Channels — Anthropic&#39;s new Discord and Telegram bridge that lets you message a single running session from your phone. Channels is a remote control. What we are talking about is an architecture: use an established CLI agent as an atomic building block and compose it into something bigger — a system that manages multiple sessions, dispatches parallel workers, builds its own tools, and gets better over time. Like LEGOs. Snap pieces together, build upward.</p>
+<p><img src="images/atomic-unit-sketch.jpg" alt="Hand-drawn pencil sketch showing a single LEGO-style brick labeled "CLI AGENT" at the bottom, with four internal components visible: SOUL, SKILLS, TOOLS, and MEMORY. Above it, multiple bricks stack into a larger structure with arrows showing Discord messages entering from the left and completed tasks exiting to the right."></p>
+<hr>
+<h2>The Atomic Unit</h2>
+<p>Claude Code&#39;s <code>-p</code> flag turns it into a Unix utility. Give it a prompt, it processes it, prints the result, exits. One shot. Stateless. Composable.</p>
+<pre><code class="language-bash">claude -p &quot;find the bug in auth.py and fix it&quot; --output-format json
+</code></pre>
+<p>That single command gets you file editing, bash execution, git operations, test running, and structured JSON output. The full agent toolset in one invocation.</p>
+<p>The flag that makes composition real is <code>--output-format stream-json</code> paired with <code>--input-format stream-json</code>. This lets you pipe the structured output of one agent directly into another — not just raw text, but the full event stream including tool calls, reasoning steps, and structured data.</p>
+<pre><code class="language-bash">claude -p --output-format stream-json &quot;analyze the codebase&quot; | \
+claude -p --input-format stream-json --output-format stream-json &quot;design improvements&quot; | \
+claude -p --input-format stream-json &quot;implement the top 3&quot;
+</code></pre>
+<p>Three agents. Three fresh context windows. Structured data flowing between them. Each one is the same atomic unit — <code>claude -p</code> — doing a different job.</p>
+<hr>
+<h2>The Four Pillars</h2>
+<p>Every atomic agent comes pre-loaded with four capabilities that make composition work. They are not features you build. They are filesystem conventions you configure.</p>
+<p><img src="images/four-pillars-sketch.jpg" alt="Hand-drawn pencil sketch showing four pillars holding up a platform labeled "AGENT". The pillars are labeled: SOUL (CLAUDE.md), SKILLS (SKILL.md), TOOLS (.mcp.json), and MEMORY (memory/). Each pillar has a small icon — a scroll, a gear, a wrench, and a brain respectively. The platform shows a friendly robot character working at a desk."></p>
+<p><strong>Soul</strong> is <code>CLAUDE.md</code>. A markdown file loaded at every session start that defines who the agent is — its role, constraints, conventions, and project knowledge. Every agent in the same project inherits the same CLAUDE.md. Change one file, every agent changes behavior. It survives context compaction. It is the shared genome.</p>
+<p><strong>Skills</strong> are <code>SKILL.md</code> files in <code>.claude/skills/</code>. Self-contained capability modules with a standard frontmatter interface. The agent loads skill descriptions at startup (cheap — ~100 tokens each) and fetches full content on demand when relevant. An agent can create new skills by writing files to this directory. The filesystem is the skill registry.</p>
+<p><strong>Tools</strong> come from two places: built-in tools (file editing, bash, git) and MCP servers configured in <code>.mcp.json</code>. MCP config has three scopes — local, project, and user — with the most specific winning. You can give different agents different tool configs via <code>--mcp-config</code>. An agent can write its own MCP server script and add it to the config.</p>
+<p><strong>Memory</strong> is markdown files in <code>.claude/projects/&lt;path&gt;/memory/</code>. Four types — user, feedback, project, reference — each with YAML frontmatter. An index file (MEMORY.md, first 200 lines) loads at session start. Topic files load on demand. Subagents can have their own isolated memory via the <code>memory:</code> frontmatter field with user, project, or local scope.</p>
+<p>Every pillar is a file on disk. Every file is version-controllable. <code>git clone</code> gives you the agent&#39;s full identity, capabilities, tools, and accumulated knowledge.</p>
+<hr>
+<h2>The Economics</h2>
+<p>On Anthropic&#39;s API, each <code>claude -p</code> call burns ~50,000 tokens just for system prompt, CLAUDE.md, skill descriptions, and tool definitions. That is before any actual work. A five-stage pipeline pays this five times. At Sonnet pricing, 20 tasks per day costs ~$324 per month. That overhead is 40-60% of total spend — tokens spent on boilerplate, not on thinking.</p>
+<p>Claude Max changes the math entirely.</p>
+<p><img src="images/economics-sketch.jpg" alt="Hand-drawn pencil sketch showing two columns side by side. Left column labeled "API PRICING" shows stacked coins getting taller with each worker ($540/mo). Right column labeled "MAX PLAN" shows a flat platform at $200/mo with unlimited workers standing on it. An arrow between them is labeled "63% LESS"."></p>
+<p>At $200 per month flat, the token overhead is free. Each worker gets the full agent toolset — file editing, bash, git, subagents, skills, memory, MCP — at zero marginal cost. The same workload that costs $324-540 on API pricing costs $200 on Max. And that $200 buys you capabilities that would take weeks to reimplement via raw API calls. The subscription model makes CLI agent composition economically dominant for developer workflows.</p>
+<hr>
+<h2>Stacking: Supervisor and Workers</h2>
+<p>The interesting architecture is not a chain of pipes. It is a persistent supervisor that dispatches fire-and-forget workers.</p>
+<p>The supervisor is a Claude Code session connected to Discord (or Telegram) via Channels — Anthropic&#39;s official messenger integration shipped March 2026. It stays alive, listens for messages, and routes tasks. It does not do heavy work itself.</p>
+<p>When a task arrives from Discord, the supervisor spawns a worker:</p>
+<pre><code class="language-bash">env -u CLAUDECODE -u CLAUDE_CODE_ENTRYPOINT \
+  claude -p &quot;Add dark mode toggle to settings page&quot; \
+  --output-format json \
+  --worktree task-dark-mode \
+  --max-turns 50 \
+  --allowedTools &quot;Bash,Read,Write,Edit,Glob,Grep&quot; \
+  &gt; .tasks/completed/dark-mode.json 2&gt;&amp;1 &amp;
+</code></pre>
+<p>The <code>env -u CLAUDECODE</code> is essential — without it, the child process detects it is inside another Claude Code session and refuses to start. The <code>--worktree</code> flag gives the worker an isolated git branch. The <code>&amp;</code> runs it in the background so the supervisor stays responsive.</p>
+<p><img src="images/supervisor-workers-sketch.jpg" alt="Hand-drawn pencil sketch showing a phone on the left with a Discord chat bubble saying "add dark mode". An arrow leads to a central figure labeled "SUPERVISOR" sitting at a desk. Three arrows fan out from the supervisor to three separate workbenches labeled "WORKER 1", "WORKER 2", "WORKER 3", each in their own box (representing worktrees). Dotted arrows return from workers to supervisor carrying result documents, which the supervisor relays back to the phone."></p>
+<p>The supervisor polls a task directory for results. When a worker finishes, it reads the output and sends a summary back to Discord. The user never touches the terminal. All interaction flows through the messenger.</p>
+<p>Each task gets its own session, its own worktree, its own context window. Three tasks run in parallel without stepping on each other. Merge conflicts — if any — surface at PR time, not during execution.</p>
+<p>This pattern already exists in production. The Dispatch skill by bassimeledath implements exactly this. incident.io runs 4-5 parallel Claude Code worktrees daily. Claude Squad manages multiple instances via tmux. The architecture is not theoretical.</p>
+<hr>
+<h2>The Toolsmith Loop</h2>
+<p>The most interesting part is not composition — it is self-development.</p>
+<p>When an agent notices it has performed the same multi-step operation three or more times, it can extract it into a reusable CLI tool. A Python script. A shell one-liner. Whatever fits the job.</p>
+<p>The tool lives inside a skill:</p>
+<pre><code>.claude/skills/parse-api-errors/
+├── SKILL.md                         # How to use it
+└── scripts/
+    └── parse-api-errors.py          # The actual tool
+</code></pre>
+<p>The SKILL.md uses <code>${CLAUDE_SKILL_DIR}</code> to reference the script portably. Future <code>claude -p</code> calls discover the skill via description matching, load the instructions, and run the script via bash. No reinstallation. No configuration. Write the files, and every future worker inherits the capability.</p>
+<p><img src="images/toolsmith-loop-sketch.jpg" alt="Hand-drawn pencil sketch showing a circular loop. Starting at the top: an agent at a desk labeled "OBSERVE (3x pattern)". Arrow curves right to a notepad labeled "WRITE SCRIPT + SKILL.md". Arrow curves down to a magnifying glass labeled "TEST". Arrow curves left to a filing cabinet labeled "DEPLOY (.claude/skills/)". Arrow curves back up to the agent, now with a toolbelt, labeled "FUTURE AGENTS USE IT". A small note reads "35x more efficient than MCP"."></p>
+<p>CLI tools wrapped in skills are 35 times more token-efficient than MCP servers for the same task. A skill description costs ~100 tokens to hold in context. An MCP server schema dump can cost 55,000. The community consensus is emerging: start with CLI tools, add MCP when you need authentication flows or shared state across agents.</p>
+<p>OpenClaw&#39;s Foundry extension crystallizes this pattern at scale — when a workflow reaches five successful uses with 70% or higher success rate, it auto-generates executable code. The idea is sound. The implementation is early.</p>
+<hr>
+<h2>The Self-Improvement Spiral</h2>
+<p>Each cycle of work leaves the agent slightly better than before.</p>
+<p>A user corrects the agent — &quot;do not mock the database in tests.&quot; The agent writes a feedback memory file. Next session, that memory loads at startup. The agent never makes the same mistake twice. This is real. It is documented. After a month of daily use, the accumulated corrections form a reliable behavioral profile.</p>
+<p>But the improvement is reactive, not proactive. The agent learns what you correct. It does not autonomously identify its own weaknesses. Community workarounds exist — a <code>wrap-up</code> skill that reviews session patterns, a <code>claude-self-improve</code> tool that analyzed 52 sessions and found a 42% friction rate. These work, but they run on human initiative.</p>
+<p>The honest assessment: self-improvement through memory and skill creation is compounding. After weeks of use, the agent knows your build commands, coding conventions, testing philosophy, and repeated patterns. It has tools it built itself. The improvement is real but bounded — like a colleague who takes excellent notes rather than one who independently studies the domain.</p>
+<p><img src="images/improvement-spiral-sketch.jpg" alt="Hand-drawn pencil sketch showing an upward spiral staircase. Each step is labeled with an iteration: "SESSION 1: Raw agent", "SESSION 5: Knows conventions", "SESSION 20: Has custom tools", "SESSION 50: Specialist". A small robot climbs the staircase. At each level, small items are added to the robot's toolbelt. A note at the bottom reads "REACTIVE, NOT PROACTIVE. COMPOUNDING, NOT EXPONENTIAL.""></p>
+<hr>
+<h2>Where LEGO Holds and Breaks</h2>
+<p>The LEGO metaphor is accurate at the configuration layer. CLAUDE.md, SKILL.md, <code>.mcp.json</code>, subagent YAML — these have real schemas, real scoping rules, real composability. You can <code>git clone</code> an agent&#39;s capabilities and they work.</p>
+<p>The metaphor weakens at the orchestration layer. Stream-JSON gives you structured envelopes, but the content inside is non-deterministic. The downstream agent parses the JSON reliably but interprets the payload differently each time.</p>
+<p>The metaphor breaks at the runtime layer. Each agent call is a non-deterministic black box. 95% reliability per step means 77% for a five-step chain. Persistent memory introduces hidden state that makes identical configurations behave differently over time. This is not LEGO. This is building with blocks that sway.</p>
+<p>For personal automation and prototyping, that sway is acceptable. The assembly speed is the point. For production systems that need SLAs, structured error recovery, and observability — the Agent SDK or a dedicated framework like the Vercel Workflow DevKit is the right tool.</p>
+<hr>
+<p>The pattern here is bigger than one agent or one CLI. Any sufficiently capable agent with a non-interactive mode, a plugin system, and a persistent memory layer becomes a composable building block. Snap together identity, capabilities, tools, and memory. Wire in a messenger. Let it learn. The individual pieces exist today across multiple tools. The composition is where the leverage lives.</p>
+<hr>
+<p><strong>References</strong></p>
+<ol>
+<li>Anthropic. &quot;Claude Code Channels Reference.&quot; <a href="https://code.claude.com/docs/en/channels-reference">code.claude.com/docs/en/channels-reference</a>.</li>
+<li>Anthropic. &quot;Create Custom Subagents.&quot; <a href="https://code.claude.com/docs/en/sub-agents">code.claude.com/docs/en/sub-agents</a>.</li>
+<li>Anthropic. &quot;Claude Code CLI Reference.&quot; <a href="https://code.claude.com/docs/en/cli-reference">code.claude.com/docs/en/cli-reference</a>.</li>
+<li>Bassim Eledath. &quot;10x Your Claude Code Window Size with Dispatch.&quot; <a href="https://www.bassimeledath.com/blog/dispatch">bassimeledath.com/blog/dispatch</a>.</li>
+<li>incident.io. &quot;Running Multiple AI Agents in Parallel.&quot; Case study (2026).</li>
+<li>Shapira et al. &quot;Agents of Chaos.&quot; arXiv:2602.20021 (Feb 2026).</li>
+<li>VentureBeat. &quot;Anthropic Shipped an OpenClaw Killer Called Claude Code Channels.&quot; (March 2026).</li>
+<li>OpenClaw. &quot;Session Management.&quot; <a href="https://docs.openclaw.ai/concepts/session">docs.openclaw.ai/concepts/session</a>.</li>
+</ol>
+
+    </article>
+
+    <p><a href="https://bootloader.live">← Back to bootloader.live</a></p>
+
+    <script>window.goatcounter={no_onload:true};</script>
+    <script data-goatcounter="https://mxcoppell.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
