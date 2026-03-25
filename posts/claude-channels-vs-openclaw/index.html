@@ -73,14 +73,21 @@
 <p>&quot;Anthropic just shipped an OpenClaw killer.&quot; That was VentureBeat&#39;s headline on March 20, 2026 — the day Claude Code Channels launched. Telegram and Discord integration for your AI coding agent. The tech press ran with the framing. Twitter lit up with hot takes.</p>
 <p>One product has 100,000 GitHub stars and 20+ messaging platform integrations. The other is a research preview with two platforms. One has been in production since November 2025. The other launched today. Calling this a &quot;killer&quot; is like reviewing a concept car against a shipping fleet.</p>
 <p>But the real story is stranger and more important than any feature comparison. It involves a silent lockdown, a platform control playbook, and a fundamental question about what kind of AI agent you actually need.</p>
-<h2>Two Different Species</h2>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Two&amp;nbsp;Species&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
 <p>The first thing to understand: Claude Channels and OpenClaw are not competing products. They are different species solving different problems.</p>
 <p><img src="images/two-species-sketch.jpg" alt="Hand-drawn pencil sketch showing a split comparison. Left: Claude Channels as a terminal connected to a code editor with arrows to just Telegram and Discord. Right: OpenClaw as a friendly lobster at the center of 20+ radiating connections to messaging platforms. Labels read "Coding Agent to Messaging" and "Messaging Agent to Everything.""></p>
 <p><strong>Claude Code Channels</strong> extends a coding agent into messaging. It&#39;s an MCP plugin that bridges your active Claude Code terminal session to Telegram or Discord. You message your bot from your phone, it runs code on your machine, and sends back the results. Close the terminal and the channel goes offline. It requires a Pro or Max plan ($20+/month) and only works with Claude models.</p>
 <p><strong>OpenClaw</strong> is a messaging-native personal AI agent. It runs as a persistent background daemon on your machine — always on, always listening. It connects to WhatsApp, Telegram, Slack, Discord, Signal, iMessage, Microsoft Teams, and a dozen more platforms simultaneously. It works with any LLM provider — Claude, GPT, Gemini, local models via Ollama. It&#39;s free and open-source (MIT license), created by Peter Steinberger, the founder of PSPDFKit.</p>
 <p>The architectural difference is fundamental. Claude Channels takes a powerful coding specialist and gives it a messaging interface. OpenClaw takes a messaging-native agent and gives it whatever capabilities you install. Multiple credible comparison articles converge on the same phrasing: &quot;Claude Code handles your codebase. OpenClaw handles your life.&quot;</p>
 <p>GetAIPerks, DataCamp, and AnalyticsVidhya all independently concluded these products are complementary, not competing. The &quot;killer&quot; narrative serves headlines, not accuracy.</p>
-<h2>The Lockdown Nobody Talks About</h2>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;The&amp;nbsp;Lockdown&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
 <p>The most important event in this comparison happened two months before Channels launched. And it wasn&#39;t a product announcement.</p>
 <p><img src="images/oauth-lockdown-sketch.jpg" alt="Hand-drawn pencil sketch of a timeline showing five events. A rocket labeled "OpenClaw Goes Viral" in Nov 2025, a happy user with dollar signs labeled "$200/Mo Claude Max" in Dec 2025, a large padlock slamming shut labeled "OAuth Lockdown" on Jan 9 2026, broken chains with sad users labeled "Workflows Broken" in Jan-Feb 2026, and a door opening labeled "Channels Launches" on Mar 20 2026. An arrow above reads "Platform Control Playbook.""></p>
 <p>On January 9, 2026, Anthropic silently deployed server-side safeguards that blocked subscription OAuth tokens from working outside the official Claude Code CLI. No announcement. No blog post. No advance warning.</p>
@@ -90,7 +97,11 @@
 <p>Then, six weeks later, Anthropic launched Channels — the &quot;official&quot; way to message your AI coding agent.</p>
 <p>This is the classic platform playbook: let innovators prove the market, then capture it. OpenClaw validated the messaging-agent pattern. Anthropic watched, cut off the model access that made OpenClaw&#39;s Claude-dependent users viable, then shipped their own version of the experience.</p>
 <p>OpenClaw&#39;s community pivoted. Some rebuilt on API keys (more expensive). Others switched to alternative models entirely — one user documented rebuilding their entire setup for $15/month with Kimi K2.5. The incident proved both the value and the vulnerability of model-agnostic architecture. If your best model can cut you off, &quot;model-agnostic&quot; is a risk management strategy, not just a feature.</p>
-<h2>How These Agents Get Better Over Time</h2>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Getting&amp;nbsp;Better&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
 <p>Neither Claude Code nor OpenClaw &quot;learns&quot; in any machine learning sense. No weights change. No fine-tuning happens. But both get meaningfully better over weeks and months of daily use — through different mechanisms that are worth understanding precisely, because the differences shape what kind of long-term relationship you build with each tool.</p>
 <h3>Learning Your Habits</h3>
 <p><img src="images/habit-learning-sketch.jpg" alt="Hand-drawn pencil sketch comparing habit learning. Left: Claude Code with an "Auto Memory" notebook writing by itself, a speech bubble saying "don't use npm," and "12 LINES" with a surprised face. Caption: "Takes notes autonomously (but conservatively)." Right: OpenClaw with daily log pages flowing up into a MEMORY.MD filing cabinet, a speech bubble saying "save this to memory." Caption: "Learns when told (explicitly prompted).""></p>
@@ -145,7 +156,11 @@
 <p>After a month of daily use, a Claude Code project accumulates a handful of precisely captured corrections and conventions. The agent stops making mistakes you&#39;ve corrected once. It knows your build commands, your testing philosophy, and your coding style. The improvement is modest but reliable — like a colleague who takes good notes.</p>
 <p>After a month of daily use, an OpenClaw agent has richer context — 30 days of searchable conversation logs, a curated MEMORY.md, possibly self-created skills for tasks you do often. The improvement is broader but requires more user investment — configuring memory protocols, reviewing accumulated notes, maintaining the file hierarchy. Like a personal assistant who gets better as you invest in training them.</p>
 <p>Neither system is &quot;self-improving&quot; in the way that phrase implies. Both are configuration systems that accumulate context through a mix of autonomous observation and explicit user instruction. The compounding is real — but it comes from the user&#39;s investment, not from the agent&#39;s initiative.</p>
-<h2>The Portability Problem</h2>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Portability&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
 <p>Here&#39;s the question nobody in the &quot;which is better&quot; debate is asking: if you invest months building up an AI agent&#39;s knowledge about you, your codebase, and your workflows — can you take that knowledge with you if you switch tools?</p>
 <p><img src="images/portability-spectrum-sketch.jpg" alt="Hand-drawn pencil sketch of a bookshelf with three sections. Left section labeled "Portable" shows books with wings labeled AGENTS.MD, Skills, and Preferences, ready to move. Middle section labeled "Lossy" shows books with covers falling off, labeled Corrections and Context. Right section labeled "Locked" shows books chained to the shelf with padlocks, labeled Promotion Pipeline, Heartbeat Config, Foundry State, and Confidence Scores. Below reads "The Portability Spectrum.""></p>
 <p>The honest answer: partially.</p>
@@ -154,7 +169,11 @@
 <p>Self-improvement knowledge is the least portable. OpenClaw&#39;s recurrence tracking (Pattern-Key, Recurrence-Count, First-Seen, Last-Seen) has no Claude Code equivalent. When you paste a learning with &quot;Recurrence-Count: 12 across 6 tasks&quot; into a flat Claude Code feedback memory, it becomes an undifferentiated text note. The knowledge transfers. The confidence calibration — how much the system should trust that knowledge — does not.</p>
 <p>The most practical escape hatch bypasses both systems entirely: externalize your knowledge into tool-agnostic project files. <code>AGENTS.md</code> (adopted by 60,000+ repositories) is recognized by Cursor, Copilot, Gemini CLI, Cline, Aider, and both Claude Code and OpenClaw. If you put your conventions in <code>AGENTS.md</code>, your architecture in <code>ARCHITECTURE.md</code>, and your decisions in <code>DECISIONS.md</code>, you get portability for free — because every major AI coding tool already reads these files.</p>
 <p>No universal standard for agent memory interchange exists yet. MIF (Memory Interchange Format) is the most rigorous attempt — a dual JSON-LD/Markdown format with bi-temporal tracking — but it&#39;s early stage. Memsearch, extracted from OpenClaw&#39;s codebase by Zilliz, is the most practical bridge today: a standalone Markdown-based memory library with a Claude Code plugin. But it&#39;s additive, not unifying — it runs alongside native memory, not instead of it.</p>
-<h2>Building a Specialized Agent: The Email Manager Example</h2>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Email&amp;nbsp;Agent&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
 <p>Everything above is abstract comparison. Here&#39;s what it looks like in practice: building an autonomous email manager with Claude Code that learns from your behavior over time.</p>
 <p><img src="images/email-agent-loop-sketch.jpg" alt="Hand-drawn pencil sketch of a circular learning loop for an autonomous email agent. Four stages clockwise: OBSERVE (magnifying glass examining email envelopes), CLASSIFY (sorting tray with Urgent, Routine, Archive stacks), ACT (robot arm labeling and drafting responses), LEARN (notebook being updated with a user correction "No, keep this one"). Center shows Claude Code connected to Gmail via MCP bridge. Below: "Building Blocks: MCP Server + Hooks + Memory + Skills.""></p>
 <p>The architecture uses four Claude Code primitives working together:</p>
@@ -164,7 +183,11 @@
 <p><strong>Skills</strong> define the triage procedure. A SKILL.md file teaches the agent the complete workflow: fetch unread emails, classify each one by priority and category, assign a confidence score, auto-execute high-confidence actions, ask about medium-confidence ones, and flag anything uncertain. The skill also defines the learning loop — when you correct a classification, the agent updates its memory files and proposes a permanent Gmail filter after three corrections of the same pattern.</p>
 <p>The learning loop runs like this: Session 1, the agent classifies 10 emails with mixed accuracy. You correct two — &quot;GitHub PR reviews are important, cold outreach isn&#39;t.&quot; Session 5, those corrections are in memory. The agent auto-archives cold outreach and keeps PR reviews in your inbox without being reminded. Session 10, the agent has enough correction data to propose permanent Gmail server-side filters. The system graduates from &quot;AI-assisted triage&quot; to &quot;permanent automation&quot; — the filters run without any AI cost at all.</p>
 <p>This pattern generalizes beyond email. Replace the Gmail MCP server with a Jira server, a Slack server, or a calendar server, and the same four building blocks — MCP + Hooks + Memory + Skills — create a specialized autonomous agent for any domain. The agent doesn&#39;t need to be built from scratch. It&#39;s a general-purpose coding agent with domain knowledge layered on top.</p>
-<h2>Who Should Pick What</h2>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Who&amp;nbsp;Picks&amp;nbsp;What&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
 <p><strong>If you&#39;re a developer already on Claude Pro or Max</strong>, Claude Channels is the obvious choice. Five-minute Telegram setup. Deep coding integration — LSP, git, tests, diff views. No model management overhead. You message your bot from your phone and get code changes on your machine.</p>
 <p><strong>If you want an always-on personal assistant</strong>, OpenClaw is the only real option. Persistent daemon, 20+ platforms, heartbeat monitoring that proactively checks your email, calendar, and CI/CD pipeline every 30 minutes. Claude Channels can&#39;t do this — it requires an active terminal session.</p>
 <p><strong>If you care about privacy above all else</strong>, OpenClaw with local models (Ollama) gives you true air-gapped operation. No data leaves your machine for inference. Claude Code always sends data to Anthropic&#39;s servers.</p>

@@ -6,7 +6,11 @@ One product has 100,000 GitHub stars and 20+ messaging platform integrations. Th
 
 But the real story is stranger and more important than any feature comparison. It involves a silent lockdown, a platform control playbook, and a fundamental question about what kind of AI agent you actually need.
 
-## Two Different Species
+```mermaid
+flowchart TD
+    H(["&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Two&nbsp;Species&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+```
 
 The first thing to understand: Claude Channels and OpenClaw are not competing products. They are different species solving different problems.
 
@@ -20,7 +24,13 @@ The architectural difference is fundamental. Claude Channels takes a powerful co
 
 GetAIPerks, DataCamp, and AnalyticsVidhya all independently concluded these products are complementary, not competing. The "killer" narrative serves headlines, not accuracy.
 
-## The Lockdown Nobody Talks About
+---
+
+```mermaid
+flowchart TD
+    H(["&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;Lockdown&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+```
 
 The most important event in this comparison happened two months before Channels launched. And it wasn't a product announcement.
 
@@ -40,7 +50,13 @@ This is the classic platform playbook: let innovators prove the market, then cap
 
 OpenClaw's community pivoted. Some rebuilt on API keys (more expensive). Others switched to alternative models entirely — one user documented rebuilding their entire setup for $15/month with Kimi K2.5. The incident proved both the value and the vulnerability of model-agnostic architecture. If your best model can cut you off, "model-agnostic" is a risk management strategy, not just a feature.
 
-## How These Agents Get Better Over Time
+---
+
+```mermaid
+flowchart TD
+    H(["&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Getting&nbsp;Better&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+```
 
 Neither Claude Code nor OpenClaw "learns" in any machine learning sense. No weights change. No fine-tuning happens. But both get meaningfully better over weeks and months of daily use — through different mechanisms that are worth understanding precisely, because the differences shape what kind of long-term relationship you build with each tool.
 
@@ -135,7 +151,13 @@ After a month of daily use, an OpenClaw agent has richer context — 30 days of 
 
 Neither system is "self-improving" in the way that phrase implies. Both are configuration systems that accumulate context through a mix of autonomous observation and explicit user instruction. The compounding is real — but it comes from the user's investment, not from the agent's initiative.
 
-## The Portability Problem
+---
+
+```mermaid
+flowchart TD
+    H(["&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Portability&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+```
 
 Here's the question nobody in the "which is better" debate is asking: if you invest months building up an AI agent's knowledge about you, your codebase, and your workflows — can you take that knowledge with you if you switch tools?
 
@@ -153,7 +175,13 @@ The most practical escape hatch bypasses both systems entirely: externalize your
 
 No universal standard for agent memory interchange exists yet. MIF (Memory Interchange Format) is the most rigorous attempt — a dual JSON-LD/Markdown format with bi-temporal tracking — but it's early stage. Memsearch, extracted from OpenClaw's codebase by Zilliz, is the most practical bridge today: a standalone Markdown-based memory library with a Claude Code plugin. But it's additive, not unifying — it runs alongside native memory, not instead of it.
 
-## Building a Specialized Agent: The Email Manager Example
+---
+
+```mermaid
+flowchart TD
+    H(["&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Email&nbsp;Agent&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+```
 
 Everything above is abstract comparison. Here's what it looks like in practice: building an autonomous email manager with Claude Code that learns from your behavior over time.
 
@@ -173,7 +201,13 @@ The learning loop runs like this: Session 1, the agent classifies 10 emails with
 
 This pattern generalizes beyond email. Replace the Gmail MCP server with a Jira server, a Slack server, or a calendar server, and the same four building blocks — MCP + Hooks + Memory + Skills — create a specialized autonomous agent for any domain. The agent doesn't need to be built from scratch. It's a general-purpose coding agent with domain knowledge layered on top.
 
-## Who Should Pick What
+---
+
+```mermaid
+flowchart TD
+    H(["&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Who&nbsp;Picks&nbsp;What&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+```
 
 **If you're a developer already on Claude Pro or Max**, Claude Channels is the obvious choice. Five-minute Telegram setup. Deep coding integration — LSP, git, tests, diff views. No model management overhead. You message your bot from your phone and get code changes on your machine.
 

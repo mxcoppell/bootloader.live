@@ -10,7 +10,11 @@ This is not Claude Code Channels — Anthropic's new Discord and Telegram bridge
 
 ---
 
-## The Atomic Unit
+```mermaid
+flowchart TD
+    H(["&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Atomic&nbsp;Unit&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+```
 
 Claude Code's `-p` flag turns it into a Unix utility. Give it a prompt, it processes it, prints the result, exits. One shot. Stateless. Composable.
 
@@ -32,7 +36,13 @@ Three agents. Three fresh context windows. Structured data flowing between them.
 
 ---
 
-## The Four Pillars
+---
+
+```mermaid
+flowchart TD
+    H(["&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Four&nbsp;Pillars&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+```
 
 Every atomic agent comes pre-loaded with four capabilities that make composition work. They are not features you build. They are filesystem conventions you configure.
 
@@ -50,7 +60,13 @@ Every pillar is a file on disk. Every file is version-controllable. `git clone` 
 
 ---
 
-## The Economics
+---
+
+```mermaid
+flowchart TD
+    H(["&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;Economics&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+```
 
 On Anthropic's API, each `claude -p` call burns ~50,000 tokens just for system prompt, CLAUDE.md, skill descriptions, and tool definitions. That is before any actual work. A five-stage pipeline pays this five times. At Sonnet pricing, 20 tasks per day costs ~$324 per month. That overhead is 40-60% of total spend — tokens spent on boilerplate, not on thinking.
 
@@ -62,7 +78,13 @@ At $200 per month flat, the token overhead is free. Each worker gets the full ag
 
 ---
 
-## Stacking: Supervisor and Workers
+---
+
+```mermaid
+flowchart TD
+    H(["&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Stacking&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+```
 
 The interesting architecture is not a chain of pipes. It is a persistent supervisor that dispatches fire-and-forget workers.
 
@@ -92,7 +114,13 @@ This pattern already exists in production. The Dispatch skill by bassimeledath i
 
 ---
 
-## The Toolsmith Loop
+---
+
+```mermaid
+flowchart TD
+    H(["&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Toolsmith&nbsp;Loop&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+```
 
 The most interesting part is not composition — it is self-development.
 
@@ -117,7 +145,13 @@ OpenClaw's Foundry extension crystallizes this pattern at scale — when a workf
 
 ---
 
-## The Self-Improvement Spiral
+---
+
+```mermaid
+flowchart TD
+    H(["&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Self&nbsp;Improve&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+```
 
 Each cycle of work leaves the agent slightly better than before.
 
@@ -131,7 +165,13 @@ The honest assessment: self-improvement through memory and skill creation is com
 
 ---
 
-## Where LEGO Holds and Breaks
+---
+
+```mermaid
+flowchart TD
+    H(["&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Holds&nbsp;&&nbsp;Breaks&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+```
 
 The LEGO metaphor is accurate at the configuration layer. CLAUDE.md, SKILL.md, `.mcp.json`, subagent YAML — these have real schemas, real scoping rules, real composability. You can `git clone` an agent's capabilities and they work.
 
