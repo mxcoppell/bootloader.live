@@ -14,11 +14,14 @@
     <meta property="og:type" content="article">
     <meta property="og:url" content="https://bootloader.live/posts/spec-driven-agentic-dev/">
     <meta property="og:site_name" content="bootloader.live">
+    <meta property="og:image" content="https://bootloader.live/posts/spec-driven-agentic-dev/images/pipeline-breaks-sketch.jpg">
+    <meta property="og:image:alt" content="Spec-Driven Agentic Development — A Lifecycle Analysis">
 
     <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary">
+    <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Spec-Driven Agentic Development — A Lifecycle Analysis">
     <meta name="twitter:description" content="Constitution written. Specifications approved. Plan generated. Then a bug surfaces that invalidates three upstream requirements. This is the lifecycle tension at the heart of spec-driven agentic development.">
+    <meta name="twitter:image" content="https://bootloader.live/posts/spec-driven-agentic-dev/images/pipeline-breaks-sketch.jpg">
 
     <!-- JSON-LD -->
     <script type="application/ld+json">
@@ -37,7 +40,8 @@
     "publisher": {
         "@type": "Person",
         "name": "Michael Xie"
-    }
+    },
+    "image": "https://bootloader.live/posts/spec-driven-agentic-dev/images/pipeline-breaks-sketch.jpg"
 }
     </script>
 
@@ -68,30 +72,13 @@
         <h1>Spec-Driven Agentic Development — A Lifecycle Analysis</h1>
 <p>Constitution written. Specifications approved. Plan generated. Task breakdown clean. Then a bug surfaces in the auth layer that invalidates three upstream requirements. The spec needs surgery — update the requirements, regenerate the plan, re-scope tasks, re-implement. What took 30 minutes to scaffold now blocks the afternoon.</p>
 <p>This is the lifecycle tension at the heart of spec-driven agentic development. The pipeline works in one direction. The question is what happens when reality pushes back.</p>
+<p><img src="images/pipeline-breaks-sketch.jpg" alt="Hand-drawn pencil sketch of a factory conveyor belt with five stations labeled CONSTITUTION, SPECS, PLAN, TASKS, and CODE. The belt runs smoothly through the first three stations but cracks apart between PLAN and TASKS, where a sign reads REALITY. Documents scatter from the break point into chaos on the right side."></p>
 <pre><code class="language-mermaid">flowchart TD
     H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;The&amp;nbsp;Promise&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
     style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
 </code></pre>
 <p>Unstructured AI coding produces measurable problems. CodeRabbit&#39;s analysis of 470 GitHub pull requests found AI-co-authored code carries 1.7x more issues than human-only code, with security vulnerabilities at 2.74x the rate [1]. METR&#39;s randomized controlled trial showed experienced developers were 19% slower with AI tools — despite believing they were 20% faster [2]. A 39-percentage-point perception gap. The most dramatic case: Jason Lemkin&#39;s 12-day Replit experiment, where an AI agent deleted a live production database containing 1,206 executive records — despite being told 11 times in ALL CAPS not to do it [3].</p>
 <p>The response: formalize the workflow. Spec-driven development defines requirements as specifications, generates plans from those specs, breaks plans into tasks, and lets agents implement within constraints. Den Delimarsky, the GitHub PM behind Spec Kit, frames the underlying assumption: &quot;We treat coding agents like search engines when we should be treating them more like literal-minded pair programmers&quot; [4]. Addy Osmani extends the argument: spend 70% of effort on problem definition, 30% on execution [5].</p>
-<pre><code class="language-mermaid">flowchart LR
-    A(Constitution) --&gt; B(Specifications)
-    B --&gt; C(Plan)
-    C --&gt; D(Tasks)
-    D --&gt; E(Implementation)
-    E --&gt; F(Pull Request)
-
-    classDef dark fill:#1a1a2e,color:#fff,stroke:#16213e,stroke-width:2px
-    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
-    classDef blue fill:#1565c0,color:#fff,stroke:#0d47a1,stroke-width:2px
-
-    class A dark
-    class B teal
-    class C teal
-    class D teal
-    class E blue
-    class F blue
-</code></pre>
 <p>The strongest argument for SDD is that specs give entire teams a shared artifact. Product owners, architects, and engineers can all contribute during the spec phase — before a single token flows. Brooker calls this &quot;shared understanding between developers and stakeholders&quot; [15]. The appeal is obvious: a BA or PM can read a spec and understand scope, motivation, and acceptance criteria without parsing a pull request.</p>
 <p>But Bockeler found a gap between that promise and practice. The SDD tools she reviewed don&#39;t clarify &quot;who is the target user?&quot; — they assume a solo developer doing all the analysis, not a collaborating team [10]. The stakeholder-engagement narrative is largely aspirational marketing, not documented practice. Somma identifies a deeper problem with spec review itself: &quot;Planning often becomes a social process. People nod. People optimize for alignment. People avoid being the blocker. Under time pressure, that tendency gets amplified&quot; [16]. Spec review risks becoming ceremonial approval rather than genuine alignment.</p>
 <p>Osmani frames the tension precisely: reviewing specs instead of code is &quot;appealing in the same way Waterfall methodology was once appealing&quot; — but &quot;translating a spec to working code involves an enormous number of implicit decisions — edge cases, data structures, error handling, performance tradeoffs — that no spec ever fully captures&quot; [17]. Only 48% of developers consistently check AI-assisted code before committing it [17]. Specs add a review layer, but do not eliminate the need for the code review that half of developers already skip.</p>
@@ -102,28 +89,9 @@
     style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
 </code></pre>
 <p>Where spec-driven genuinely delivers is the 0-to-1 phase. New projects, new features, new systems — the blank-slate problem where agents have no existing code to learn from and developers have not yet formed strong opinions about architecture.</p>
+<p><img src="images/bootstrap-scaffold-sketch.jpg" alt="Hand-drawn pencil sketch showing a blank whiteboard on the left labeled BLANK SLATE, an arrow pointing right through a clock to a fully scaffolded building structure labeled SCAFFOLD with blueprint documents fluttering around it. A dotted arrow below continues rightward into a tangled knot of arrows labeled ITERATION."></p>
 <p>In this phase, specs do three things well. They force upfront thinking before tokens start flowing. They create shared vocabulary between developer and agent. They scaffold quickly — constitution to working code in a single session.</p>
 <p>Kent Beck offers a useful frame: &quot;What game are we playing?&quot; [18]. The Finish Line Game — build X, you&#39;re done — is where specs work. The codebase is empty. The developer needs structure. The spec provides a single, clear target. Bootstrap is a Finish Line Game.</p>
-<pre><code class="language-mermaid">flowchart TD
-    A(Blank Slate&lt;br/&gt;Project) --&gt; B(Specs Force&lt;br/&gt;Upfront Thinking)
-    B --&gt; C(Shared&lt;br/&gt;Vocabulary)
-    C --&gt; D(Fast&lt;br/&gt;Scaffold)
-    D -.-&gt;|Iteration Begins| E(Spec Maintenance&lt;br/&gt;Overhead)
-    E --&gt; F(Friction&lt;br/&gt;Grows)
-
-    classDef dark fill:#1a1a2e,color:#fff,stroke:#16213e,stroke-width:2px
-    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
-
-    class A dark
-    class B teal
-    class C teal
-    class D teal
-    class E orange
-    class F red
-
-    style E fill:#e65100,color:#fff,stroke:#bf360c,stroke-width:4px,font-size:16px,font-weight:bold
-    style F fill:#c62828,color:#fff,stroke:#b71c1c,stroke-width:4px,font-size:16px,font-weight:bold
-</code></pre>
 <p>One Hacker News developer described spending &quot;2-3 hours writing a spec focusing on acceptance criteria and then by the end of the day I have a working, tested next version of a feature.&quot; An embedded systems engineer reported doing &quot;over 70% using LLMs by specs — great for grounding.&quot; Prezi Engineering tested the approach across four teams and found it &quot;both terrifying and exciting&quot; — with the caveat that &quot;some team members felt that for certain work, going through all the stages seemed like overkill.&quot;</p>
 <p>The pattern is consistent: bootstrap value is real. But every testimonial carries a qualifier about what happens next. The pipeline runs forward. Then iteration begins. Beck&#39;s second game — the Compounding Game, where &quot;the first thing we finish will earn the resources for the next thing&quot; — requires a different approach entirely [18]. Most software is a Compounding Game.</p>
 <hr>
@@ -134,29 +102,12 @@
 <p>The same lifecycle that makes bootstrapping smooth creates friction at four points when the project moves from scaffold to iteration.</p>
 <p><strong>Over-contexting.</strong> ETH Zurich tested 138 real-world tasks across four coding agents and found that LLM-generated context files reduced success rates by 3% while increasing costs by 20% and reasoning tokens by 22% [6]. The key finding was counterintuitive: &quot;The agents did follow the instructions — they ran more tests, searched more files. So the problem isn&#39;t that agents ignore the files. Rather, unnecessary requirements made the tasks harder&quot; [6]. The &quot;Curse of Instructions&quot; research explains part of the mechanism: prompt-level accuracy follows a power law where accuracy equals per-instruction accuracy raised to the number of instructions. At 10 instructions, GPT-4o drops to 15% compliance [7].</p>
 <p>The context budget makes this concrete. A 200K-token window has roughly 140K usable tokens after system prompt and autocompact buffer. Spec Kit generates 3.7x to 7.5x more markdown than code — a single feature&#39;s specs can consume 100K tokens [8]. That leaves roughly 40K tokens for actual code reasoning, barely above the compaction threshold.</p>
+<p><img src="images/context-window-jar-sketch.jpg" alt="Hand-drawn pencil sketch of a glass jar representing a context window. The jar is stuffed with stacked documents labeled SPECS, REQUIREMENTS, ACCEPTANCE CRITERIA, and ARCHITECTURE filling most of the space. A tiny sliver at the top holds a thin document labeled CODE. An arrow points to the code sliver with the label 2.5% SIGNAL."></p>
 <p>Attention is zero-sum: every spec token competes with code for the model&#39;s finite attention. In a 20K-token context, the relevant code may be only 500 tokens — a 2.5% signal ratio [19]. Degradation starts early. Chroma&#39;s study of 18 models found performance degrades at 25% of window capacity, not at the limit [19]. A model with a 200K window shows significant degradation at 50K tokens — one quarter of the advertised size. NVIDIA&#39;s RULER benchmark confirms: effective context is 50-65% of advertised across frontier models [20]. Well-structured specification documents with consistent terminology may actually create more semantic interference, not less — Chroma found that &quot;shuffled haystacks consistently outperformed structured ones across all 18 models&quot; because organized documents create plausible distractors [19].</p>
 <p>SDD advocates counter that specs are curated context, not dumping — structured, intentional, domain-specific [5]. The distinction is real. Whether it survives at scale — when a project accumulates specs across multiple features, each loaded into the same finite window — is the open question.</p>
 <p><strong>Static rigidity.</strong> Colin Eberhardt ran the most rigorous head-to-head comparison. Spec Kit took 33.5 minutes of agent time plus 3.5 hours of human review to produce 2,577 lines of markdown and 689 lines of code. Iterative prompting took 8 minutes plus 15 minutes of review to produce 1,000 lines of code [8]. Ten times slower, 14 times the review burden. Zaninotto documented Spec Kit generating 8 files and 1,300 lines of markdown for a feature that displays the current date [9]. Bockeler found reviewing the spec markdown &quot;tedious&quot; — &quot;I&#39;d rather review code&quot; [10].</p>
 <p>Kiro added two-way sync — code changes update specs, spec changes regenerate tasks. Tessl builds specs that evolve with the codebase. These are real iteration mechanisms, but they are documentation claims, not measured outcomes.</p>
-<pre><code class="language-mermaid">flowchart TD
-    A(Bootstrap&lt;br/&gt;Phase) --&gt; B(Iteration&lt;br/&gt;Begins)
-    B --&gt; C(Over-Contexting)
-    B --&gt; D(Static&lt;br/&gt;Rigidity)
-    B --&gt; E(Spec&lt;br/&gt;Afterlife)
-    B --&gt; F(No E2E&lt;br/&gt;Verification)
-
-    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
-    classDef dark fill:#1a1a2e,color:#fff,stroke:#16213e,stroke-width:2px
-    classDef red fill:#c62828,color:#fff,stroke:#b71c1c,stroke-width:2px
-    classDef orange fill:#e65100,color:#fff,stroke:#bf360c,stroke-width:2px
-
-    class A teal
-    class B dark
-    class C red
-    class D red
-    class E orange
-    class F orange
-</code></pre>
+<p><img src="images/spec-afterlife-sketch.jpg" alt="Hand-drawn pencil sketch of a confused robot sitting between a dusty document labeled STALE SPEC v1.0 with cobwebs and a spider, and a modern laptop showing clean code labeled EVOLVED CODE with checkmarks. The robot holds the spec in one hand and points at the laptop with the other, with a question mark thought bubble above its head."></p>
 <p><strong>Spec afterlife.</strong> What happens to specs after the initial build? The consensus: most teams abandon them. The arXiv paper explicitly labels spec-first as &quot;May abandon&quot; [22]. Breunig identifies the practical barrier: &quot;The spec gets written, it gets implemented, it gets released. Is the spec updated? No&quot; [23]. Updating specs &quot;feels like overhead, especially when you&#39;re moving fast. And the entire point of using agents is to move fast&quot; [23]. Augment Code frames the structural reason: &quot;Every documentation-first initiative in software has failed for the same reason: it asked developers to do continuous maintenance work that nobody sees and nobody rewards&quot; [13].</p>
 <p>Stale specs do not merely sit idle — they actively mislead. Unlike stale docs that mislead humans who can exercise judgment, stale specs mislead agents who execute confidently on wrong information. Augment Code: &quot;They&#39;ll execute a plan that no longer matches reality, confidently, and they won&#39;t flag that anything is wrong&quot; [13]. Bockeler observed this directly: an agent took spec descriptions of existing classes and created duplicates — it read old specs as new instructions [10]. Context debt compounds: specs plus code equals parallel sources of truth. Each iteration widens the gap between them. A Reddit user summarized the practitioner experience: &quot;You update a business rule but the spec still says the old thing. The agent doesn&#39;t know. It just builds from what it finds.&quot;</p>
 <p>Kiro and Tessl claim living specs that evolve with the codebase. The evidence is from tool documentation, not longitudinal user data.</p>
@@ -168,24 +119,10 @@
     style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
 </code></pre>
 <p>The most significant finding across six research reports: none of the three major AI coding tool vendors endorse spec-driven development.</p>
+<p><img src="images/industry-convergence-sketch.jpg" alt="Hand-drawn pencil sketch of three roads labeled ANTHROPIC (Context Engineering), OPENAI (Bias to Action), and GOOGLE (Right Tool) converging into a single bold path labeled ITERATIVE + VERIFY. A fourth path labeled SPEC-DRIVEN (Kiro) diverges away from the group with a question mark at its end."></p>
 <p><strong>Anthropic</strong> advocates &quot;context engineering&quot; — &quot;the set of strategies for curating and maintaining the optimal set of tokens&quot; [21]. The philosophy is surgical context, not comprehensive specification. Best practice: &quot;Explore first, then plan, then code&quot; — but skip planning when scope is clear [25]. Internal teams favor &quot;try one-shot first, then collaborate&quot; — let the agent attempt the full implementation, and if it works (roughly one-third of the time), you have saved significant time [26]. On CLAUDE.md: &quot;Would removing this cause Claude to make mistakes? If not, cut it&quot; [25].</p>
 <p><strong>OpenAI</strong> defaults to action: &quot;Default to implementing with reasonable assumptions; do not end your turn with clarifications unless truly blocked&quot; [24]. Plan only roughly 25% of tasks [24]. AGENTS.md is &quot;an open-format README for agents&quot; — keep it &quot;short, accurate&quot; [27]. The emphasis is on configuring once, then iterating over time — not front-loading comprehensive specifications.</p>
 <p><strong>Google</strong> prescribes tool-task matching — inline generation for functions, agents for multi-file work, Jules for async background tasks [28]. No single methodology prescribed. &quot;Writing a new function? Use inline generation. Taking an app from v1 to v2? Use an agent.&quot; Flexibility is the methodology.</p>
-<pre><code class="language-mermaid">flowchart TD
-    A(Anthropic&lt;br/&gt;Context Engineering) ---|Converge| B(Iterative +&lt;br/&gt;Verify)
-    C(OpenAI&lt;br/&gt;Bias to Action) ---|Converge| B
-    D(Google&lt;br/&gt;Right Tool) ---|Converge| B
-    E(AWS Kiro&lt;br/&gt;Spec-Driven) -.-&gt;|Sole Advocate| B
-
-    classDef dark fill:#1a1a2e,color:#fff,stroke:#16213e,stroke-width:2px
-    classDef teal fill:#00897b,color:#fff,stroke:#00695c,stroke-width:2px
-
-    class A dark
-    class B dark
-    class C dark
-    class D dark
-    class E teal
-</code></pre>
 <p>All three independently arrived at the same meta-pattern: persistent config files (CLAUDE.md / AGENTS.md / GEMINI.md) plus plan mode for complex tasks plus progressive context loading plus verification-first. None chose spec-first. AWS/Kiro stands alone as the major vendor championing SDD [15]. Thoughtworks placed SDD in the &quot;Assess&quot; ring — the lowest recommendation level [11].</p>
 <hr>
 <pre><code class="language-mermaid">flowchart TD
@@ -195,11 +132,15 @@
 <p>Proxy evidence creates a plausible case for structure over chaos. METR&#39;s RCT found unstructured AI use made experienced devs 19% slower, partly due to &quot;overly simple prompts&quot; [2] — implying structure helps, but not proving SDD specifically. Tessl&#39;s benchmark across roughly 270 repos showed structured API docs improved agent correctness by 35% [29] — but that measures API correctness, not productivity, and it is a vendor study. GitClear&#39;s analysis of 211 million lines found refactoring collapsed from 25% to under 10% while copy-paste doubled in the AI era [30] — implying unstructured AI use degrades quality. DORA 2025 identified &quot;AI-accessible internal data&quot; as one of seven capabilities that amplify AI benefits [31] — organizational context matters, but methodology-level evidence is absent.</p>
 <p>The direct evidence is thin — and points the other direction. Eberhardt&#39;s head-to-head found SDD 10x slower for a small feature [8]. Bockeler&#39;s qualitative evaluation found all three SDD tools &quot;verbose&quot; and &quot;tedious&quot; [10]. No vendor — not Kiro, Tessl, or Spec Kit — has published comparative productivity data. The arXiv paper claiming &quot;error reductions of up to 50%&quot; cites blog posts, not peer-reviewed studies — the claim is an extrapolation, not a measurement [22].</p>
 <p>The honest framing: the proxy evidence creates a plausible case that structured approaches outperform unstructured ones. Plausibility is not proof. The gap is temporal — SDD is less than 12 months old, and the tooling is too new for controlled studies. The one existing head-to-head comparison found SDD slower for small features, which says more about task-size fit than methodology. The question is not whether structure helps — the METR and Tessl data suggest it does — but whether full SDD pipelines provide the right amount of structure or overshoot into bureaucracy.</p>
-<p>Beck&#39;s framework holds: the Finish Line Game — build X, you&#39;re done — is where specs work [18]. The Compounding Game — continuous evolution — is where &quot;a better spec will never get you from N to N+1 forever&quot; [18]. The historical parallel is direct: CASE tools in the 1980s, UML and Model Driven Architecture in the 2000s — Fowler called MDA &quot;Night of the Living CASE Tools&quot; [12]. Bockeler identified the specific risk for SDD: combining MDD&#39;s inflexibility with LLMs&#39; non-determinism [10].</p>
+<p>Beck&#39;s framework holds: the Finish Line Game — build X, you&#39;re done — is where specs work [18]. The Compounding Game — continuous evolution — is where &quot;a better spec will never get you from N to N+1 forever&quot; [18].</p>
+<p><img src="images/finish-line-compounding-sketch.jpg" alt="Hand-drawn pencil sketch showing two contrasting game boards side by side. Left: a straight race track with a runner approaching a FINISH banner, labeled FINISH LINE GAME (Bootstrap). Right: a spiral track with checkpoints marked by flags that loops endlessly inward, with a runner who can never reach an end, labeled COMPOUNDING GAME (Everything After). An arrow between them reads MOST SOFTWARE."></p>
+<p>The historical parallel is direct: CASE tools in the 1980s, UML and Model Driven Architecture in the 2000s — Fowler called MDA &quot;Night of the Living CASE Tools&quot; [12]. Bockeler identified the specific risk for SDD: combining MDD&#39;s inflexibility with LLMs&#39; non-determinism [10].</p>
+<p><img src="images/methodology-monuments-sketch.jpg" alt="Hand-drawn pencil sketch of three monuments on a shared stone foundation labeled SAME FOUNDATION. Left: a tall weathered obelisk labeled CASE TOOLS (1980s). Center: a shorter gravestone labeled MDA/UML (2000s). Right: a shiny new structure under construction with scaffolding and a crane, labeled SPEC-DRIVEN DEV (2020s). A developer in a DEV t-shirt stands to the right scratching their head."></p>
 <p><strong>If you&#39;re evaluating</strong>, the proxy evidence favors structure over chaos. The unanswered question is how much structure — and whether full SDD pipelines overshoot.</p>
 <p><strong>If you already use them</strong>, watch for spec afterlife. The moment specs stop getting updated is the moment they start misleading your agents.</p>
 <p><strong>If you&#39;re building these tools</strong>, the industry is converging on iterative context engineering, not upfront specification. Follow the evidence as it arrives.</p>
 <hr>
+<p><img src="images/spec-vs-iteration-sketch.jpg" alt="Hand-drawn pencil sketch of a balance scale on a pedestal labeled WORKING SOFTWARE. The left side holds a heavy stack of documents labeled SPECIFICATION, weighing it down. The right side holds a figure running inside a circular loop of arrows labeled ITERATION, with upward momentum. The scale tips toward specification but the iteration side rises."></p>
 <p>The tension between specification and iteration predates AI by decades. The Agile Manifesto chose &quot;working software over comprehensive documentation.&quot; Spec-driven tools are testing whether AI changes that calculus. The evidence so far says: for bootstrapping, partially. For the rest of the lifecycle, not a verdict — SDD does not fail because specifications are wrong. It struggles because software is not a Finish Line Game.</p>
 <hr>
 <p><strong>References</strong></p>
