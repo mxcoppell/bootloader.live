@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCP Grew Up When the Control Plane Arrived — bootloader.live</title>
+    <meta name="description" content="Security wants approval screens. Platform wants one gateway instead of twenty direct integrations. Audit wants logs. That pressure changed MCP more than any shiny new server did.">
+    <link rel="canonical" href="https://bootloader.live/posts/mcp-enterprise-control-planes/">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="MCP Grew Up When the Control Plane Arrived">
+    <meta property="og:description" content="Security wants approval screens. Platform wants one gateway instead of twenty direct integrations. Audit wants logs. That pressure changed MCP more than any shiny new server did.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://bootloader.live/posts/mcp-enterprise-control-planes/">
+    <meta property="og:site_name" content="bootloader.live">
+    <meta property="og:image" content="https://bootloader.live/posts/mcp-enterprise-control-planes/images/the-shift-control-room.jpg">
+    <meta property="og:image:alt" content="MCP Grew Up When the Control Plane Arrived">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="MCP Grew Up When the Control Plane Arrived">
+    <meta name="twitter:description" content="Security wants approval screens. Platform wants one gateway instead of twenty direct integrations. Audit wants logs. That pressure changed MCP more than any shiny new server did.">
+    <meta name="twitter:image" content="https://bootloader.live/posts/mcp-enterprise-control-planes/images/the-shift-control-room.jpg">
+
+    <!-- JSON-LD -->
+    <script type="application/ld+json">
+    {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "MCP Grew Up When the Control Plane Arrived",
+    "description": "Security wants approval screens. Platform wants one gateway instead of twenty direct integrations. Audit wants logs. That pressure changed MCP more than any shiny new server did.",
+    "datePublished": "2026-04-02",
+    "url": "https://bootloader.live/posts/mcp-enterprise-control-planes/",
+    "author": {
+        "@type": "Person",
+        "name": "Michael Xie"
+    },
+    "keywords": "MCP, Architecture",
+    "publisher": {
+        "@type": "Person",
+        "name": "Michael Xie"
+    },
+    "image": "https://bootloader.live/posts/mcp-enterprise-control-planes/images/the-shift-control-room.jpg"
+}
+    </script>
+
+    <style>
+        body {
+            font-family: 'Newsreader', Georgia, serif;
+            max-width: 740px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            background: #222222;
+            color: #e6edf3;
+            line-height: 1.7;
+        }
+        a { color: #58a6ff; }
+        pre { background: #2a2a2a; padding: 1rem; border-radius: 6px; overflow-x: auto; }
+        code { font-size: 0.9em; }
+        img { max-width: 100%; height: auto; }
+        h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        .meta { color: #8b949e; font-size: 0.9rem; margin-bottom: 2rem; }
+    </style>
+</head>
+<body>
+    <script>window.location.replace('https://bootloader.live/#/post/mcp-enterprise-control-planes');</script>
+
+    <article>
+        <h1>MCP Grew Up When the Control Plane Arrived</h1>
+        <div class="meta">April 2, 2026</div>
+        <h1>MCP Grew Up When the Control Plane Arrived</h1>
+<p>Security wants approval screens. Platform wants one gateway instead of twenty direct integrations. Audit wants logs. That pressure changed MCP more than any shiny new server did.</p>
+<p>After <code>2025-06-18</code>, the protocol story was not constant churn. It was one meaningful turn toward enterprise control.</p>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;The&amp;nbsp;Shift&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>If you only scan announcements, MCP looks noisy. The spec delta is simpler. The research found one later stable revision after the <code>2025-06-18</code> baseline: <code>2025-11-25</code>. Its most substantive changes clustered around standard auth discovery, scoped consent, URL-mode elicitation, and experimental tasks for durable work. It also tightened Streamable HTTP guidance around sessions and resumability.</p>
+<p>That is the real shift. MCP started looking less like a loose plugin format and more like something a platform team could operate.</p>
+<p><img src="images/the-shift-control-room.jpg" alt="Hand-drawn pencil sketch of an enterprise operations room. A central MCP gateway console sits between four labeled stations: Identity, Approvals, Audit Logs, and Tool Registry. The scene looks like a calm control room rather than a futuristic dashboard, in a pencil sketch style with clear labels and no logos."></p>
+<p>The protocol language backs that up directly. The <code>2025-11-25</code> authorization spec says MCP servers must expose standard authorization metadata. The elicitation spec adds a URL mode for interactions that must stay outside the client transcript. The changelog adds experimental tasks for durable requests. Those are control-plane features. The Streamable HTTP changes are transport hardening that make remote MCP easier to operate.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Control&amp;nbsp;Plane&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>You can describe the change more plainly. Discovery becomes standardized. Approval steps move out of band. Sessions survive across requests. Long-running work gets tracked instead of guessed. That bundle is the control plane.</p>
+<p>The server is the aircraft. The control plane is the tower.</p>
+<p><img src="images/control-plane-tower.jpg" alt="Hand-drawn pencil sketch showing a simple tower-and-runway metaphor. Several small boxes labeled Remote Server, Approval URL, Session State, and Task Polling are coordinated by a central tower labeled CONTROL PLANE. The style is minimal pencil sketch, clear, and instructional."></p>
+<p>Enterprise MCP is hard because real organizations need identity boundaries, scoped consent, visibility, and recovery when work spans multiple requests. A standard that supports discovery, approval, session handling, and durable execution is deployable.</p>
+<p>That is also why registry work matters. GitHub&#39;s MCP Registry shows discovery becoming infrastructure instead of a pile of README links.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Who&amp;nbsp;Is&amp;nbsp;Real&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Confirmed adoption looks different from a search-result dump. The strongest examples are the ones that shipped the surrounding machinery.</p>
+<p>GitHub is the cleanest proof: a GA remote server with OAuth 2.1 and PKCE. Kong is the clearest governance proof: hosted remote MCP, OAuth at the gateway, and tool-level ACLs. AWS is the clearest cloud proof: a managed MCP Server tied to IAM and CloudTrail. Google Cloud is the clearest cloud-governance proof: managed remote MCP with Cloud API Registry and Apigee governance. Atlassian Rovo is the clearest SaaS proof: GA hosted remote MCP with admin controls. OpenAI is the clearest runtime proof: remote MCP as a built-in tool with approvals and tool filtering.</p>
+<p><img src="images/confirmed-adoption-board.jpg" alt="Hand-drawn pencil sketch of a corkboard used by a platform team. Six pinned cards read GitHub GA, Kong ACLs, AWS IAM, Google Managed, Atlassian GA, and OpenAI Approvals. Thin strings connect them to a note in the center labeled CONFIRMED ADOPTION. No corporate logos, only handwritten labels."></p>
+<p>Notice what these examples have in common. They are not winning on raw tool count. They are winning on hosted endpoints, OAuth, approvals, registries, ACLs, audit logs, and admin controls. That is MCP as platform infrastructure.</p>
+<p>One public number reinforces the point. Sentry said its MCP traffic passed 30 million requests a month soon after launch. That remains the clearest hard number in the research.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;What&amp;nbsp;Counts&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>The wrong way to judge MCP adoption is to count how many vendors wrote &quot;supports MCP.&quot; The right way is to ask what they had to build around MCP to make it safe and useful.</p>
+<p><img src="images/what-counts-checklist.jpg" alt="Hand-drawn pencil sketch of a platform review checklist on paper. Five boxes are checked: Hosted Endpoint, OAuth or Approvals, Admin Policy, Audit or Observability, and Registry or Discovery. One box is left unchecked: Demo Server Only. Pencil sketch style, simple and readable."></p>
+<p><strong>If you buy AI platforms</strong>, ask where the control plane lives. Look for hosted endpoints, approval flows, org policies, audit logs, and discovery layers.</p>
+<p><strong>If you build MCP servers</strong>, assume descriptions, scopes, and policy boundaries matter as much as tool logic. Discovery and governance are now part of the product.</p>
+<p><strong>If you evaluate MCP maturity</strong>, discount broad compatibility claims that stop at &quot;works with client X.&quot; The real evidence is OAuth, approvals, ACLs, IAM, CloudTrail, registries, and actual usage signals.</p>
+<hr>
+<p>The pattern is bigger than MCP. A protocol starts to matter when operators can control it, not just call it. The post-<code>2025-06-18</code> MCP story is not that the ecosystem got louder — it is that the control plane arrived.</p>
+<hr>
+<p><strong>References</strong></p>
+<ol>
+<li>Model Context Protocol. &quot;Changelog.&quot; <a href="https://modelcontextprotocol.io/specification/2025-11-25/changelog">modelcontextprotocol.io/specification/2025-11-25/changelog</a>.</li>
+<li>Model Context Protocol. &quot;Authorization.&quot; <a href="https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization">modelcontextprotocol.io/specification/2025-11-25/basic/authorization</a>.</li>
+<li>Model Context Protocol. &quot;Elicitation.&quot; <a href="https://modelcontextprotocol.io/specification/2025-11-25/client/elicitation">modelcontextprotocol.io/specification/2025-11-25/client/elicitation</a>.</li>
+<li>GitHub. &quot;Remote GitHub MCP Server is now generally available.&quot; <a href="https://github.blog/changelog/2025-09-04-remote-github-mcp-server-is-now-generally-available/">github.blog</a>.</li>
+<li>GitHub. &quot;Meet the GitHub MCP Registry.&quot; <a href="https://github.blog/ai-and-ml/github-copilot/meet-the-github-mcp-registry-the-fastest-way-to-discover-mcp-servers/">github.blog</a>.</li>
+<li>Kong. &quot;Enterprise MCP Gateway.&quot; <a href="https://konghq.com/blog/product-releases/enterprise-mcp-gateway">konghq.com</a>.</li>
+<li>Kong. &quot;MCP Tool ACLs.&quot; <a href="https://konghq.com/blog/product-releases/mcp-tool-acls-ai-gateway">konghq.com</a>.</li>
+<li>AWS. &quot;AWS MCP Server.&quot; <a href="https://aws.amazon.com/about-aws/whats-new/2025/11/aws-mcp-server/">aws.amazon.com</a>.</li>
+<li>Google Cloud. &quot;Announcing official MCP support for Google services.&quot; <a href="https://cloud.google.com/blog/products/ai-machine-learning/announcing-official-mcp-support-for-google-services">cloud.google.com</a>.</li>
+<li>Atlassian. &quot;Atlassian Rovo MCP Server is now generally available.&quot; <a href="https://www.atlassian.com/blog/announcements/atlassian-rovo-mcp-ga">atlassian.com</a>.</li>
+<li>OpenAI. &quot;MCP and Connectors.&quot; <a href="https://developers.openai.com/api/docs/guides/tools-connectors-mcp/">developers.openai.com</a>.</li>
+<li>Sentry. &quot;Sentry launches monitoring tool for MCP servers.&quot; <a href="https://sentry.io/about/press-releases/sentry-launches-monitoring-tool-for-mcp-servers/">sentry.io</a>.</li>
+</ol>
+
+    </article>
+
+    <p><a href="https://bootloader.live">← Back to bootloader.live</a></p>
+
+    <script>window.goatcounter={no_onload:true};</script>
+    <script data-goatcounter="https://mxcoppell.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
