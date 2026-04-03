@@ -6,6 +6,7 @@ This blog covers AI-assisted software development, MCP (Model Context Protocol) 
 
 ## Posts
 
+- [Claude Code Memory System](https://bootloader.live/posts/claude-code-memory-system/): You tell Claude Code the same three things in a week. A month later, one should feel like policy, one like learned behavior, one like temporary state. The memory file is not the memory.
 - [MCP Grew Up When the Control Plane Arrived](https://bootloader.live/posts/mcp-enterprise-control-planes/): Security wants approval screens. Platform wants one gateway instead of twenty direct integrations. Audit wants logs. That pressure changed MCP more than any shiny new server did.
 - [The Trust Problem Nobody Wants to Talk About](https://bootloader.live/posts/agentic-sdlc-full-lifecycle/): Stripe ships 1,300 pull requests per week with zero human-written code. Amazon ships 6.3 million lost orders in a single day because an agent deleted a production environment without asking. Same year. Same industry. Same promise. Radically different outcomes.
 - [Build Your Own OpenClaw with Claude Code](https://bootloader.live/posts/claude-code-channel-agent-products/): You message your agent from Telegram: "Research the top headless CMS options for our blog, then set up the best one." Twelve minutes later, your phone buzzes with the reply. Sanity installed, schemas configured, API routes created. You never opened a terminal.
