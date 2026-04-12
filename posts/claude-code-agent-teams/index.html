@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code&#039;s Three Agent Patterns: Solo, Subagents, and Teams — bootloader.live</title>
+    <meta name="description" content="Forty-five minutes into a deep research session. The agent has crawled 30 web pages, read a dozen local files, and generated four interim reports. Now it asks a question you answered at minute ten. The context window is 70% full.">
+    <link rel="canonical" href="https://bootloader.live/posts/claude-code-agent-teams/">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Claude Code&#039;s Three Agent Patterns: Solo, Subagents, and Teams">
+    <meta property="og:description" content="Forty-five minutes into a deep research session. The agent has crawled 30 web pages, read a dozen local files, and generated four interim reports. Now it asks a question you answered at minute ten. The context window is 70% full.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://bootloader.live/posts/claude-code-agent-teams/">
+    <meta property="og:site_name" content="bootloader.live">
+    <meta property="og:image" content="https://bootloader.live/posts/claude-code-agent-teams/images/context-pollution-sketch.jpg">
+    <meta property="og:image:alt" content="Claude Code&#039;s Three Agent Patterns: Solo, Subagents, and Teams">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Claude Code&#039;s Three Agent Patterns: Solo, Subagents, and Teams">
+    <meta name="twitter:description" content="Forty-five minutes into a deep research session. The agent has crawled 30 web pages, read a dozen local files, and generated four interim reports. Now it asks a question you answered at minute ten. The context window is 70% full.">
+    <meta name="twitter:image" content="https://bootloader.live/posts/claude-code-agent-teams/images/context-pollution-sketch.jpg">
+
+    <!-- JSON-LD -->
+    <script type="application/ld+json">
+    {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Claude Code's Three Agent Patterns: Solo, Subagents, and Teams",
+    "description": "Forty-five minutes into a deep research session. The agent has crawled 30 web pages, read a dozen local files, and generated four interim reports. Now it asks a question you answered at minute ten. The context window is 70% full.",
+    "datePublished": "2026-04-12",
+    "url": "https://bootloader.live/posts/claude-code-agent-teams/",
+    "author": {
+        "@type": "Person",
+        "name": "Michael Xie"
+    },
+    "keywords": "Claude Code, Agents",
+    "publisher": {
+        "@type": "Person",
+        "name": "Michael Xie"
+    },
+    "image": "https://bootloader.live/posts/claude-code-agent-teams/images/context-pollution-sketch.jpg"
+}
+    </script>
+
+    <style>
+        body {
+            font-family: 'Newsreader', Georgia, serif;
+            max-width: 740px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            background: #222222;
+            color: #e6edf3;
+            line-height: 1.7;
+        }
+        a { color: #58a6ff; }
+        pre { background: #2a2a2a; padding: 1rem; border-radius: 6px; overflow-x: auto; }
+        code { font-size: 0.9em; }
+        img { max-width: 100%; height: auto; }
+        h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        .meta { color: #8b949e; font-size: 0.9rem; margin-bottom: 2rem; }
+    </style>
+</head>
+<body>
+    <script>window.location.replace('https://bootloader.live/#/post/claude-code-agent-teams');</script>
+
+    <article>
+        <h1>Claude Code&#039;s Three Agent Patterns: Solo, Subagents, and Teams</h1>
+        <div class="meta">April 12, 2026</div>
+        <h1>Claude Code&#39;s Three Agent Patterns: Solo, Subagents, and Teams</h1>
+<p>Forty-five minutes into a deep research session. The agent has crawled 30 web pages, read a dozen local files, and generated four interim reports. Now it asks a question you answered at minute ten. The context window is 70% full. 81% of what is in there is noise from completed subtasks that will never be revisited.</p>
+<p>This happens in every long session — coding, research, analysis, content generation. Claude Code is a general-purpose agent, not just a code editor, and context pollution hits every workflow equally. The longer the session, the worse the signal-to-noise ratio. Research across 18 frontier models confirms it: every model degrades measurably as context grows, at every length increment.</p>
+<p>Claude Code offers three patterns to manage this: stay solo, auto-delegate to subagents, or orchestrate a full team. Each has a distinct cost profile, quality curve, and set of tasks it handles best. This is a practical guide to when and how to use each — with the real numbers.</p>
+<p><img src="images/context-pollution-sketch.jpg" alt="Hand-drawn pencil sketch showing a desk overflowing with papers, sticky notes, and open books representing context pollution. A robot sits at the desk looking overwhelmed. Labels identify STALE FILE READS, OLD BASH OUTPUTS, FAILED APPROACHES, and CONVERSATION HISTORY piling up."></p>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Context&amp;nbsp;Decay&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>A single-agent session works like a single desk. Every document stays on it: web search results, file contents, bash outputs, conversation history, debugging transcripts. Nothing gets removed until compaction fires at ~95% capacity. Compaction retains only 14-20% of original content, losing variable names, API signatures, and exact error messages first.</p>
+<p>The degradation is measurable:</p>
+<table>
+<thead>
+<tr>
+<th>Turn</th>
+<th>Cumulative Context</th>
+<th>Relevant to Task</th>
+<th>Relevance Ratio</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>5</td>
+<td>~110K tokens</td>
+<td>~80K</td>
+<td>73%</td>
+</tr>
+<tr>
+<td>10</td>
+<td>~190K</td>
+<td>~60K</td>
+<td>32%</td>
+</tr>
+<tr>
+<td>15</td>
+<td>~245K</td>
+<td>~73K</td>
+<td>30%</td>
+</tr>
+<tr>
+<td>20</td>
+<td>~320K</td>
+<td>~60K</td>
+<td>19%</td>
+</tr>
+</tbody></table>
+<p>LLMs also attend strongly to tokens at the beginning and end of context, but poorly to the middle (Liu et al., TACL 2024). Accuracy drops 30-55 percentage points for middle-positioned information. After about 35 minutes, all agents&#39; success rates decline. Doubling task duration quadruples failure rates. One community member described long sessions as &quot;hiring a brilliant contractor who forgets who you are every single morning.&quot;</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;The&amp;nbsp;Spiral&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Context decay is not linear. It compounds — in both cost and quality.</p>
+<p>Every turn resends the full conversation history. With Opus 4.6 at USD 5.00 per million input tokens (USD 0.50 cached), the per-turn cost accelerates as context grows:</p>
+<table>
+<thead>
+<tr>
+<th>Turn</th>
+<th>Context Size</th>
+<th>Cost per Turn</th>
+<th>Cumulative Cost</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>5</td>
+<td>~120K</td>
+<td>USD 0.13</td>
+<td>USD 0.72</td>
+</tr>
+<tr>
+<td>10</td>
+<td>~200K</td>
+<td>USD 0.17</td>
+<td>USD 1.54</td>
+</tr>
+<tr>
+<td>20</td>
+<td>~360K</td>
+<td>USD 0.25</td>
+<td>USD 3.75</td>
+</tr>
+<tr>
+<td>30</td>
+<td>~520K</td>
+<td>USD 0.33</td>
+<td>USD 6.70</td>
+</tr>
+<tr>
+<td>40</td>
+<td>~680K</td>
+<td>USD 0.41</td>
+<td>USD 10.40</td>
+</tr>
+</tbody></table>
+<p>Turn 40 costs 3x what turn 5 costs, for the same amount of new work. This is the cumulative retransmission tax — every token you have ever generated gets resent every turn.</p>
+<p><img src="images/compounding-spiral-sketch.jpg" alt="Hand-drawn pencil sketch showing a downward spiral of degradation. At the top, TURN 1 with a clean circle showing 73% RELEVANT. The spiral descends through increasingly messy circles: TURN 10 at 32% RELEVANT, TURN 20 at 19% RELEVANT, a jagged COMPACTION break showing 86% LOST, and TURN 30 as a scribbled mess labeled RE-READ LOOP. Cost labels escalate on the left. Quality labels degrade on the right."></p>
+<p>The cost problem feeds the quality problem. As context fills with noise, the agent makes more errors. More errors mean more debugging turns. More debugging turns consume more context. Worse context produces worse output. This is a positive feedback loop.</p>
+<p>When compaction fires, it accelerates the spiral. The agent loses file contents it needs, then searches for them again — a Reddit audit of 132 sessions found 71% of file reads were re-reads of files already opened. This refills the context window, which triggers another compaction, which loses more files, which triggers more re-reads. The loop can be catastrophic: one documented session hit 211 compactions with zero forward progress. Another consumed 695 million tokens overnight in an infinite retry loop. These are not edge cases. They are the predictable endpoint of a context window that was never designed to be a long-term memory system.</p>
+<p>After compaction, the agent receives a system message to continue without asking the user questions. Multiple GitHub issues document the result — the agent charges forward on incomplete understanding rather than confirming what it lost. Combine lost context with instructions to not ask questions, and you get an agent that confidently does the wrong thing.</p>
+<p>Under Claude MAX plans, the damage compounds further. A 30-day usage audit found cache reads consumed 99.93% of total quota. A single message at turn 50 consumes 10-30x the quota of a fresh message. Users on the USD 200 MAX plan report burning through daily limits in hours during compaction-heavy sessions.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Three&amp;nbsp;Patterns&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Claude Code addresses context decay with three distinct patterns.</p>
+<p><strong>Single agent</strong> keeps everything in one context window. Zero coordination overhead. Works well for focused tasks under 10-15 turns where deep sequential reasoning matters — debugging a race condition, tracing data flow through multiple layers, writing documentation.</p>
+<p><strong>Subagents</strong> use a hub-and-spoke model. The parent spawns a child with a focused task prompt. The child works in a fresh ~50K token context, returns a compressed summary, and terminates. The parent never sees the child&#39;s file reads, bash outputs, or debugging transcripts. This fires automatically — Claude auto-delegates when tasks match agent descriptions, with a built-in threshold of &quot;more than 3 queries.&quot; The Explore agent (Haiku, fast) handles codebase research. Plugins add more agent types. Most users are running multi-agent sessions without knowing it.</p>
+<p><strong>Agent teams</strong> use a mesh model. A lead coordinates persistent teammates that message each other, share a task list, and self-assign work. Each teammate gets its own 1M context window. They stay alive across multiple tasks, building domain expertise. This requires explicit setup and your approval.</p>
+<p><img src="images/architecture-comparison-sketch.jpg" alt="Hand-drawn pencil sketch showing two workspace layouts side by side. On the left, labeled HUB AND SPOKE: one central desk with a LEAD figure, three satellite desks each with a WORKER, arrows flowing out with tasks and back with results. On the right, labeled MESH: four desks in a diamond pattern connected by bidirectional arrows, with a SHARED TASKS board in the center."></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Single Agent</th>
+<th>Subagents</th>
+<th>Agent Teams</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Context</strong></td>
+<td>One shared, growing</td>
+<td>Fresh per task (~50K)</td>
+<td>Fresh per teammate (1M)</td>
+</tr>
+<tr>
+<td><strong>Communication</strong></td>
+<td>N/A</td>
+<td>Parent-child only</td>
+<td>Any to any</td>
+</tr>
+<tr>
+<td><strong>Lifecycle</strong></td>
+<td>Continuous</td>
+<td>Ephemeral</td>
+<td>Persistent</td>
+</tr>
+<tr>
+<td><strong>Cost profile</strong></td>
+<td>Escalates per turn</td>
+<td>Low (scoped)</td>
+<td>High (full instances)</td>
+</tr>
+<tr>
+<td><strong>Status</strong></td>
+<td>Default</td>
+<td>Production-ready</td>
+<td>Experimental</td>
+</tr>
+<tr>
+<td><strong>Who decides</strong></td>
+<td>N/A</td>
+<td>Claude auto-delegates</td>
+<td>You approve</td>
+</tr>
+</tbody></table>
+<p>Claude Code&#39;s system prompt frames subagents as &quot;valuable for protecting the main context window from excessive results.&quot; The word <em>protecting</em> is deliberate. Context cleanliness is a defensive architecture against inevitable pollution.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Smarter&amp;nbsp;Output&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>A reasonable objection: multi-agent just throws more compute at the problem. Give a single agent the same token budget and it should match. Research from April 2026 supports this — under equal token budgets with clean context, single agents match or beat multi-agent on multi-hop reasoning. Token usage alone explains 80% of performance differences in Anthropic&#39;s own evaluation.</p>
+<p>But that framing misses three structural advantages that no amount of single-agent compute can replicate.</p>
+<p><img src="images/smarter-output-sketch.jpg" alt="Hand-drawn pencil sketch showing three panels. Top: ANCHORING BIAS — a robot with blind spots reviewing its own work in the same context (93% anchored) versus a fresh-context robot seeing clearly (+11pp errors found). Middle: INDEPENDENT PATHS — a single narrow path versus three separate paths converging on a better answer with half the compute. Bottom: DEBATE vs REFLECTION — a robot talking to a mirror (self-reflection, score 78) versus two robots challenging each other (debate, score 89)."></p>
+<p><strong>Fresh context eliminates anchoring bias.</strong> An agent reviewing its own code is anchored to its own reasoning — 93% of the time, consistently across models. Prompting tricks do not fix this. Chain-of-thought, structured reflection, explicit debiasing instructions — four strategies tested, all insufficient. The only demonstrated fix is a separate context window. A reviewer in a fresh session finds 11 percentage points more critical errors. And repeating self-review in the same session actually <em>decreases</em> detection quality, from 24.6% to 21.7%. More compute in the same context makes things worse, not better.</p>
+<p><strong>Independent exploration prevents premature convergence.</strong> Three agents solving the same problem independently explore different paths. Aggregating their outputs outperforms mixed-model approaches by 6.6 percentage points — with half the forward passes. The gain comes from independence, not raw compute. Anthropic&#39;s Ultra Plan exploits this: three parallel explorers independently investigate, then a critic evaluates all three. No single agent, no matter how long it thinks, can replicate this diversity.</p>
+<p><strong>Adversarial debate catches what self-reflection misses.</strong> Multi-agent debate outperforms self-reflection by 8-11 points on mathematical reasoning benchmarks. That gap persists even when both approaches use similar token budgets. Self-reflection cannot escape its own reasoning frame. A separate agent with a separate context can.</p>
+<p>The honest answer: multi-agent systems are not smarter. They avoid being dumber. They remove structural obstacles — anchoring bias, path dependency, self-preference — that prevent a single agent from using the intelligence it already has. When context is clean and the task is focused, a single agent uses that intelligence fully. When context is degraded or the task requires independent verification, multi-agent preserves it.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Team&amp;nbsp;Mode&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Some work needs coordination that subagents cannot provide. A frontend teammate waiting on the backend teammate&#39;s API contract. A security reviewer challenging an architect&#39;s design choices. Three researchers investigating the same question from different angles.</p>
+<p>Agent teams are experimental and disabled by default. Enable in <code>~/.claude/settings.json</code>:</p>
+<pre><code class="language-json">{
+  &quot;env&quot;: {
+    &quot;CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS&quot;: &quot;1&quot;
+  }
+}
+</code></pre>
+<p>You need Claude Code v2.1.32 or later (check with <code>claude --version</code>). Known limitations: no session resumption for in-process teammates, task status can lag, one team per session, no nested teams.</p>
+<p>Create teams through natural language:</p>
+<pre><code class="language-text">Create an agent team with 3 teammates:
+- Frontend dev owning src/components/ and src/hooks/
+- Backend dev owning src/api/ and src/services/
+- Test writer covering both with integration tests
+Use Sonnet for teammates. Require plan approval before implementation.
+</code></pre>
+<p>Three practices separate productive teams from expensive chaos:</p>
+<p><strong>Enable delegate mode (Shift+Tab).</strong> Without it, the lead frequently implements tasks instead of coordinating. Delegate mode restricts the lead to coordination tools, which is the most important operational pattern for agent teams.</p>
+<p><strong>Define file ownership.</strong> Two teammates editing the same file produces merge conflicts. Each teammate owns different directories. This is the most common failure mode.</p>
+<p><strong>Demand evidence.</strong> Teammates mark tasks complete without testing. Require actual output — test results, API responses, build logs. The <code>TaskCompleted</code> hook with exit code 2 enforces this programmatically.</p>
+<p><img src="images/clean-lead-pattern-sketch.jpg" alt="Hand-drawn pencil sketch showing the clean lead pattern. A central rounded rectangle labeled LEAD contains only a PLAN card and SUMMARY cards, with CLEAN CONTEXT above it. Three circles labeled WORKER 1, 2, 3 surround it, filled with scribbled lines representing messy detailed work, with DETAILED WORK above them. Curved arrows carry RESULT envelopes from workers to lead."></p>
+<p>I use agent teams for two specific scenarios. <strong>Research tasks</strong>: deploying 3-4 specialists (researcher, analyst, architect, devil&#39;s advocate) to investigate from different angles produces deeper findings than a single agent going breadth-first sequentially. <strong>Full-stack features</strong>: when frontend, backend, and tests can develop in parallel with clear API contracts between them.</p>
+<p>Everything else stays single-agent or auto-delegated. The mistake most people make is reaching for teams when subagents would suffice.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;The&amp;nbsp;Real&amp;nbsp;Cost&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>The naive comparison: subagents cost less than single-agent, teams cost more. The full picture includes the compounding spiral and iteration reduction. The following estimates model a full-stack feature on a ~500K token codebase using April 2026 pricing.</p>
+<table>
+<thead>
+<tr>
+<th>Pattern</th>
+<th>Initial Cost</th>
+<th>Typical Fix Turns</th>
+<th>Total with Rework</th>
+<th>Wall Clock</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Single Opus (40 turns)</td>
+<td>USD 8.43</td>
+<td>15 (quality degrades)</td>
+<td>USD 11-13</td>
+<td>50-70 min</td>
+</tr>
+<tr>
+<td>5 Subagents</td>
+<td>USD 6.13</td>
+<td>3 (focused context)</td>
+<td>USD 7-8</td>
+<td>10-15 min</td>
+</tr>
+<tr>
+<td>Mixed Team (3 members)</td>
+<td>USD 10.04</td>
+<td>5 (first-pass quality)</td>
+<td>USD 11-12</td>
+<td>20-30 min</td>
+</tr>
+</tbody></table>
+<p>Subagents remain the cheapest pattern outright. Total input: 1,510K tokens versus the single agent&#39;s 4,500K. Each subagent starts with only ~50K of relevant context, avoiding the retransmission tax entirely.</p>
+<p>The surprise is in the team row. Initial cost is higher (USD 10.04 vs USD 8.43), but teams produce higher first-pass quality. Multi-agent systems find 3x more critical bugs and reduce false positives by 87%. When the single agent needs 15 fix turns due to context degradation and the team needs only 5, total costs converge. Enterprise data supports this: organizations using structured agent workflows report shipping code up to 30% faster with fewer rework cycles.</p>
+<p>The wall-clock savings depend entirely on how parallelizable the task is.</p>
+<p><img src="images/parallel-speedup-sketch.jpg" alt="Hand-drawn pencil sketch comparing parallel versus sequential task execution. Left side labeled PARALLELIZABLE shows 5 agents working simultaneously, finishing in short time at 4-5x faster, with examples: API modules, test suites, file migrations. Right side labeled SEQUENTIAL shows a solo agent working through 5 dependent steps, and 3 agents blocked waiting for each other taking the same time, with examples: debugging, refactoring chains, deep reasoning. Center divider reads SPEEDUP DEPENDS ON TASK STRUCTURE."></p>
+<p>Measured benchmarks show a consistent pattern:</p>
+<table>
+<thead>
+<tr>
+<th>Task Type</th>
+<th>Measured Speedup</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Independent modules, APIs</td>
+<td>4-5x with 5 agents</td>
+<td>OpenAIToolsHub, 2026</td>
+</tr>
+<tr>
+<td>Full-stack feature (frontend/backend/tests)</td>
+<td>1.86x</td>
+<td>LogRocket head-to-head, 2026</td>
+</tr>
+<tr>
+<td>Mixed tasks with dependencies</td>
+<td>2-2.5x</td>
+<td>M1-Parallel (GAIA benchmark)</td>
+</tr>
+<tr>
+<td>Sequential reasoning</td>
+<td>Negative (slower)</td>
+<td>Google, 180 configurations</td>
+</tr>
+</tbody></table>
+<p>The pattern is consistent across sources. A head-to-head benchmark on a JWT authentication module: solo Claude Code in 29 minutes 50 seconds, a 3-person team in 16 minutes 5 seconds. Independent API integrations hit 4.6x speedup; interdependent bug fixes achieved only 2.4x. The most rigorous academic measurement found a ceiling of 2.2x with 5 parallel teams. Adding agents past 5 rarely helps — Amdahl&#39;s Law applies to AI workflows just as it does to parallel computing.</p>
+<p>The takeaway: parallel execution is a multiplier on task decomposability. If you can split the work into independent pieces, 3-5 agents cut wall-clock time by half or more. If the task is inherently sequential, more agents make it slower.</p>
+<p>Under MAX plans, the math shifts further. A team finishing in 20 minutes at 3.5x the token rate consumes roughly 70 &quot;token-minutes&quot; of quota. A single agent taking 60 minutes plus compaction overhead consumes roughly 78. The team is cheaper on quota when the single agent would have hit compaction.</p>
+<p>The optimization: Opus for the lead (complex reasoning), Sonnet for teammates (40% cheaper, capable enough). This mixed approach saves 27% versus all-Opus teams. Anthropic&#39;s own guidance: &quot;A clean session with a better prompt almost always outperforms a long session with accumulated corrections.&quot;</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Decision&amp;nbsp;Guide&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>The official deciding question from the documentation: <strong>&quot;Do your workers need to communicate with each other?&quot;</strong></p>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Pattern</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Bug fix (single file)</td>
+<td>Single agent</td>
+<td>Deep sequential reasoning</td>
+</tr>
+<tr>
+<td>Code review</td>
+<td>Subagent</td>
+<td>Fresh perspective, no anchoring bias</td>
+</tr>
+<tr>
+<td>Codebase exploration</td>
+<td>Subagent (Explore)</td>
+<td>Read-only, scoped, cheap</td>
+</tr>
+<tr>
+<td>Full-stack feature</td>
+<td>Agent team (3-5)</td>
+<td>Cross-domain coordination</td>
+</tr>
+<tr>
+<td>Multi-file refactor</td>
+<td>Subagents + worktree</td>
+<td>Parallel independent changes</td>
+</tr>
+<tr>
+<td>Research deep dive</td>
+<td>Agent team</td>
+<td>Multiple angles, synthesis</td>
+</tr>
+<tr>
+<td>Complex debugging</td>
+<td>Agent team</td>
+<td>Competing hypotheses</td>
+</tr>
+<tr>
+<td>Documentation</td>
+<td>Single agent</td>
+<td>Sequential, context-dependent</td>
+</tr>
+</tbody></table>
+<p>The common mistake: defaulting to teams for everything. Anthropic&#39;s guidance is explicit — &quot;start conversational, automate later.&quot; Three focused teammates outperform five scattered ones. Start with research or review tasks.</p>
+<p>But the reverse mistake is more costly. Sticking with a single agent past the point where context decay has made it ineffective. A session that has compacted twice is working from a summary of a summary — a telephone game with itself. A fresh team of three, each with clean context, produces better results at comparable total cost because fewer iterations mean less total spend.</p>
+<p>The patterns are not mutually exclusive. Use a team for planning, switch to subagents for isolated implementation, spin up a fresh review subagent afterward. The boundaries between these patterns are not walls. They are tools in a progression, and you can mix them within the same workflow.</p>
+<hr>
+<p>Multi-agent orchestration exists because context windows are finite and reasoning quality degrades when planning, execution, and verification compete for the same attention budget. The separation is not about having more agents. It is about context hygiene — a lead that only sees plans and summaries, workers that start clean and terminate before they decay, reviewers that evaluate without the author&#39;s bias. The pattern does not make AI smarter. It prevents the compounding spiral that makes a single overloaded context progressively dumber.</p>
+<hr>
+<p><strong>References</strong></p>
+<ol>
+<li>Anthropic. &quot;Subagents in Claude Code.&quot; <a href="https://claude.com/blog/subagents-in-claude-code">claude.com/blog/subagents-in-claude-code</a>.</li>
+<li>Anthropic. &quot;Agent Teams Documentation.&quot; <a href="https://code.claude.com/docs/en/agent-teams">code.claude.com/docs/en/agent-teams</a>.</li>
+<li>Liu et al. &quot;Lost in the Middle: How Language Models Use Long Contexts.&quot; TACL 2024.</li>
+<li>Chroma. &quot;Context Rot: All Frontier Models Get Worse as Context Grows.&quot; <a href="https://research.trychroma.com/context-rot">research.trychroma.com/context-rot</a>. 2025.</li>
+<li>Du et al. &quot;Context Length Alone Hurts LLM Performance Despite Perfect Retrieval.&quot; EMNLP Findings 2025.</li>
+<li>Anthropic. &quot;Effective Context Engineering for AI Agents.&quot; <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents">anthropic.com/engineering</a>.</li>
+<li>GitHub #13112, #24906. &quot;Auto-compact context loss and degraded post-compaction behavior.&quot; <a href="https://github.com/anthropics/claude-code/issues/13112">github.com/anthropics/claude-code</a>.</li>
+<li>GitHub #22758. &quot;Auto-compact infinite retry loop consuming 695M tokens.&quot; <a href="https://github.com/anthropics/claude-code/issues/22758">github.com/anthropics/claude-code</a>.</li>
+<li>GitHub #24147. &quot;30-day audit: cache reads consume 99.93% of usage quota.&quot; <a href="https://github.com/anthropics/claude-code/issues/24147">github.com/anthropics/claude-code</a>.</li>
+<li>CodeRabbit. &quot;AI Code Quality Study: 1.7x more issues, 2.74x security vulnerabilities.&quot; 2025.</li>
+<li>arXiv:2412.06593. &quot;Anchoring Bias in LLMs: 93% anchoring-consistent, all mitigations fail.&quot; 2024.</li>
+<li>arXiv:2502.00674. &quot;Self-MoA: Independent sampling from same model outperforms mixed approaches.&quot; 2025.</li>
+<li>Du et al. &quot;Improving Factuality and Reasoning via Multi-Agent Debate.&quot; ICML 2024.</li>
+<li>arXiv:2604.02460. &quot;Single-agent matches multi-agent under equal token budgets.&quot; 2026.</li>
+<li>arXiv:2603.12123. &quot;Fresh-context review finds +11pp more critical errors than self-review.&quot; 2026.</li>
+<li>LogRocket. &quot;Splitting Work Across AI Agents.&quot; <a href="https://blog.logrocket.com/splitting-across-ai-agents/">blog.logrocket.com</a>. 2026.</li>
+<li>OpenAIToolsHub. &quot;Claude Code Agent Teams Advanced Benchmark.&quot; <a href="https://www.openaitoolshub.org/en/blog/claude-code-agent-teams-advanced">openaitoolshub.org</a>. 2026.</li>
+<li>arXiv:2507.08944. &quot;M1-Parallel: Wall-clock speedup measurement of parallel LLM agents on GAIA.&quot; 2025.</li>
+</ol>
+
+    </article>
+
+    <p><a href="https://bootloader.live">← Back to bootloader.live</a></p>
+
+    <script>window.goatcounter={no_onload:true};</script>
+    <script data-goatcounter="https://mxcoppell.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

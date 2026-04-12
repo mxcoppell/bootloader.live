@@ -6,6 +6,7 @@ This blog covers AI-assisted software development, MCP (Model Context Protocol) 
 
 ## Posts
 
+- [Claude Code's Three Agent Patterns: Solo, Subagents, and Teams](https://bootloader.live/posts/claude-code-agent-teams/): Forty-five minutes into a deep research session. The agent has crawled 30 web pages, read a dozen local files, and generated four interim reports. Now it asks a question you answered at minute ten. The context window is 70% full.
 - [Hermes Agent vs OpenClaw: Two Paths to a Self-Evolving Agent](https://bootloader.live/posts/hermes-agent-vs-openclaw/): A single Python class. Roughly ten thousand lines. Every software engineering textbook says this is wrong. Reddit called it "vibe coded slop." It has zero known security vulnerabilities. Its competitor — a clean, modular TypeScript monorepo — has 138.
 - [Claude Code Memory System](https://bootloader.live/posts/claude-code-memory-system/): You tell Claude Code the same three things in a week. A month later, one should feel like policy, one like learned behavior, one like temporary state. The memory file is not the memory.
 - [MCP Grew Up When the Control Plane Arrived](https://bootloader.live/posts/mcp-enterprise-control-planes/): Security wants approval screens. Platform wants one gateway instead of twenty direct integrations. Audit wants logs. That pressure changed MCP more than any shiny new server did.
