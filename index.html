@@ -839,6 +839,14 @@ body {
 // ─── Post Manifest ──────────────────────────────────────
 const POSTS = [
     {
+        slug: 'prompt-caching-deep-dive',
+        title: 'What Prompt Caching Actually Caches',
+        date: '2026-05-03',
+        excerpt: 'Prompt caching does not cache the prompt. It caches the work the model already did on a prefix of it. Once that distinction lands, every other behavior — why a capitalized character invalidates 2,727 tokens, why agent SDKs silently lose the savings, why the bill drops 80% on the second call — falls out of one property of transformer attention.',
+        tags: ['Prompt Engineering', 'Pricing'],
+        file: 'blog.md'
+    },
+    {
         slug: 'ai-engineering-done-right',
         title: 'AI Works When You Build for It',
         date: '2026-04-15',

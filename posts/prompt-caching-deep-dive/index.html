@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What Prompt Caching Actually Caches — bootloader.live</title>
+    <meta name="description" content="Prompt caching does not cache the prompt. It caches the work the model already did on a prefix of it. Once that distinction lands, every other behavior — why a capitalized character invalidates 2,727 tokens, why agent SDKs silently lose the savings, why the bill drops 80% on the second call — falls out of one property of transformer attention.">
+    <link rel="canonical" href="https://bootloader.live/posts/prompt-caching-deep-dive/">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="What Prompt Caching Actually Caches">
+    <meta property="og:description" content="Prompt caching does not cache the prompt. It caches the work the model already did on a prefix of it. Once that distinction lands, every other behavior — why a capitalized character invalidates 2,727 tokens, why agent SDKs silently lose the savings, why the bill drops 80% on the second call — falls out of one property of transformer attention.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://bootloader.live/posts/prompt-caching-deep-dive/">
+    <meta property="og:site_name" content="bootloader.live">
+    <meta property="og:image" content="https://bootloader.live/posts/prompt-caching-deep-dive/images/kv-cache-prefix-reuse-schematic.png">
+    <meta property="og:image:alt" content="What Prompt Caching Actually Caches">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="What Prompt Caching Actually Caches">
+    <meta name="twitter:description" content="Prompt caching does not cache the prompt. It caches the work the model already did on a prefix of it. Once that distinction lands, every other behavior — why a capitalized character invalidates 2,727 tokens, why agent SDKs silently lose the savings, why the bill drops 80% on the second call — falls out of one property of transformer attention.">
+    <meta name="twitter:image" content="https://bootloader.live/posts/prompt-caching-deep-dive/images/kv-cache-prefix-reuse-schematic.png">
+
+    <!-- JSON-LD -->
+    <script type="application/ld+json">
+    {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "What Prompt Caching Actually Caches",
+    "description": "Prompt caching does not cache the prompt. It caches the work the model already did on a prefix of it. Once that distinction lands, every other behavior — why a capitalized character invalidates 2,727 tokens, why agent SDKs silently lose the savings, why the bill drops 80% on the second call — falls out of one property of transformer attention.",
+    "datePublished": "2026-05-03",
+    "url": "https://bootloader.live/posts/prompt-caching-deep-dive/",
+    "author": {
+        "@type": "Person",
+        "name": "Michael Xie"
+    },
+    "keywords": "Prompt Engineering, Pricing",
+    "publisher": {
+        "@type": "Person",
+        "name": "Michael Xie"
+    },
+    "image": "https://bootloader.live/posts/prompt-caching-deep-dive/images/kv-cache-prefix-reuse-schematic.png"
+}
+    </script>
+
+    <style>
+        body {
+            font-family: 'Newsreader', Georgia, serif;
+            max-width: 740px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            background: #222222;
+            color: #e6edf3;
+            line-height: 1.7;
+        }
+        a { color: #58a6ff; }
+        pre { background: #2a2a2a; padding: 1rem; border-radius: 6px; overflow-x: auto; }
+        code { font-size: 0.9em; }
+        img { max-width: 100%; height: auto; }
+        h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        .meta { color: #8b949e; font-size: 0.9rem; margin-bottom: 2rem; }
+    </style>
+</head>
+<body>
+    <script>window.location.replace('https://bootloader.live/#/post/prompt-caching-deep-dive');</script>
+
+    <article>
+        <h1>What Prompt Caching Actually Caches</h1>
+        <div class="meta">May 3, 2026</div>
+        <h1>What Prompt Caching Actually Caches</h1>
+<p><em>&quot;Up to 80% latency reduction. Up to 90% cost reduction.&quot;</em> OpenAI&#39;s claim, repeated by every vendor.</p>
+<p>The evidence in your own logs:</p>
+<pre><code class="language-json">&quot;usage&quot;: {
+  &quot;input_tokens&quot;: 4,
+  &quot;cache_creation_input_tokens&quot;: 0,
+  &quot;cache_read_input_tokens&quot;: 47289
+}
+</code></pre>
+<p>Forty-seven thousand tokens read, four billed at full rate.</p>
+<p>Prompt caching does not cache the prompt. It caches the work the model already did on a prefix of it. Once that distinction lands, every other behavior — why a single capitalized character invalidates 2,727 tokens, why agent SDKs silently lose the savings, why the bill drops 80% on the second call — falls out of one property of transformer attention.</p>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;The&amp;nbsp;Mechanism&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Transformer attention is causal. Token <em>N</em>&#39;s key/value tensors at every layer depend only on tokens 0 through <em>N-1</em>. Nothing later changes them. That single property is what makes prompt caching possible: when two requests share a byte-identical prefix, the precomputed KV tensors stay valid, and the provider skips prefill on the cached portion. Anthropic&#39;s docs call this <em>&quot;resuming from specific prefixes&quot;</em>. OpenAI&#39;s call it <em>&quot;routing requests to servers that recently processed the same prompt.&quot;</em> Same memoization, different phrasings.</p>
+<p><img src="images/kv-cache-prefix-reuse-schematic.png" alt="Hand-drawn pencil schematic showing the KV cache prefix reuse mechanism. Title at top reads "KV CACHE PREFIX REUSE". On the left, incoming prefix tokens are subdivided into hash chunks: CHUNK 1 (~256 tok), CHUNK 2 (128 tok), CHUNK 3 (128 tok). An arrow flows into a HASH LOOKUP box, which branches to MATCH FOUND AT TOKEN K — REUSE KV STATE 0..K (top) and PREFILL TOKENS K+1 TO N (bottom). Both converge into DECODE AT N+1. A leader-line annotation marks the BYTE-EXACT BOUNDARY between cached and prefilled regions."></p>
+<p>No fuzzy matching. No semantic equivalence. A single character of difference in the first 1,024 tokens of an OpenAI prompt produces a full miss — <code>cached_tokens: 0</code>. Anthropic Engineering documented one example where changing <em>&quot;senior software engineer&quot;</em> to <em>&quot;Senior Software Engineer&quot;</em> in Claude Code&#39;s system prompt invalidated 2,727 cached tokens.</p>
+<p>Hash chunking is the optimization that makes the lookup cheap. OpenAI hashes the first ~256 tokens as one chunk, then 128-token increments. The cache reports tokens hit rounded to the nearest chunk boundary — which is why a prompt with 1,023 cached tokens returns <code>cached_tokens: 0</code>. The boundary between cached and new compute sits at the last token both prefixes share.</p>
+<p>The cache lives provider-side, ephemeral, in GPU or CPU memory. Anthropic publishes TTLs (5 min default, 1 h extended). OpenAI uses inactivity eviction (5–10 min typical, max 1 h, up to 24 h under Extended Retention). Gemini explicit caches live as long as the paid storage TTL. Nothing crosses organization boundaries — and as of February 5, 2026, nothing crosses workspace boundaries on Claude API and Azure AI Foundry either.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Provider&amp;nbsp;Matrix&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>The four hosted providers diverge on every dimension that matters: control surface, minimum prefix, TTL options, pricing model.</p>
+<p><img src="images/four-pricing-shapes-sketch.png" alt="Hand-drawn pencil sketch metaphor showing four vendor stalls side-by-side, one per provider. Title reads "FOUR PRICING SHAPES". Stall 1 ANTHROPIC (marker pen, 4 stickies): a clerk hangs four numbered sticky notes on a scroll. Stall 2 OPENAI (auto conveyor): an automatic conveyor belt feeds boxes into a chute marked "DISCOUNT". Stall 3 GEMINI (rental locker, hourly meter): a bank of numbered rental lockers with a parking-meter style timer mounted on top reading "TIME TICKING / RENT BY THE HOUR". Stall 4 BEDROCK (regional warehouse, partial): three numbered shelves where the top shelf has a "COMING SOON" sign and the lower shelves are full."></p>
+<table>
+<thead>
+<tr>
+<th>Provider</th>
+<th>Mode</th>
+<th>Min prefix</th>
+<th>Read discount</th>
+<th>Write surcharge</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Anthropic</td>
+<td>Explicit <code>cache_control</code>, max 4 breakpoints</td>
+<td>4096 tok (Opus 4.7/4.6/4.5, Haiku 4.5); 2048 (Sonnet 4.6); 1024 (older)</td>
+<td>90% (read = 0.1× input)</td>
+<td>+25% (5-min); +100% (1-hour)</td>
+</tr>
+<tr>
+<td>OpenAI</td>
+<td>Fully automatic</td>
+<td>1024 tokens, 128-tok increments</td>
+<td>50% (4o) → 75% (4.1) → 90% (gpt-5.x) → 98.75% (audio)</td>
+<td>None</td>
+</tr>
+<tr>
+<td>Gemini</td>
+<td>Implicit auto + explicit <code>cachedContent</code></td>
+<td>1024 (Flash) / 4096 (Pro)</td>
+<td>90% across all models</td>
+<td>None on read; <strong>hourly storage fee</strong> (USD 1 to 4.50 per MTok per hour)</td>
+</tr>
+<tr>
+<td>Bedrock</td>
+<td>Explicit <code>cachePoint</code> (Converse) or <code>cache_control</code> (InvokeModel)</td>
+<td>1024 tok (Claude); model-dependent (Nova)</td>
+<td>Same as upstream</td>
+<td>Same as upstream</td>
+</tr>
+</tbody></table>
+<p>The pricing structures are architecturally different products. Anthropic charges a write multiplier and stores nothing — once the prefix is cached, holding it is free until TTL expires. OpenAI charges nothing for caching, only discounts the read. Gemini charges by the hour for storage on top of the read discount, so idle caches actively burn money. Bedrock approximates Anthropic&#39;s model with region-specific caveats.</p>
+<p>A few 2026 details the marketing rarely surfaces. Anthropic&#39;s minimum prefix jumped from 1,024 to 4,096 tokens for the newest Opus and Haiku tiers — a four-fold increase that silently disables caching on shorter system prompts. <em>Automatic</em> caching on Bedrock and Vertex is not yet shipped for current Claude generations; manual <code>cachePoint</code> works for Claude 3.7 and Opus 4 on Bedrock, but Claude 4.6 / 4.7 has no Bedrock caching at all (<code>claude-code#1347</code>).</p>
+<p>OpenAI&#39;s 24-hour Extended Prompt Cache Retention costs nothing extra on gpt-5.x and gpt-4.1. The catch: <code>prompt_cache_key</code> has a documented throughput cap of roughly 15 requests per minute per <code>prefix + key</code> combination. Above that, the load balancer overflows to fresh machines, each a one-time miss. One customer documented going 60% to 87% hit rate after sharding the cache key across multiple values.</p>
+<p>Gemini&#39;s explicit cache is the most algebraically interesting. Caching a 100k-token prefix on 2.5 Pro for one hour costs USD 0.45 in storage; reading it once costs USD 0.0125; uncached costs USD 0.125. Break-even is four queries per hour — below four, the explicit cache loses to no cache.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Local&amp;nbsp;Runtimes&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Local runtimes have always cached implicitly. The mechanism is the same — reuse KV state for shared prefixes — but the data structures evolved through three generations.</p>
+<p><img src="images/local-runtime-progression-schematic.png" alt="Hand-drawn pencil schematic showing the local runtime cache progression in three side-by-side panels. Left panel "LLAMA.CPP / OLLAMA" shows three slot boxes labeled SLOT 1, SLOT 2, SLOT 3 each containing a small KV cache region, with a leader line noting "--slot-prompt-similarity 0.10". Middle panel "VLLM V1" shows a single global KV pool box containing a grid of small uniform 16-token block squares, with a leader line noting "DEFAULT ON IN 2026". Right panel "SGLANG" shows a small radix tree with a root node branching to three children and six leaves, with a leader line noting "SHARED ACROSS ALL REQUESTS". A horizontal arrow at the bottom spans all three panels labeled "FROM PER-SLOT REUSE → GLOBAL SHARED PREFIX STORE"."></p>
+<p>llama.cpp&#39;s server runs <code>--parallel N</code> independent slots, each with its own KV region. When a request arrives, the server picks the slot with the highest token-overlap fraction against the new prefix — longest-common-prefix matching, tunable via <code>--slot-prompt-similarity</code> (default 0.10). Ollama wraps this with its own envs: <code>OLLAMA_KEEP_ALIVE</code> (default 5 min), <code>OLLAMA_NUM_PARALLEL</code> (default 1, slots per model), <code>OLLAMA_KV_CACHE_TYPE</code> (<code>f16</code> default; <code>q8_0</code> halves memory at negligible quality cost; requires <code>OLLAMA_FLASH_ATTENTION=1</code>).</p>
+<p><code>OLLAMA_MULTIUSER_CACHE</code> is the subtle one. It does not pass through to llama.cpp — Ollama&#39;s Go runner has its own dual-strategy slot picker. Default off, <code>findLongestCacheSlot</code> reuses one VRAM region for fastest GPU performance. On, <code>findBestCacheSlot</code> tracks both longest-prefix and oldest LRU, copying KV via <code>KvCacheSeqCp</code> before eviction. Better hit rates under concurrent load, slightly slower miss path.</p>
+<p>vLLM V1 hashes 16-token blocks tracked in an LRU free queue — <em>&quot;V1&#39;s prefix caching causes less than 1% decrease in throughput even when the cache hit rate is 0%&quot;</em>, which is why it ships on by default in 2026. SGLang generalizes one step further into a token-keyed radix tree shared across requests. The arc is &quot;find the best slot&quot; → &quot;find the longest matching subtree across the entire server.&quot;</p>
+<p>Two details break the tidy story. TensorRT-LLM uses 128-token blocks — eight times vLLM&#39;s granularity. And LM Studio is no longer pure llama.cpp; since v0.3.4 it ships an Apple MLX engine, and the MLX path bypasses prefix cache entirely for hybrid architectures (sliding-window attention, SSM, Mamba, RWKV).</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Agent&amp;nbsp;SDKs&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Every agent SDK published in 2026 is either invisible-and-uncontrollable or breaks under multi-provider routing.</p>
+<p><img src="images/cache-control-drops-schematic.png" alt="Hand-drawn pencil schematic showing where cache_control markers drop through SDK and provider routes. Title reads "WHERE CACHE_CONTROL DROPS". Three horizontal lanes. Lane 1 (top): USER CODE → @ai-sdk/anthropic SDK → ANTHROPIC API → MODEL with a checkmark labeled "marker honored". Lane 2 (middle): USER CODE → @ai-sdk/anthropic SDK → providerID != 'anthropic' gateway where the marker visibly drops to the floor → MODEL with an X labeled "SILENTLY DROPPED". Lane 3 (bottom): USER CODE → @ai-sdk/anthropic SDK → OAUTH CLAUDE (subscription) → brick wall labeled "HTTP 400" with an X labeled "REJECTED (API-tier only)"."></p>
+<table>
+<thead>
+<tr>
+<th>SDK</th>
+<th>Verdict</th>
+<th>Knob</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Claude Agent SDK (Py 0.1.72 / TS 0.2.126)</td>
+<td>Auto with kill switch; <strong>subagents hardcoded OFF</strong></td>
+<td><code>DISABLE_PROMPT_CACHING=1</code> env; <code>exclude_dynamic_sections</code> preset</td>
+</tr>
+<tr>
+<td>OpenAI Agents SDK (Py 0.15.1)</td>
+<td>Auto + retention knob</td>
+<td><code>ModelSettings.prompt_cache_retention=&quot;24h&quot;</code></td>
+</tr>
+<tr>
+<td>Vercel AI SDK (<code>ai</code> v5; <code>@ai-sdk/anthropic</code> 3.0.47)</td>
+<td>Manual + cookbook helper; <strong>silent strip on multi-provider routing</strong></td>
+<td><code>providerOptions.anthropic.cacheControl: { type: &#39;ephemeral&#39; }</code></td>
+</tr>
+<tr>
+<td>LangChain + <code>AnthropicPromptCachingMiddleware</code></td>
+<td>Auto via middleware; <strong>3 open bugs</strong></td>
+<td><code>middleware: [anthropicPromptCachingMiddleware({ttl: &#39;5m&#39;})]</code></td>
+</tr>
+<tr>
+<td>LlamaIndex (<code>llama-index-llms-anthropic</code>)</td>
+<td>Manual + LLM-level helper</td>
+<td><code>Anthropic(cache_idx=-1)</code></td>
+</tr>
+<tr>
+<td>Anthropic raw (Py 0.97.0 / TS 0.92.0)</td>
+<td>Manual baseline</td>
+<td>Block-level <code>cache_control</code>; up to 4 breakpoints</td>
+</tr>
+</tbody></table>
+<p>The Claude Agent SDK auto-arranges system, tools, and conversation tail for Anthropic&#39;s auto-mode breakpoint placement. Two real controls: <code>DISABLE_PROMPT_CACHING=1</code> env kill switch, and <code>exclude_dynamic_sections</code> preset — which <em>removes</em> per-user dynamic content (cwd, auto-memory, git status, current date) entirely from the cached system block. The model loses access to that context. The SDK&#39;s largest production footgun: <code>claude-code#29966</code> documents that subagent invocations have <code>enablePromptCaching</code> hardcoded to <code>false</code>. For a 100k-token system + tools prefix sent to five subagents per parent task, that&#39;s USD 1.35 per task instead of USD 0.15 — a 9× overcharge that scales linearly with subagent fan-out.</p>
+<p>Vercel AI SDK&#39;s gotcha lives in <code>transform.ts</code> — the <code>applyCaching</code> function gates on <code>model.providerID === &quot;anthropic&quot;</code>. Two failure modes follow. Non-Anthropic models routed through <code>@ai-sdk/anthropic</code> silently drop <code>cache_control</code> (no error, no warning). OAuth-authenticated Claude (subscription, not API key) gets <code>cache_control</code> injected, then Anthropic&#39;s API rejects with HTTP 400 because prompt caching is API-tier only (<code>opencode#17910</code>).</p>
+<p>LangChain&#39;s middleware reads cleanest in code but ships with three open bugs as of writing: <code>#33709</code> breaks <code>with_fallbacks()</code>, <code>#34542</code> 400s on <code>code_execution</code> blocks, <code>#33635</code> Bedrock-Anthropic ignores middleware-injected <code>cache_control</code>. Direct usage on <code>ChatAnthropic</code> without the middleware is the safer fallback.</p>
+<p>LlamaIndex has the cleanest abstraction surveyed: <code>Anthropic(cache_idx=-1)</code> caches every prior message. Policy lives on the constructor instead of leaking into every message.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Agentic&amp;nbsp;Tools&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Claude Code structures cache reuse in four layers: built-in tools and system prompt at the bottom (cached globally per CLI version), <code>CLAUDE.md</code> above that (cached per project), per-session context, then growing conversation messages. An explicit <code>__SYSTEM_PROMPT_DYNAMIC_BOUNDARY__</code> marker separates globally-cacheable content from session-specific content. Anthropic&#39;s server places the implicit cache breakpoint after the last built-in tool, and Claude Code deliberately sorts so built-ins come first and MCP tools come separately — adding an MCP server invalidates the messages region but leaves built-ins warm. MCP server <em>instructions</em> fields are recomputed every turn and not cached; only tool <em>schemas</em> sit in the cached prefix region.</p>
+<p><img src="images/subagent-footgun-sketch.png" alt="Hand-drawn pencil sketch metaphor showing a parent agent robot at the top labeled "PARENT (cached at 90% discount)" holding up a large tag that reads "90% DISCOUNT". Below the parent, five smaller subagent robots fan outward, each holding up a much larger tag reading "FULL PRICE". Each subagent has a hand-drawn arrow pointing down to a small dollar bill icon. A label below reads "SUBAGENTS (claude-code #29966)"."></p>
+<p>Hit rate has been independently triangulated. A 30-day single-user telemetry capture from <code>claude-code#24147</code> reports 5.09 billion cache reads vs 176 million cache creations vs 3.9 million fresh input tokens — <strong>96.65%</strong> hit rate by <code>read / (read + create + fresh)</code>. The Camp blog independently reports 95–96% from JSONL parsing of separate sessions. Two independent measurements within one percentage point.</p>
+<p>The same telemetry reveals a subscription-tier footgun. On Pro and Max plans, <strong>cache reads consume usage quota at the full rate</strong> even though the dollar cost is discounted — 99.93% of the user&#39;s quota burn was cache reads representing zero new compute. The dollar-cost model and the quota-counter model are decoupled. A Pro/Max user hitting their cap should not interpret it as &quot;expensive caching&quot;; it&#39;s a quota-counter design choice.</p>
+<p>Other agentic CLIs land at different points. Codex CLI rides OpenAI&#39;s automatic cache and pins prompt + tool order. Cursor relies on provider-routed caching at ~65% Composer 2 hit rate, and breaks badly when Auto mode model-switches across providers — Cursor v2.6.12 routed requests to a model variant that didn&#39;t support Anthropic-style caching, producing zero cache reads and zero cache writes for many users until v2.6.18 fixed it. Pinning a model is the recommended user lever. Aider ships the most novel option: <code>--cache-keepalive-pings N</code> issues lightweight pings every five minutes to defeat the 5-minute TTL during human reading gaps. It&#39;s the only CLI surveyed that does this.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;The&amp;nbsp;Math&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>A figure circulates in vendor-adjacent blog posts and conference talks: caching is cost-positive only above 1.4 reads per write. The figure is wrong.</p>
+<p><img src="images/breakeven-math-schematic.png" alt="Hand-drawn pencil schematic graph on visible graph paper showing two curves crossing the zero-cost line. Horizontal axis labeled "READS PER WRITE" with tick marks at 0, 0.28, 1.11, 2. Vertical axis labeled "EFFECTIVE COST". The 5-MIN TIER curve crosses zero at 0.28; the 1-HOUR TIER curve crosses zero at 1.11. Annotation in upper right reads "MARKETING SAID 1.4" with a strikethrough line. Below it: "REALITY: 0.28 / 1.11". Title: "BREAKEVEN MATH"."></p>
+<p>For Anthropic Sonnet 4.5 at USD 3 per MTok base input — a representative number, not a price quote — a 5-minute cache write costs 1.25 × 3 = USD 3.75 per MTok. The premium over baseline is USD 0.75 per MTok. A cache read costs 0.1 × 3 = USD 0.30 per MTok, saving USD 2.70 per MTok against baseline. Break-even: <code>0.75 ÷ 2.70 = 0.278</code> reads per write. Roughly <strong>one read for every four writes</strong>.</p>
+<p>The 1-hour tier costs more on the write side. 2 × 3 = USD 6 per MTok at write, premium USD 3 per MTok over baseline. Same USD 2.70 per MTok savings on read. Break-even: <code>3.00 ÷ 2.70 = 1.111</code>. <strong>Slightly more than one read per write.</strong></p>
+<p>The practical consequence is the opposite of what the marketing implies. The 5-minute cache is cost-positive <em>very early</em> — even a single read against three or four writes makes it profitable. The 1-hour tier is cost-positive only above one read per write, which matters for low-traffic apps. A side project hitting a cached prefix once an hour will lose money on the 1-hour tier and break even on the 5-minute tier.</p>
+<p>Independent benchmarks support the framing. arXiv 2601.06007 measured 41–80% cost reduction and 13–31% TTFT improvement across 40 sessions × 3 providers. The BSWEN production trace measured 84% hit rate and ~74% input cost saved on a real Claude Code workload. F5&#39;s stable-vs-perturbed A/B measured 65% TTFT improvement.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Footguns&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Caching breaks in patterns. Five most common in production:</p>
+<p><img src="images/five-cache-breaks-sketch.png" alt="Hand-drawn pencil sketch showing five hazard icons of common cache-breaking patterns. Title reads "FIVE WAYS THE CACHE BREAKS". Icon 1: a clock face with "2026-05-03" written across it, label "TIMESTAMP IN PROMPT". Icon 2: a stack of tool-shaped boxes (hammer, wrench, screwdriver) with curved arrows showing them shuffling, label "TOOLS REORDERED". Icon 3: a sand-timer with sand mostly settled and "5 MIN" annotation, label "TTL IDLE EVICTION". Icon 4: two name tags reading "claude-sonnet-4-5" and "claude-sonnet-4-5-20250929" separated by a not-equals symbol, label "MODEL ALIAS DRIFT". Icon 5: parent and child silhouettes with the parent stamped "CACHED" and the child stamped "FULL PRICE", label "SUBAGENT CACHING OFF"."></p>
+<ol>
+<li><strong>Timestamps in the system prompt.</strong> <code>datetime.now()</code> invalidates every second. Most common cache-killer. <code>openclaw#19534</code> documented one customer running 170,000 tokens written and 0 read every request because of <code>Current Date &amp; Time</code> in the system prompt.</li>
+<li><strong>Tool array reordering.</strong> Tool order is part of the hash. Frameworks that sort alphabetically on load, or pull from a <code>dict</code> with non-deterministic iteration order, blow the cache from the first reordered tool onward.</li>
+<li><strong>5-minute TTL idle eviction.</strong> Any human-in-the-loop pause longer than five minutes forces a full re-prefill at the 1.25× write rate on the next turn.</li>
+<li><strong>Model alias drift.</strong> <code>claude-sonnet-4-5</code> and <code>claude-sonnet-4-5-20250929</code> are different models and break each other&#39;s cache. Aliases also rotate silently when new snapshots ship. Pin a dated snapshot.</li>
+<li><strong>Subagent caching hardcoded off.</strong> <code>claude-code#29966</code>. For agent loops that fan out to subagents, the largest dollar-impact footgun in production agentic tooling.</li>
+</ol>
+<p>The privacy footguns are subtler. Stanford CS191 and alphaXiv 2502.07776 audited eight providers and found seven shared cache globally across users, detectable via timing attacks. After disclosure, OpenAI and Anthropic confirmed per-organization caching — but per-org doesn&#39;t defeat intra-org timing attacks. Treat <code>prompt_cache_key</code> as a routing hint, never as auth. NDSS 2025&#39;s <em>Prompt Leakage via KV-Cache Sharing</em> demonstrates extraction on shared inference nodes.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;What&amp;nbsp;To&amp;nbsp;Do&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p><img src="images/four-levers-by-reader-sketch.png" alt="Hand-drawn pencil sketch showing four reader segments and their respective levers. Title reads "FOUR LEVERS BY READER". Four columns side-by-side. Column 1 IDE USER (pin a snapshot): a developer at a laptop holding a pin labeled "PIN MODEL". Column 2 API DEVELOPER (verify with telemetry): a developer holding a dashboard reading cache_read_input_tokens with cache hit rate 78.4%. Column 3 AGENT BUILDER (independent subagent prefix): a developer surrounded by subagent figures with a thought bubble showing a system-prompt template marked "INDEPENDENT PREFIX". Column 4 LOCAL INFERENCE (default-on prefix cache): a developer at a server rack flipping a switch labeled "vLLM V1 / SGLang" to ON. Each column has a pencil-drawn lever underneath."></p>
+<p><strong>If you use a commercial agentic IDE</strong> (Claude Code, Codex CLI, Cursor), the rules are mostly negative. No <code>datetime.now()</code> in custom prompts. Don&#39;t reorder tools mid-session. Pin a dated model snapshot, never an alias. Use <code>/compact</code> instead of <code>/clear</code>. Install MCP servers at session start. On Pro and Max subscription tiers, watch the quota counter, not just the dollar bill — cache reads burn quota at full rate even when discounted on the wallet side.</p>
+<p><strong>If you build on hosted APIs directly</strong>, verify with telemetry. <code>cache_read_input_tokens</code> (Anthropic) and <code>prompt_tokens_details.cached_tokens</code> (OpenAI) are the only ground truths. A high <code>cache_creation_input_tokens</code> looks like efficiency and is the bill. Real efficiency is <code>cache_read / (cache_read + cache_creation + input)</code> weighted by <em>price</em>, not count.</p>
+<p><strong>If you build agent loops that fan out to subagents</strong>, treat the subagent cache as off until proven otherwise. Design the subagent prefix to be independently cacheable rather than relying on inherited state.</p>
+<p><strong>If you run local inference</strong>, choose the right runtime. vLLM V1 and SGLang ship prefix caching on by default in 2026 with under 1% overhead at zero hit rate. Ollama at default settings caches per-slot for one user; flip <code>OLLAMA_MULTIUSER_CACHE=true</code> for concurrent multi-user load. On Apple Silicon, verify whether your model is on the MLX path — modern hybrid architectures bypass prefix cache there.</p>
+<hr>
+<p>The pattern is universal: deterministic prefix memoization scales further than developers building on top of it usually assume, and breaks in ways that look like model degradation when they&#39;re really cache degradation. Anthropic&#39;s April 23, 2026 postmortem describes fifteen days of &quot;model nerfing&quot; complaints that turned out to be a per-turn cache invalidation bug shipped without canary-testing prefix-hash stability. The cache that was supposed to cache stopped caching, and the only signal was the bill. Prompt caching doesn&#39;t make the model faster — it removes a cost ceiling that was making the bill look artificially expensive, when the bill is checked.</p>
+<hr>
+<p><strong>References</strong></p>
+<ol>
+<li>Anthropic. &quot;Prompt caching.&quot; <a href="https://docs.claude.com/en/docs/build-with-claude/prompt-caching">docs.claude.com/en/docs/build-with-claude/prompt-caching</a>.</li>
+<li>OpenAI. &quot;Prompt caching.&quot; <a href="https://developers.openai.com/api/docs/guides/prompt-caching">developers.openai.com/api/docs/guides/prompt-caching</a>.</li>
+<li>Google. &quot;Gemini context caching.&quot; <a href="https://ai.google.dev/gemini-api/docs/caching">ai.google.dev/gemini-api/docs/caching</a>.</li>
+<li>AWS. &quot;Bedrock prompt caching.&quot; <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-caching.html">docs.aws.amazon.com/bedrock/latest/userguide/prompt-caching.html</a>.</li>
+<li>ggml-org. &quot;llama.cpp server README and PR #7728.&quot; <a href="https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md">github.com/ggml-org/llama.cpp</a>.</li>
+<li>vLLM. &quot;V1 alpha release: prefix caching by default.&quot; <a href="https://vllm.ai/blog/v1-alpha-release">vllm.ai/blog/v1-alpha-release</a>.</li>
+<li>Anthropic Engineering. &quot;Lessons from building Claude Code: prompt caching is everything.&quot; <a href="https://claude.com/blog/lessons-from-building-claude-code-prompt-caching-is-everything">claude.com/blog</a>.</li>
+<li><em>Don&#39;t Break the Cache</em> (2026). <a href="https://arxiv.org/abs/2601.06007">arXiv:2601.06007</a>.</li>
+<li>BSWEN. &quot;Prompt caching production trace, March 2026.&quot; <a href="https://docs.bswen.com/blog/2026-03-10-prompt-caching-claude-code/">docs.bswen.com</a>.</li>
+<li>Anthropic Engineering. &quot;April 23 postmortem.&quot; <a href="https://www.anthropic.com/engineering/april-23-postmortem">anthropic.com/engineering/april-23-postmortem</a>.</li>
+<li>GitHub Issue. &quot;Subagent prompt-caching hardcoded off.&quot; <a href="https://github.com/anthropics/claude-code/issues/29966">claude-code#29966</a>.</li>
+<li>GitHub Issue. &quot;Cache TTL silently regressed from 1h to 5m.&quot; <a href="https://github.com/anthropics/claude-code/issues/46829">claude-code#46829</a>.</li>
+<li>GitHub Issue. &quot;Cache reads consume 99.93% of usage quota.&quot; <a href="https://github.com/anthropics/claude-code/issues/24147">claude-code#24147</a>.</li>
+<li>Aider. &quot;Prompt caching.&quot; <a href="https://aider.chat/docs/usage/caching.html">aider.chat/docs/usage/caching.html</a>.</li>
+<li>NDSS 2025. &quot;Prompt Leakage via KV-Cache Sharing in Multi-Tenant LLM Serving Systems.&quot; <a href="https://www.ndss-symposium.org/wp-content/uploads/2025-1772-paper.pdf">ndss-symposium.org</a>.</li>
+</ol>
+
+    </article>
+
+    <p><a href="https://bootloader.live">← Back to bootloader.live</a></p>
+
+    <script>window.goatcounter={no_onload:true};</script>
+    <script data-goatcounter="https://mxcoppell.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
