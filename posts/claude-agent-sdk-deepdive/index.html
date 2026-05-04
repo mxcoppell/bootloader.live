@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inside the Claude Agent SDK — bootloader.live</title>
+    <meta name="description" content="An LLM API answers questions. An agent pursues goals. The difference is a runtime — a process that decides which tool to call next, manages its own working memory across hundreds of turns, fans out sub-agents in isolated context windows, accepts human steering mid-loop, and persists every decision to disk for later resume.">
+    <link rel="canonical" href="https://bootloader.live/posts/claude-agent-sdk-deepdive/">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Inside the Claude Agent SDK">
+    <meta property="og:description" content="An LLM API answers questions. An agent pursues goals. The difference is a runtime — a process that decides which tool to call next, manages its own working memory across hundreds of turns, fans out sub-agents in isolated context windows, accepts human steering mid-loop, and persists every decision to disk for later resume.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://bootloader.live/posts/claude-agent-sdk-deepdive/">
+    <meta property="og:site_name" content="bootloader.live">
+    <meta property="og:image" content="https://bootloader.live/posts/claude-agent-sdk-deepdive/images/thin-client-architecture-schematic.png">
+    <meta property="og:image:alt" content="Inside the Claude Agent SDK">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Inside the Claude Agent SDK">
+    <meta name="twitter:description" content="An LLM API answers questions. An agent pursues goals. The difference is a runtime — a process that decides which tool to call next, manages its own working memory across hundreds of turns, fans out sub-agents in isolated context windows, accepts human steering mid-loop, and persists every decision to disk for later resume.">
+    <meta name="twitter:image" content="https://bootloader.live/posts/claude-agent-sdk-deepdive/images/thin-client-architecture-schematic.png">
+
+    <!-- JSON-LD -->
+    <script type="application/ld+json">
+    {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Inside the Claude Agent SDK",
+    "description": "An LLM API answers questions. An agent pursues goals. The difference is a runtime — a process that decides which tool to call next, manages its own working memory across hundreds of turns, fans out sub-agents in isolated context windows, accepts human steering mid-loop, and persists every decision to disk for later resume.",
+    "datePublished": "2026-05-03",
+    "url": "https://bootloader.live/posts/claude-agent-sdk-deepdive/",
+    "author": {
+        "@type": "Person",
+        "name": "Michael Xie"
+    },
+    "keywords": "SDK, Agents",
+    "publisher": {
+        "@type": "Person",
+        "name": "Michael Xie"
+    },
+    "image": "https://bootloader.live/posts/claude-agent-sdk-deepdive/images/thin-client-architecture-schematic.png"
+}
+    </script>
+
+    <style>
+        body {
+            font-family: 'Newsreader', Georgia, serif;
+            max-width: 740px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            background: #222222;
+            color: #e6edf3;
+            line-height: 1.7;
+        }
+        a { color: #58a6ff; }
+        pre { background: #2a2a2a; padding: 1rem; border-radius: 6px; overflow-x: auto; }
+        code { font-size: 0.9em; }
+        img { max-width: 100%; height: auto; }
+        h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        .meta { color: #8b949e; font-size: 0.9rem; margin-bottom: 2rem; }
+    </style>
+</head>
+<body>
+    <script>window.location.replace('https://bootloader.live/#/post/claude-agent-sdk-deepdive');</script>
+
+    <article>
+        <h1>Inside the Claude Agent SDK</h1>
+        <div class="meta">May 3, 2026</div>
+        <h1>Inside the Claude Agent SDK</h1>
+<p>An LLM API answers questions. An agent pursues goals. The difference is a runtime — a process that decides which tool to call next, manages its own working memory across hundreds of turns, fans out sub-agents in isolated context windows, accepts human steering mid-loop, and persists every decision to disk for later resume.</p>
+<p>The Claude Agent SDK is a programmable interface to that runtime. It ships in two packages — <code>claude-agent-sdk</code> for Python and <code>@anthropic-ai/claude-agent-sdk</code> for TypeScript — and exposes the same agent harness that powers Claude Code. Most posts about it cover what you can do with it. This one covers what it actually is and how each piece fits together.</p>
+<p>The deepdive walks the agent loop at the center — where the model decides what to do next — and the five surfaces user code attaches to it: hooks, MCP servers, sub-agents, permission modes, and sessions. Each surface goes from entry point down to the on-disk format, then maps to a production decision. One section compares the SDK with n8n for workloads where autonomous reasoning is not worth its cost ceiling. The post ends with a worked demo: a long-running agent that is observable, steerable, and recoverable from a phone.</p>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Thin&amp;nbsp;Client&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Open <code>src/claude_agent_sdk/query.py</code>. The async iterator delegates to an <code>InternalClient.process_query()</code> that speaks newline-delimited JSON to a <code>Transport</code> abstraction. The default transport spawns a subprocess. That subprocess is the bundled Claude Code CLI binary — the same one developers run from a terminal. The model loop, tool selection, replanning, and context compaction all run inside the CLI process. User code is a transport peer.</p>
+<p><img src="images/thin-client-architecture-schematic.png" alt="Hand-drawn pencil schematic showing the thin-client architecture. User code in Python or TypeScript holds the SDK library, which routes through a newline-delimited JSON transport pipe to a subprocess running the Claude Code CLI binary. The CLI subprocess holds the agent loop and talks to the Anthropic API."></p>
+<p>The TS package bundles the CLI binary as an optional dependency so installation is one step. The Python package expects the CLI on the path and falls back to a <code>CLINotFoundError</code> if it is missing. Either way, the runtime topology is the same: a parent process holding your agent code, a child process holding the agent loop, and a JSON pipe between them. Almost every production capability the SDK markets — long-running sessions, sub-agents with isolated context, hooks that mutate tool I/O, runtime permission swaps — is implemented inside the subprocess. The library does not implement them; it routes messages to and from the program that does.</p>
+<p>The two entry points expose the same subprocess differently. <code>query()</code> is a one-shot async iterator: prompt in, messages out until a <code>ResultMessage</code>. <code>ClaudeSDKClient</code> is a long-lived <code>async with</code> context manager with a control protocol — <code>set_permission_mode</code>, <code>set_model</code>, <code>interrupt</code>, <code>rewind_files</code>, <code>reconnect_mcp_server</code>, <code>stop_task</code>, <code>get_context_usage</code>. Streaming mode is the recommended default; one-shot mode lacks images, queueing, interrupts, and hooks. Holding this topology in mind makes the rest of the surfaces easier to read: each one is a way for user code to attach to the subprocess at a defined boundary.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Agent&amp;nbsp;Loop&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Anthropic&#39;s framing of the loop is one line: <em>gather context, take action, verify work, repeat</em>. A turn is one model response that may emit zero or more <code>ToolUseBlock</code>s, followed by their <code>ToolResultBlock</code>s feeding into the next model call. The loop ends when the model emits a stop turn or hits <code>max_turns</code> or <code>max_budget_usd</code>. The <code>Stop</code> and <code>SubagentStop</code> hooks fire at the boundary.</p>
+<p><img src="images/agent-loop-cycle-schematic.png" alt="Hand-drawn pencil schematic of the agent loop as a circular cycle. Four numbered stations around a central "AGENT LOOP" hub, flowing clockwise: 1 Gather Context (read, grep, web-fetch, MCP tool list), 2 Take Action (tool-use, edit, bash), 3 Verify Work (read, test result), 4 Decide: Repeat or Stop. An off-ramp from station 4 leads to a Stop terminator with the conditions: model emits no tool call, max_turns reached, max_budget_usd hit. A Model Turn cloud annotates that each cycle equals one model turn."></p>
+<p>This is the loop where the model&#39;s reasoning lives. Everything else in the SDK — hooks, MCP tools, sub-agents, permission modes, sessions — is a way for user code to attach to specific points in this cycle. The model decides what to gather, what to do, and when to stop. Anthropic&#39;s contribution is making the loop predictable enough that user code can hook into it without breaking it.</p>
+<p>Every tool the model wants to call goes through a five-stage decision pipeline before execution. Hooks run first, then deny rules, then the active permission mode, then allow rules, then a final <code>canUseTool</code> callback. Conflict priority across stages is <em>deny &gt; defer &gt; ask &gt; allow</em>. Deny rules hold even under <code>bypassPermissions</code>, which is the only durable safety net once that mode is on.</p>
+<p><img src="images/tool-decision-pipeline-schematic.png" alt="Hand-drawn pencil schematic of the five-stage tool decision pipeline. Numbered stages flow left to right: 1 hooks, 2 deny rules, 3 permission mode, 4 allow rules, 5 canUseTool callback. A priority bar across the top reads deny then defer then ask then allow."></p>
+<p>The decision pipeline is where the SDK&#39;s &quot;control plane over a subprocess&quot; becomes concrete. Each stage is a distinct surface for user code: hooks are async callbacks attached to events, deny and allow rules are static lists, the permission mode is a single string flipped at runtime, and <code>canUseTool</code> is a last-resort callback. They compose in a defined order with a defined priority. That predictability is what makes long-running autonomous agents tractable; without it, every <code>Bash</code> call would be a roll of the dice.</p>
+<p>Two adjacent mechanisms manage the loop&#39;s working memory. Auto-compaction summarizes prior messages when the context limit approaches. The <code>PreCompact</code> hook fires before either auto or manual compaction, with a payload of <code>{trigger: &quot;manual&quot; | &quot;auto&quot;, custom_instructions?: str}</code> so user code can archive the full transcript or inject summarization rules. <code>ClaudeSDKClient.get_context_usage()</code> exposes live usage so callers can pre-empt compaction rather than react to it.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;MCP&amp;nbsp;Tools&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>The SDK ships a default tool preset matching Claude Code: <code>Read</code>, <code>Write</code>, <code>Edit</code>, <code>Bash</code>, <code>Monitor</code>, <code>Glob</code>, <code>Grep</code>, <code>WebSearch</code>, <code>WebFetch</code>, <code>AskUserQuestion</code>, and <code>Agent</code>. Custom tools come from MCP servers. The SDK supports four transport variants, and the fourth one is the architectural surprise.</p>
+<p>Three of the variants are conventional. <code>stdio</code> runs an MCP server as a local subprocess and speaks JSON-RPC over the pipes. <code>sse</code> and <code>http</code> reach a remote MCP server over HTTP, with <code>sse</code> supporting streaming. Auth on remote transports is static <code>headers: { Authorization: &quot;Bearer &lt;token&gt;&quot; }</code> — the SDK does not perform OAuth flows, so any OAuth-gated MCP server requires your application to complete the flow and inject the token.</p>
+<p>The fourth variant is <code>sdk:</code>. It runs your tool code as Python or TypeScript closures inside the same process as the SDK. No subprocess, no JSON-RPC, no network. You decorate a function with <code>@tool(name, description, schema)</code>, register it via <code>create_sdk_mcp_server()</code>, and the agent now has a tool that can read your application&#39;s live state.</p>
+<p><img src="images/mcp-transport-rooms-sketch.png" alt="Hand-drawn pencil sketch in isometric perspective showing four rooms. Three rooms are separated from the agent by thick walls labeled SUBPROCESS, HTTP, SSE — each contains a small server figure. The fourth room shares its floor with the agent and contains a closure with a key labeled IN-PROCESS holding live application state."></p>
+<p>This is the killer differentiator for application-embedded agents. n8n&#39;s tools are static node definitions wired at design time. Most LLM frameworks expose tools through some message-passing layer. The SDK lets you hand the agent a closure that closes over your service&#39;s database connection, your auth context, your domain types. The closure has the same lifetime as your application and shares its memory. Tool naming convention is rigid — <code>mcp__&lt;server&gt;__&lt;tool&gt;</code> — and tool search is on by default to keep large MCP toolsets out of the context window.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Sub&amp;nbsp;Agents&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Sub-agents are dispatched through the <code>Agent</code> tool — the same name as the entry tool, renamed from <code>Task</code> in CLI v2.1.63. The model decides at runtime when to spawn one. Each sub-agent runs in a fresh context window: it does not see the parent&#39;s transcript, the parent&#39;s system prompt, or the parent&#39;s skills. The only channel from parent to child is the prompt string passed in the tool call.</p>
+<p>That isolation is a deliberate architectural choice, not an oversight. Sub-agents are how the SDK keeps long-running agents from drowning their own context. A research agent that needs to deep-read fifty documents spawns fifty sub-agents in sequence, each with its own context window, and only the final summary returns to the parent. Sub-agent transcripts persist in their own files on disk and survive parent compaction.</p>
+<p><img src="images/sub-agents-sealed-envelopes-sketch.png" alt="Hand-drawn pencil sketch in isometric perspective showing a parent agent at a desk handing sealed task envelopes labeled PROMPT to three sub-agents standing in separate offices. Each sub-agent's office has its own filing cabinet labeled CONTEXT WINDOW. Each returns a single sealed report envelope back to the parent."></p>
+<p>The contract is enforced. Sub-agents cannot recurse — they cannot invoke the <code>Agent</code> tool themselves. Their permission mode is inherited from the parent and cannot be overridden per sub-agent, which means a parent in <code>bypassPermissions</code> mode hands every child a loaded gun. <code>AgentDefinition</code> lets you specify a sub-agent&#39;s prompt, allowed tools, model tier, effort level, and whether it runs in the background. Definitions live either in code (recommended) or as files in <code>.claude/agents/</code>.</p>
+<p>The pattern that makes sub-agents valuable is also the thing that makes them brittle. Because the only parent-to-child channel is the prompt string, the parent must serialize every relevant fact into it. There is no shared scratchpad, no inherited memory, no implicit context. Sub-agent design is API design — what does the parent need to tell the child, in plain text, every single time?</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Hooks&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Hooks are the SDK&#39;s most powerful and least-discussed feature. The Python package exposes ten events: <code>PreToolUse</code>, <code>PostToolUse</code>, <code>PostToolUseFailure</code>, <code>UserPromptSubmit</code>, <code>Stop</code>, <code>SubagentStop</code>, <code>PreCompact</code>, <code>Notification</code>, <code>SubagentStart</code>, and <code>PermissionRequest</code>. The TypeScript package adds nine more for session lifecycle, teammate idle, task completion, config changes, and worktree operations.</p>
+<p>Each hook is an async callback with a typed payload. <code>PreToolUse</code> receives <code>{tool_name, tool_input, tool_use_id}</code> and can return <code>{decision: &quot;allow&quot; | &quot;deny&quot; | &quot;ask&quot; | &quot;defer&quot;, updatedInput?}</code>. The output <code>updatedInput</code> mutates what the model &quot;asked for&quot; before the tool runs. <code>PostToolUse</code> can return <code>additionalContext</code> (appended to the tool result the model sees) or <code>updatedToolOutput</code> (replaces it). The model&#39;s view of its own tool call can be different from what actually happened, by design.</p>
+<p>This is what enables real production patterns. A <code>PreToolUse</code> hook on <code>Bash</code> can scrub secrets before execution. A <code>PostToolUse</code> hook on a database read can redact PII before the model sees the result. A <code>PreCompact</code> hook can persist the full transcript to durable storage before compaction destroys it. None of these patterns are libraries you import; they are five-line async functions you attach to event matchers, with regex matching against the event&#39;s filter field.</p>
+<p>Hooks register via <code>HookMatcher(matcher=&quot;Write|Edit&quot;, hooks=[callback], timeout=60)</code>. Multiple matchers under one event run in array order. For high-volume telemetry hooks that should not block the agent, the output supports <code>{async_: True, asyncTimeout: 30000}</code> for fire-and-forget — the agent proceeds without waiting and the hook cannot mutate I/O.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Permissions&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>Six permission modes (five in Python, plus <code>auto</code> in TypeScript). Each is a string and each gates a stage of the decision pipeline.</p>
+<table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>default</code></td>
+<td>No auto-approvals; unmatched tools fall through to <code>canUseTool</code></td>
+</tr>
+<tr>
+<td><code>acceptEdits</code></td>
+<td>Auto-approves file edits and filesystem <code>Bash</code> calls inside cwd / additional dirs. Does not auto-approve MCP tools</td>
+</tr>
+<tr>
+<td><code>bypassPermissions</code></td>
+<td>Approves everything; deny rules and hooks still run. <code>allowed_tools</code> does <strong>not</strong> constrain it — listed tools are not a whitelist here</td>
+</tr>
+<tr>
+<td><code>plan</code></td>
+<td>Pure analysis mode; no tool execution. <code>AskUserQuestion</code> still works</td>
+</tr>
+<tr>
+<td><code>dontAsk</code></td>
+<td>Anything not pre-approved is denied. <code>canUseTool</code> is never called</td>
+</tr>
+<tr>
+<td><code>auto</code> (TS only)</td>
+<td>Model classifier approves or denies each tool call</td>
+</tr>
+</tbody></table>
+<p>The footgun is <code>bypassPermissions</code>. Many users assume <code>allowed_tools</code> constrains it. It does not. A parent agent in <code>bypassPermissions</code> hands every sub-agent the same mode without override. Production deployments should treat <code>bypassPermissions</code> as a deliberate choice for trusted, observable, ephemeral runs only.</p>
+<p>What makes the modes powerful is that they are not set-once. <code>client.set_permission_mode(&quot;acceptEdits&quot;)</code> flips the active mode mid-session. The SDK&#39;s trust boundary is a runtime control plane, not a design-time switch. An agent can start in <code>plan</code> mode for analysis, switch to <code>acceptEdits</code> when the user approves the plan, and never touch <code>bypassPermissions</code> at all.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Sessions&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>A session is not a single JSONL file. Open <code>~/.claude/projects/&lt;encoded-cwd&gt;/&lt;session-id&gt;.jsonl</code> on any host running the SDK and you find a directory tree:</p>
+<pre><code>&lt;encoded-cwd&gt;/
+├── &lt;session-id&gt;.jsonl                   # main transcript
+└── &lt;session-id&gt;/
+    ├── subagents/
+    │   ├── agent-&lt;id&gt;.jsonl             # each sub-agent persists independently
+    │   └── agent-&lt;id&gt;.meta.json
+    └── tool-results/
+        └── &lt;tool_use_id&gt;.txt            # spillover for large tool outputs
+</code></pre>
+<p>Eight record types appear in real sessions: <code>user</code>, <code>assistant</code>, <code>system</code>, <code>attachment</code>, <code>file-history-snapshot</code>, <code>permission-mode</code>, <code>last-prompt</code>, <code>ai-title</code>. Each carries a <code>uuid</code> and a <code>parentUuid</code>, forming a DAG rather than a linear log. Records emitted from inside a sub-agent are flagged <code>isSidechain: true</code>. The parallel <code>subagents/</code> directory is what makes sub-agent transcripts survive parent compaction — they are not embedded in the parent stream.</p>
+<p>Three resume modes are supported. <code>continue_conversation=True</code> resumes the most recent session in the working directory. <code>resume=&lt;session_id&gt;</code> resumes a specific session by ID. <code>fork_session=True</code> creates a new session that branches from a copy of the original&#39;s history. <code>ClaudeSDKClient</code> exposes <code>list_sessions</code>, <code>get_session_messages</code>, <code>rename_session</code>, <code>tag_session</code>, and <code>delete_session</code> for managing the on-disk store. A pluggable <code>SessionStore</code> adapter mirrors transcripts to S3, R2, Redis, or any backing store, which is how cross-host resume and Anthropic Managed Agents work.</p>
+<p>The on-disk format does work that user code does not have to. Every assistant turn records a <code>usage</code> block with <code>cache_creation_input_tokens</code>, <code>cache_read_input_tokens</code>, and an <code>ephemeral_5m_input_tokens</code> versus <code>ephemeral_1h_input_tokens</code> split. Exact prompt-cache hit rate and per-turn cost are reconstructible from a JSONL alone, no external observability tool required. Real session sizes range from under five kilobytes for one-shots to nearly eight megabytes for multi-day runs.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;n8n&amp;nbsp;Compared&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>n8n is the obvious comparison because n8n 2.0 (January 2026) ships a native LangChain AI Agent node. The naive framing — &quot;agents versus workflows&quot; — is a strawman. n8n can run autonomous tool-calling loops. The honest distinction is structural.</p>
+<blockquote>
+<p><strong>n8n runs autonomous tool-call loops <em>within one workflow execution</em>. The Agent SDK runs them <em>open-ended across event boundaries</em>. Issue arrives Tuesday, test fails Wednesday, fix lands Thursday — same agent, same accumulating context, same goal.</strong></p>
+</blockquote>
+<p><img src="images/n8n-vs-sdk-runtime-shape-schematic.png" alt="Hand-drawn pencil schematic comparing the two runtime shapes side by side. Left column titled "n8n — loop bounded by execution" shows two separate Execution boxes, each with a Trigger, an AI Agent Node containing a small reason-plan-act loop, and an Output, with a "starts blank" annotation between them and a time axis below; bottom caption reads "every execution starts blank." Right column titled "Claude Agent SDK — loop open-ended across event boundaries" shows a Session timeline with three event pins (Tue, Wed, Thu) and a single continuous loop snake-line passing through all three, with three growing-notebook icons labeled Memory; bottom caption reads "same agent, same context, same goal.""></p>
+<p>n8n is a deterministic node-DAG runtime that embeds an agent as one node type. The agent&#39;s loop runs inside the AI Agent node and returns a single output item to the next graph edge. Branching, looping, and error handling are static edges authored on the canvas. The unit of progress is an item in the array passed between nodes. The unit of state is an execution row in Postgres. Memory across runs requires a Memory sub-node; without one, every run starts blank.</p>
+<p>The Agent SDK is the inverse. The agent is the runtime. Sessions persist across executions, the model decides what tool to call next, sub-agents fan out with isolated context, the permission mode hot-swaps mid-session, and hooks mutate tool I/O between model and execution. Five capabilities have no clean n8n analog: in-process MCP servers with closures over live state, dynamically-dispatched sub-agents with isolated context windows, hook chains that rewrite tool input and output, <code>PreCompact</code> plus <code>get_context_usage()</code> exposing the model&#39;s working memory, and runtime permission mode swaps.</p>
+<p>When does each win? Deterministic ETL, webhook fan-out, customer support triage with stable routing, and citizen-dev no-code automation all favor n8n. Open-ended research, code review, SRE alert triage with judgment, voice or chat agents with persistent memory, and long-running autonomous monitoring all favor the SDK. A common production shape is hybrid: n8n owns the orchestration spine and stable integrations, an SDK-backed service handles the slice that needs reasoning across event boundaries.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;The&amp;nbsp;Demo&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>The unique example is the <strong>Weekend Researcher</strong> — <em>tell your AI a question Friday, read its researched answer Monday.</em></p>
+<p>You have a question you&#39;ve been meaning to think hard about. <em>Is Postgres or DuckDB the right backend for my analytics side project? What changed in Rust async between 2023 and 2026? Why does my flaky test only fail on Tuesdays?</em> But you never have a clear weekend to dig in. You open a single web page, type the question, tap submit. For the next 48 hours an agent runs in the cloud reading sources, running small experiments, and revising a draft brief in real time. You can watch its progress on your phone — what it&#39;s reading, what it concluded, what surprised it. You can steer at any moment.</p>
+<p><img src="images/weekend-researcher-architecture-schematic.png" alt="Hand-drawn pencil schematic of the Weekend Researcher architecture. Three components: a phone PWA at the top with three panels (live timeline, steering input box, brief draft in Markdown); a Cloudflare Container in the middle holding ClaudeSDKClient with WebSearch / WebFetch / notebook MCP tools, PreToolUse hooks for loop and budget caps, and an hourly cron alarm running until t+48h; an R2 storage cylinder at the bottom holding briefs/<id>.md and sessions/<id>.jsonl. PWA and Container connect via a WebSocket event stream and HTTP POST steering channel; Container writes to R2."></p>
+<p>The whole system is three components. A public progressive web app, one URL per brief, that shows the live timeline of sources read and conclusions revised, plus a steering input box, plus the evolving Markdown brief. A Cloudflare Container holding one long-lived <code>ClaudeSDKClient</code> per active brief — sleeps between hourly cron-alarm wake-ups so the cost ceiling is bounded. R2 storage holding one Markdown file per brief and one JSONL per session. No GitHub. No OAuth. No external MCP servers. The agent&#39;s tools are WebSearch, WebFetch, and a ten-line in-process notebook MCP for reading and writing the brief.</p>
+<p>The flow is what makes the demo agentic rather than scripted. <strong>Friday 8 pm</strong>: you type the question, the agent posts an outline of what it doesn&#39;t know and the first sources it queued. <strong>Friday-to-Sunday, every hour</strong>: cron fires, the agent does about thirty minutes of work, reads two to four sources, sometimes runs a small experiment, revises the brief, sleeps. <strong>Saturday 9 am</strong>: you open the PWA over coffee, see fourteen sources read and a contradiction the agent flagged. You type into the steering box, <em>I care about operational simplicity, not query speed</em>. The agent&#39;s next wake-up reads the steering message as a typed <code>SDKUserMessage</code> and re-prioritizes — drops two queued benchmark articles, queues two ops-focused ones. The brief&#39;s framing shifts. <strong>Sunday 7 pm</strong>: the agent freezes the brief, sends a notification. <strong>Monday 7:30 am</strong>: you read 1,500 words on your phone over breakfast.</p>
+<p><img src="images/weekend-researcher-timeline-schematic.png" alt="Hand-drawn pencil schematic of the Weekend Researcher timeline. A horizontal timeline with five pinned moments left to right: Friday 8pm question entered, Friday 8:01pm agent starts with outline of unknowns, Saturday 9am steering message changes the reading queue mid-loop, Sunday 7pm freeze and final pass, Monday 7:30am developer reads the 1,500-word brief on phone. Below the line, hourly cron wake-ups marked with clock icons and a memory-growing notebook progression. Above the line between Saturday and Sunday, a label reads "same agent, same context, accumulating theory.""></p>
+<p>Saturday&#39;s surprise changing Sunday&#39;s conclusion is the deep meaning of &quot;agentic.&quot; It is something every reader has experienced themselves while researching — but this version is delegated. The agent holds the working theory across forty-eight hours of evidence, accepts human steering at any moment, and produces one coherent artifact at the end.</p>
+<p>What makes this unreachable in n8n is not any single feature. It is the runtime shape. n8n&#39;s AI Agent node runs its loop inside one workflow execution and returns a single output item. There is no surface to inject a new user message into a running loop. The cancel-and-restart pattern that approximates steering loses the in-flight reasoning context. Continuous reasoning across triggers does not exist in a node-DAG runtime where every execution starts blank.</p>
+<p>The transferable principle is what an agentic system actually requires: persistent state, runtime control plane, tool-use telemetry, human-in-the-loop steering at any moment, fork-and-resume of session history. Any agent runtime that ships fewer than these primitives is reasoning-by-script wearing a hat.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Inside&amp;nbsp;OpenClaw&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>The Weekend Researcher is one shape — build your own harness around the SDK. The other shape is to plug into a harness that already exists. The most concrete production example sits inside <strong>OpenClaw</strong>, an open-source agent framework that has shipped a Gateway daemon, a per-session execution lane, and a plugin SDK since November 2025. As of v2026.5.2 (367,955 GitHub stars), OpenClaw treats the inference loop as one slot in a larger system and accepts five candidate backends through a single configuration knob: PI (the default, built on <code>pi-ai</code>), <code>claude-cli</code>, <code>google-gemini-cli</code>, <code>codex-cli</code>, and <code>codex</code> (native).</p>
+<p><img src="images/openclaw-integration-schematic.png" alt="Hand-drawn pencil schematic of how the Claude Agent SDK plugs into OpenClaw. The left side shows the OpenClaw harness as a large box containing six components: Gateway daemon, 24 channel adapters, Plugin SDK with lifecycle hooks, Memory and dreaming, Cron and heartbeat scheduler, Auth registry. A central agentRuntime slot connects to five engine boxes on the right: PI default, claude-cli (highlighted as the Claude Agent SDK with sub-labels Agent loop, Hooks, MCP tools, Sub-agents, Sessions, Permissions), google-gemini-cli, codex-cli, and codex native. A callout from claude-cli labeled "what this post just walked" makes the connection explicit. Bottom caption: OpenClaw selects one inference engine per session. The Claude Agent SDK is one of five."></p>
+<p>The <code>claude-cli</code> agentRuntime <em>is</em> the SDK in production. OpenClaw provides the daemon shell, the channel adapters, the cron scheduler, the auth registry, the multi-account binding, the memory plugins, the diagnostics. The SDK provides the agent loop and the five attachment surfaces this post just walked. They compose. For the 95% of teams who want OpenClaw&#39;s surface with Claude as the engine, the integration is a configuration line, not a build.</p>
+<p>The transferable principle: <strong>agent harnesses and inference engines are separable concerns</strong>, and harness-with-pluggable-engine is the durable answer for any agent system that wants to outlive its current preferred vendor. January 9, 2026&#39;s OAuth lockdown was the existence proof. OpenClaw&#39;s response — provider diversification, token sink, read-through inheritance, five interchangeable agentRuntime backends — is the case study. The SDK alone does not give you that protection; the SDK <em>inside</em> a harness does.</p>
+<hr>
+<pre><code class="language-mermaid">flowchart TD
+    H([&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;The&amp;nbsp;Wire&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;])
+    style H fill:#455a64,color:#fff,stroke:#90a4ae,stroke-width:3px,font-weight:bold,font-size:18px
+</code></pre>
+<p>The Claude Agent SDK is a control plane over a separate program. Once you see it that way, the rest of the surface — hooks, sub-agents, MCP transports, permission modes, the on-disk session tree — stops being API trivia and starts being the answer to a different question: how do you keep a long-running autonomous process observable, steerable, and recoverable from outside its own loop? The Messages API lets you ask a model a question. The Agent SDK lets you put a program in charge of a goal and watch what it does about it. The library is not the agent — the library is the wire.</p>
+<hr>
+<p><strong>References</strong></p>
+<ol>
+<li>Anthropic. &quot;Claude Agent SDK Overview.&quot; <a href="https://code.claude.com/docs/en/agent-sdk/overview">code.claude.com/docs/en/agent-sdk/overview</a>.</li>
+<li>Anthropic. &quot;Claude Agent SDK Hooks.&quot; <a href="https://code.claude.com/docs/en/agent-sdk/hooks">code.claude.com/docs/en/agent-sdk/hooks</a>.</li>
+<li>Anthropic. &quot;Claude Agent SDK Permissions.&quot; <a href="https://code.claude.com/docs/en/agent-sdk/permissions">code.claude.com/docs/en/agent-sdk/permissions</a>.</li>
+<li>Anthropic. &quot;Claude Agent SDK Sub-agents.&quot; <a href="https://code.claude.com/docs/en/agent-sdk/subagents">code.claude.com/docs/en/agent-sdk/subagents</a>.</li>
+<li>Anthropic. &quot;Claude Agent SDK MCP Integration.&quot; <a href="https://code.claude.com/docs/en/agent-sdk/mcp">code.claude.com/docs/en/agent-sdk/mcp</a>.</li>
+<li>Anthropic. &quot;Claude Agent SDK Sessions.&quot; <a href="https://code.claude.com/docs/en/agent-sdk/sessions">code.claude.com/docs/en/agent-sdk/sessions</a>.</li>
+<li>Anthropic. &quot;Hosting the Agent SDK.&quot; <a href="https://code.claude.com/docs/en/agent-sdk/hosting">code.claude.com/docs/en/agent-sdk/hosting</a>.</li>
+<li>Anthropic Engineering. &quot;Building Agents with the Claude Agent SDK.&quot; <a href="https://claude.com/blog/building-agents-with-the-claude-agent-sdk">claude.com/blog/building-agents-with-the-claude-agent-sdk</a>.</li>
+<li>GitHub. &quot;claude-agent-sdk-python.&quot; <a href="https://github.com/anthropics/claude-agent-sdk-python">github.com/anthropics/claude-agent-sdk-python</a>.</li>
+<li>GitHub. &quot;claude-agent-sdk-typescript.&quot; <a href="https://github.com/anthropics/claude-agent-sdk-typescript">github.com/anthropics/claude-agent-sdk-typescript</a>.</li>
+<li>n8n. &quot;AI Agent Cluster Node Documentation.&quot; <a href="https://docs.n8n.io/integrations/builtin/cluster-nodes/root-nodes/n8n-nodes-langchain.agent/">docs.n8n.io/integrations/builtin/cluster-nodes/root-nodes/n8n-nodes-langchain.agent</a>.</li>
+<li>n8n. &quot;Queue Mode.&quot; <a href="https://docs.n8n.io/hosting/scaling/queue-mode/">docs.n8n.io/hosting/scaling/queue-mode</a>.</li>
+</ol>
+
+    </article>
+
+    <p><a href="https://bootloader.live">← Back to bootloader.live</a></p>
+
+    <script>window.goatcounter={no_onload:true};</script>
+    <script data-goatcounter="https://mxcoppell.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
