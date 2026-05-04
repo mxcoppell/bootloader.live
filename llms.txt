@@ -6,6 +6,7 @@ This blog covers AI-assisted software development, MCP (Model Context Protocol) 
 
 ## Posts
 
+- [Choose an AI Agent Stack](https://bootloader.live/posts/ai-agent-sdk-comparison/): A team shipping a chat feature, a team building long-running research agents, and a team automating ticket workflows can all say they need an AI agent stack and mean different things.
 - [Inside the Claude Agent SDK](https://bootloader.live/posts/claude-agent-sdk-deepdive/): An LLM API answers questions. An agent pursues goals. The difference is a runtime — a process that decides which tool to call next, manages its own working memory across hundreds of turns, fans out sub-agents in isolated context windows, accepts human steering mid-loop, and persists every decision to disk for later resume.
 - [What Prompt Caching Actually Caches](https://bootloader.live/posts/prompt-caching-deep-dive/): Prompt caching does not cache the prompt. It caches the work the model already did on a prefix of it. Once that distinction lands, every other behavior — why a capitalized character invalidates 2,727 tokens, why agent SDKs silently lose the savings, why the bill drops 80% on the second call — falls out of one property of transformer attention.
 - [AI Works When You Build for It](https://bootloader.live/posts/ai-engineering-done-right/): AI writes your code. The question is what tells it what to write, how to verify it, and where to ship it. The answer is not a better model. It is a system — ground truth, tools, skills, and defined routes through different types of engineering work.
