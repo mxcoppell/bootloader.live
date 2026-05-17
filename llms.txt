@@ -6,6 +6,7 @@ This blog covers AI-assisted software development, MCP (Model Context Protocol) 
 
 ## Posts
 
+- [Reading an Interactive Diagram on This Blog](https://bootloader.live/posts/html-format-reference/): A pencil sketch teaches mood. A schematic teaches structure. An interactive diagram teaches a sequence the reader walks through themselves.
 - [Managing Spec-Driven Context in a Real Agile SDLC](https://bootloader.live/posts/manage-sdd-context/): The spec says one thing. The Jira story says another. Production is still doing a third.
 - [Choose an AI Agent Stack](https://bootloader.live/posts/ai-agent-sdk-comparison/): A team shipping a chat feature, a team building long-running research agents, and a team automating ticket workflows can all say they need an AI agent stack and mean different things.
 - [Inside the Claude Agent SDK](https://bootloader.live/posts/claude-agent-sdk-deepdive/): An LLM API answers questions. An agent pursues goals. The difference is a runtime — a process that decides which tool to call next, manages its own working memory across hundreds of turns, fans out sub-agents in isolated context windows, accepts human steering mid-loop, and persists every decision to disk for later resume.
