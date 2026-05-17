@@ -757,6 +757,168 @@ body {
 .markdown-body { background-color: transparent !important; }
 [data-theme="dark"] .hljs { background: var(--code-bg) !important; }
 [data-theme="light"] .hljs { background: var(--code-bg) !important; }
+
+/* ─── HTML-format post components ─────────────────────── */
+.post-html .section-badge {
+    display: flex;
+    justify-content: center;
+    margin: 3rem 0 1.5rem;
+}
+.post-html .section-badge span {
+    background: #1f2020;
+    color: #ffffff;
+    border: 3px solid #cccccc;
+    border-radius: 999px;
+    padding: 12px 80px;
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: 0.02em;
+    font-family: system-ui, sans-serif;
+    text-align: center;
+}
+[data-theme="light"] .post-html .section-badge span {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+.post-html .lead {
+    font-size: 1.1em;
+    color: var(--text-primary);
+}
+
+.post-html .callout-note,
+.post-html .callout-warn {
+    border-left: 4px solid var(--accent-color);
+    background: var(--bg-secondary);
+    padding: 1rem 1.25rem;
+    margin: 1.5rem 0;
+    border-radius: 0 6px 6px 0;
+}
+.post-html .callout-warn {
+    border-left-color: var(--color-attention-fg);
+}
+
+.post-html .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1.5rem 0;
+}
+@media (max-width: 600px) {
+    .post-html .compare-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.post-html .svg-figure {
+    margin: 2rem 0;
+    text-align: center;
+}
+.post-html .svg-figure svg {
+    max-width: 100%;
+    height: auto;
+}
+.post-html .svg-figure .node {
+    fill: var(--bg-secondary);
+    stroke: var(--text-body);
+    stroke-width: 1.5;
+    cursor: pointer;
+    transition: stroke 0.15s ease;
+}
+.post-html .svg-figure .node:hover,
+.post-html .svg-figure .node:focus,
+.post-html .svg-figure .node[data-active="true"] {
+    stroke: var(--accent-color);
+    stroke-width: 2;
+    outline: none;
+}
+.post-html .svg-figure .edge {
+    stroke: var(--text-body);
+    stroke-width: 1.5;
+    fill: none;
+}
+.post-html .svg-figure .edge[data-active="true"] {
+    stroke: var(--accent-color);
+    stroke-width: 2;
+}
+.post-html .svg-figure .edge[data-completed="true"] {
+    stroke: var(--text-muted);
+}
+.post-html .svg-figure .label {
+    fill: var(--text-primary);
+    font-family: system-ui, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    pointer-events: none;
+}
+
+.post-html .svg-legend {
+    min-height: 2.5rem;
+    margin-top: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--bg-secondary);
+    color: var(--text-body);
+    border-radius: 4px;
+    font-size: 0.9rem;
+    text-align: left;
+}
+.post-html .svg-legend strong { color: var(--text-primary); margin-right: 0.5rem; }
+
+.post-html .svg-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+}
+.post-html .svg-controls button {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    padding: 4px 16px;
+    font-family: system-ui, sans-serif;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+.post-html .svg-controls button:hover { border-color: var(--accent-color); }
+.post-html .svg-controls button:disabled { opacity: 0.4; cursor: not-allowed; }
+.post-html .svg-controls .step-indicator {
+    color: var(--text-muted);
+    font-family: system-ui, sans-serif;
+    font-size: 0.9rem;
+    min-width: 4rem;
+    text-align: center;
+}
+
+.post-html .svg-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+.post-html .svg-tabs button {
+    background: transparent;
+    color: var(--text-body);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 4px 12px;
+    font-family: system-ui, sans-serif;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+.post-html .svg-tabs button[aria-selected="true"] {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border-color: var(--accent-color);
+}
+
+/* No-JS fallback: when JS hasn't marked the figure ready, show everything */
+.post-html .svg-figure:not(.js-ready) .svg-legend { display: none; }
+.post-html .svg-figure:not(.js-ready) .svg-controls { display: none; }
+.post-html .svg-figure[data-interaction="toggle-view"]:not(.js-ready) [data-view] { display: block; }
+.post-html .svg-figure[data-interaction="toggle-view"]:not(.js-ready) [data-view][hidden] { display: block !important; }
     </style>
 </head>
 <body>
