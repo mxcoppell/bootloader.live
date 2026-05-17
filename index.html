@@ -1590,9 +1590,12 @@ function updateReadingProgress() {
 }
 
 // ─── Utilities ──────────────────────────────────────────
-function readingTime(text) {
-    var words = text.trim().split(/\s+/).length;
-    return Math.ceil(words / 230) + ' min read';
+function readingTime(text, isHtml) {
+    var stripped = isHtml
+        ? text.replace(/<svg[\s\S]*?<\/svg>/gi, ' ').replace(/<[^>]+>/g, ' ')
+        : text;
+    var words = stripped.trim().split(/\s+/).filter(Boolean).length;
+    return Math.max(1, Math.ceil(words / 230)) + ' min read';
 }
 
 function formatDate(dateStr) {
@@ -1733,7 +1736,7 @@ async function showPost(slug, skipPush) {
     dotSpan.textContent = '\u00B7';
     metaEl.appendChild(dotSpan);
     var timeSpan = document.createElement('span');
-    timeSpan.textContent = readingTime(md);
+    timeSpan.textContent = readingTime(md, post.file.endsWith('.html'));
     metaEl.appendChild(timeSpan);
 
     var basePath = '/posts/' + slug + '/';
