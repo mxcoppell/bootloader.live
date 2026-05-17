@@ -62,9 +62,9 @@ function parsePosts() {
     return posts;
 }
 
-// ─── Render a post's markdown to HTML ──────────────────
-function renderMarkdown(mdContent) {
-    return marked.parse(mdContent);
+// ─── Render a post's content to HTML ──────────────────
+function renderPostContent(content, isHtml) {
+    return isHtml ? content : marked.parse(content);
 }
 
 // ─── Extract first image from markdown ────────────────
@@ -233,9 +233,10 @@ function main() {
             continue;
         }
 
-        const md = fs.readFileSync(mdPath, 'utf-8');
-        const renderedHtml = renderMarkdown(md);
-        const imageUrl = extractFirstImage(md, post.slug);
+        const content = fs.readFileSync(mdPath, 'utf-8');
+        const isHtml = (post.file || 'blog.md').endsWith('.html');
+        const renderedHtml = renderPostContent(content, isHtml);
+        const imageUrl = isHtml ? null : extractFirstImage(content, post.slug);
 
         const outDir = path.join(__dirname, 'posts', post.slug);
         const outPath = path.join(outDir, 'index.html');
