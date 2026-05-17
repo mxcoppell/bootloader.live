@@ -1345,7 +1345,7 @@ function sanitizeHtmlFragment(html, basePath) {
 function initSvgInteractions(root) {
     root.querySelectorAll('.svg-figure[data-interaction="hover-reveal"]').forEach(initHoverReveal);
     root.querySelectorAll('.svg-figure[data-interaction="step-through"]').forEach(initStepThrough);
-    // toggle-view added in subsequent task
+    root.querySelectorAll('.svg-figure[data-interaction="toggle-view"]').forEach(initToggleView);
 }
 
 // Update a legend element with a bolded label and following description text.
@@ -1427,6 +1427,31 @@ function initStepThrough(figure) {
     if (prevBtn) prevBtn.addEventListener('click', function() { if (current > 1) { current--; render(); } });
     if (nextBtn) nextBtn.addEventListener('click', function() { if (current < totalSteps) { current++; render(); } });
     render();
+}
+
+function initToggleView(figure) {
+    figure.classList.add('js-ready');
+    var tabs = figure.querySelectorAll('.svg-tabs [data-view]');
+    var views = figure.querySelectorAll('svg [data-view]');
+
+    function selectView(name) {
+        tabs.forEach(function(t) {
+            var sel = t.getAttribute('data-view') === name;
+            t.setAttribute('aria-selected', sel ? 'true' : 'false');
+        });
+        views.forEach(function(v) {
+            if (v.getAttribute('data-view') === name) v.removeAttribute('hidden');
+            else v.setAttribute('hidden', '');
+        });
+    }
+
+    tabs.forEach(function(tab) {
+        tab.addEventListener('click', function() { selectView(tab.getAttribute('data-view')); });
+    });
+
+    // Initial: first tab with aria-selected="true", else first tab
+    var initialTab = figure.querySelector('.svg-tabs [aria-selected="true"]') || tabs[0];
+    if (initialTab) selectView(initialTab.getAttribute('data-view'));
 }
 
 // Wait for mermaid ESM to load
