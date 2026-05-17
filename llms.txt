@@ -6,6 +6,7 @@ This blog covers AI-assisted software development, MCP (Model Context Protocol) 
 
 ## Posts
 
+- [How OpenAPI Is Evolving for AI Agents](https://bootloader.live/posts/openapi-for-ai-agents/): Every guide says the same thing: hand the agent your OpenAPI spec and it will figure out the rest. In practice, the agent loads the spec, the spec eats a third of the context window, and the agent picks the wrong endpoint anyway.
 - [Managing Spec-Driven Context in a Real Agile SDLC](https://bootloader.live/posts/manage-sdd-context/): The spec says one thing. The Jira story says another. Production is still doing a third.
 - [Choose an AI Agent Stack](https://bootloader.live/posts/ai-agent-sdk-comparison/): A team shipping a chat feature, a team building long-running research agents, and a team automating ticket workflows can all say they need an AI agent stack and mean different things.
 - [Inside the Claude Agent SDK](https://bootloader.live/posts/claude-agent-sdk-deepdive/): An LLM API answers questions. An agent pursues goals. The difference is a runtime — a process that decides which tool to call next, manages its own working memory across hundreds of turns, fans out sub-agents in isolated context windows, accepts human steering mid-loop, and persists every decision to disk for later resume.
