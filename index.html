@@ -1316,6 +1316,29 @@ function renderMarkdown(md, basePath) {
     return html;
 }
 
+// Sanitize HTML-fragment posts with SVG + component-class allowlist.
+// Per-post <script> blocks are NOT allowed; interactivity lives in initSvgInteractions().
+function sanitizeHtmlFragment(html, basePath) {
+    // Rewrite relative image paths the same way renderMarkdown does
+    var processed = html.replace(/(<img[^>]+src=")(?!https?:|\/)/g, function(match) {
+        return match + basePath;
+    });
+
+    return DOMPurify.sanitize(processed, {
+        USE_PROFILES: { html: true, svg: true, svgFilters: true },
+        ADD_TAGS: ['use'],
+        ADD_ATTR: [
+            'class', 'style', 'id', 'role', 'tabindex', 'hidden', 'aria-selected',
+            'aria-live', 'aria-labelledby', 'aria-label', 'viewBox', 'preserveAspectRatio',
+            'data-interaction', 'data-step', 'data-steps', 'data-view', 'data-action',
+            'data-label', 'data-desc', 'data-active', 'data-completed'
+        ],
+        ALLOW_DATA_ATTR: true,
+        FORBID_TAGS: ['script', 'iframe', 'object', 'embed'],
+        FORBID_ATTR: ['onerror', 'onclick', 'onload', 'onmouseover']
+    });
+}
+
 // Wait for mermaid ESM to load
 function waitForMermaid() {
     return new Promise(function(resolve) {
@@ -1599,7 +1622,9 @@ async function showPost(slug, skipPush) {
     metaEl.appendChild(timeSpan);
 
     var basePath = '/posts/' + slug + '/';
-    var sanitizedHtml = renderMarkdown(md, basePath);
+    var sanitizedHtml = post.file.endsWith('.html')
+        ? sanitizeHtmlFragment(md, basePath)
+        : renderMarkdown(md, basePath);
 
     body.textContent = '';
     var template = document.createElement('template');
