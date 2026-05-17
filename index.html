@@ -1339,6 +1339,68 @@ function sanitizeHtmlFragment(html, basePath) {
     });
 }
 
+// ─── SVG Interaction Patterns ──────────────────────────
+// All interaction logic lives here so per-post <script> is never needed.
+// Three patterns: hover-reveal, step-through, toggle-view.
+function initSvgInteractions(root) {
+    root.querySelectorAll('.svg-figure[data-interaction="hover-reveal"]').forEach(initHoverReveal);
+    // step-through and toggle-view added in subsequent tasks
+}
+
+// Update a legend element with a bolded label and following description text.
+// Uses safe DOM construction — never writes to innerHTML.
+function setLegendContent(legend, label, desc) {
+    while (legend.firstChild) legend.removeChild(legend.firstChild);
+    if (label) {
+        var strong = document.createElement('strong');
+        strong.textContent = label;
+        legend.appendChild(strong);
+    }
+    if (desc) {
+        legend.appendChild(document.createTextNode(desc));
+    }
+}
+
+function initHoverReveal(figure) {
+    figure.classList.add('js-ready');
+    var legend = figure.querySelector('.svg-legend');
+    if (!legend) return;
+
+    var nodes = figure.querySelectorAll('.node[data-label]');
+    nodes.forEach(function(node) {
+        // Make focusable for keyboard users
+        if (!node.hasAttribute('tabindex')) node.setAttribute('tabindex', '0');
+        if (!node.hasAttribute('role')) node.setAttribute('role', 'button');
+        var label = node.getAttribute('data-label') || '';
+        var desc = node.getAttribute('data-desc') || '';
+        node.setAttribute('aria-label', label + (desc ? '. ' + desc : ''));
+
+        var show = function() {
+            nodes.forEach(function(n) { n.removeAttribute('data-active'); });
+            node.setAttribute('data-active', 'true');
+            setLegendContent(legend, label, desc);
+        };
+        var hide = function() {
+            node.removeAttribute('data-active');
+            // Keep legend showing last value; do not clear on leave to avoid flicker
+        };
+        node.addEventListener('mouseenter', show);
+        node.addEventListener('focus', show);
+        node.addEventListener('mouseleave', hide);
+        node.addEventListener('blur', hide);
+    });
+
+    // Show first node's label as the initial state so the legend isn't empty
+    if (nodes.length > 0) {
+        var first = nodes[0];
+        setLegendContent(
+            legend,
+            first.getAttribute('data-label') || '',
+            first.getAttribute('data-desc') || ''
+        );
+    }
+}
+
 // Wait for mermaid ESM to load
 function waitForMermaid() {
     return new Promise(function(resolve) {
@@ -1634,6 +1696,7 @@ async function showPost(slug, skipPush) {
     window.scrollTo(0, 0);
 
     await renderMermaidDiagrams();
+    initSvgInteractions(document.querySelector('.post-content'));
     generateToc();
     fixThemeColors();
 
