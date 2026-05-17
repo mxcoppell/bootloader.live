@@ -1344,7 +1344,8 @@ function sanitizeHtmlFragment(html, basePath) {
 // Three patterns: hover-reveal, step-through, toggle-view.
 function initSvgInteractions(root) {
     root.querySelectorAll('.svg-figure[data-interaction="hover-reveal"]').forEach(initHoverReveal);
-    // step-through and toggle-view added in subsequent tasks
+    root.querySelectorAll('.svg-figure[data-interaction="step-through"]').forEach(initStepThrough);
+    // toggle-view added in subsequent task
 }
 
 // Update a legend element with a bolded label and following description text.
@@ -1399,6 +1400,33 @@ function initHoverReveal(figure) {
             first.getAttribute('data-desc') || ''
         );
     }
+}
+
+function initStepThrough(figure) {
+    figure.classList.add('js-ready');
+    var totalSteps = parseInt(figure.getAttribute('data-steps') || '0', 10);
+    var stepEls = figure.querySelectorAll('[data-step]');
+    var indicator = figure.querySelector('.step-indicator');
+    var prevBtn = figure.querySelector('[data-action="prev"]');
+    var nextBtn = figure.querySelector('[data-action="next"]');
+    var current = 1;
+
+    function render() {
+        stepEls.forEach(function(el) {
+            var n = parseInt(el.getAttribute('data-step') || '0', 10);
+            el.removeAttribute('data-active');
+            el.removeAttribute('data-completed');
+            if (n < current) el.setAttribute('data-completed', 'true');
+            if (n === current) el.setAttribute('data-active', 'true');
+        });
+        if (indicator) indicator.textContent = current + ' / ' + totalSteps;
+        if (prevBtn) prevBtn.disabled = (current === 1);
+        if (nextBtn) nextBtn.disabled = (current === totalSteps);
+    }
+
+    if (prevBtn) prevBtn.addEventListener('click', function() { if (current > 1) { current--; render(); } });
+    if (nextBtn) nextBtn.addEventListener('click', function() { if (current < totalSteps) { current++; render(); } });
+    render();
 }
 
 // Wait for mermaid ESM to load
