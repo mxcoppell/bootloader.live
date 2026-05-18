@@ -1469,9 +1469,16 @@ function initToggleView(figure) {
             var sel = t.getAttribute('data-view') === name;
             t.setAttribute('aria-selected', sel ? 'true' : 'false');
         });
+        // Toggle the SVG-native `display` attribute (not the HTML `hidden` attribute)
+        // because `hidden` is inconsistently honored on SVG <g> elements across browsers.
+        // Also clear any stale `hidden` from older post markup for backward compat.
         views.forEach(function(v) {
-            if (v.getAttribute('data-view') === name) v.removeAttribute('hidden');
-            else v.setAttribute('hidden', '');
+            if (v.getAttribute('data-view') === name) {
+                v.removeAttribute('display');
+                v.removeAttribute('hidden');
+            } else {
+                v.setAttribute('display', 'none');
+            }
         });
     }
 
