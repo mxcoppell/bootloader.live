@@ -779,11 +779,11 @@ body {
     text-align: center;
 }
 
-/* HTML-format post typography: mirror the source preview's tonal hierarchy
-   so <strong> and <em> visibly contrast against body text. Body is muted;
-   strong inherits muted but gets full bold weight (pops by weight); em is
-   even more muted (recedes); lead, code, headings stay bright (highlights). */
-.post-content .post-html { color: var(--text-secondary); }
+/* HTML-format post typography: body stays bright (inherits markdown-body's
+   --fgColor-default) for readability. <strong> pops by weight only (700 vs
+   the inherited 400). <em> recedes via --text-muted + italic. <figcaption>
+   muted as secondary text. Note: deviates from the source preview's muted-
+   body design choice — bright body is preferred here. */
 .post-content .post-html strong { font-weight: 700; }
 .post-content .post-html em { color: var(--text-muted); font-style: italic; }
 .post-content .post-html figcaption { color: var(--text-muted); }
