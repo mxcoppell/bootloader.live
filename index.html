@@ -810,28 +810,32 @@ body {
 
 .post-html .svg-figure {
     margin: 2rem 0;
+    padding: 24px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
     text-align: center;
 }
 .post-html .svg-figure svg {
     max-width: 100%;
     height: auto;
+    display: block;
 }
 .post-html .svg-figure .node {
-    fill: var(--bg-secondary);
-    stroke: var(--text-body);
+    fill: var(--bg-tertiary);
+    stroke: var(--text-secondary);
     stroke-width: 1.5;
-    cursor: pointer;
-    transition: stroke 0.15s ease;
+    transition: stroke 0.15s ease, fill 0.15s ease;
 }
-.post-html .svg-figure .node:hover,
-.post-html .svg-figure .node:focus,
+.post-html .svg-figure .node[tabindex] { cursor: pointer; outline: none; }
+.post-html .svg-figure .node[tabindex]:hover,
+.post-html .svg-figure .node[tabindex]:focus,
 .post-html .svg-figure .node[data-active="true"] {
     stroke: var(--accent-color);
     stroke-width: 2;
-    outline: none;
 }
 .post-html .svg-figure .edge {
-    stroke: var(--text-body);
+    stroke: var(--text-secondary);
     stroke-width: 1.5;
     fill: none;
 }
@@ -844,11 +848,34 @@ body {
 }
 .post-html .svg-figure .label {
     fill: var(--text-primary);
-    font-family: system-ui, sans-serif;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
     font-size: 14px;
     font-weight: 500;
     pointer-events: none;
 }
+.post-html .svg-figure .label.box-title { font-size: 17px; font-weight: 600; fill: var(--text-primary); }
+.post-html .svg-figure .label.layer-tag { font-size: 11px; fill: var(--text-muted); letter-spacing: 0.08em; }
+.post-html .svg-figure .label.layer-name { font-size: 18px; fill: var(--text-primary); }
+.post-html .svg-figure .label.layer-sub { font-size: 12px; fill: var(--text-muted); }
+.post-html .svg-figure .label.callout { font-size: 13px; fill: var(--text-primary); }
+.post-html .svg-figure .label.callout-sub { font-size: 11px; fill: var(--text-muted); font-style: italic; }
+.post-html .svg-figure .label.doc-line { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; fill: var(--text-primary); }
+.post-html .svg-figure .label.bracket-label { font-size: 11px; fill: var(--text-muted); letter-spacing: 0.1em; }
+.post-html .svg-figure .label.tool-num { font-size: 16px; fill: var(--accent-color); }
+.post-html .svg-figure .label.tool-name { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 14px; fill: var(--text-primary); }
+.post-html .svg-figure .label.tool-sub { font-size: 11px; fill: var(--text-muted); }
+.post-html .svg-figure .doc-rect { fill: var(--bg-tertiary); stroke: var(--text-secondary); }
+.post-html .svg-figure .tool-box { fill: var(--bg-tertiary); }
+.post-html .svg-figure .layer-band { fill: var(--bg-tertiary); stroke: var(--text-secondary); stroke-width: 1; opacity: 0.5; }
+.post-html .svg-figure .step .step-arrow { stroke: var(--text-secondary); stroke-width: 1; opacity: 0.4; }
+
+/* step-through interaction states (JS sets data-active / data-completed on .step elements) */
+.post-html .svg-figure[data-interaction="step-through"].js-ready .step { opacity: 0.35; transition: opacity 200ms ease; }
+.post-html .svg-figure[data-interaction="step-through"].js-ready .step[data-active="true"] { opacity: 1; }
+.post-html .svg-figure[data-interaction="step-through"].js-ready .step[data-active="true"] .layer-band { stroke: var(--accent-color); stroke-width: 2; opacity: 1; }
+.post-html .svg-figure[data-interaction="step-through"].js-ready .step[data-active="true"] .step-arrow { stroke: var(--accent-color); stroke-width: 2; opacity: 1; }
+.post-html .svg-figure[data-interaction="step-through"].js-ready .step[data-completed="true"] { opacity: 0.65; }
+.post-html .svg-figure[data-interaction="step-through"].js-ready .step[data-completed="true"] .step-arrow { stroke: var(--text-muted); opacity: 0.6; }
 
 .post-html .svg-legend {
     min-height: 2.5rem;
