@@ -173,6 +173,29 @@ npx agent-browser eval "(() => {
 
 Add more probes as new classes appear. If any check fails, fix the host CSS before publishing.
 
+**Typography hierarchy parity.** Open both the source preview (port 8765) and the local build (port 8080), then probe the same paragraph in each. Body text, `<strong>`, `<em>`, `<code>`, and `<p class="lead">` should resolve to comparable colors and weights. The source establishes a tonal hierarchy — body muted, strong same-color-but-bolder, em more muted, code/lead bright. If the host renders everything at `--text-primary`, bold and italic don't pop visually and the page reads as flat.
+
+```bash
+# Run against BOTH renderers (port 8765 source, port 8080 host) and diff
+npx agent-browser eval "(() => {
+  const para = Array.from(document.querySelectorAll('.markdown-body p, .post-html p')).find(p => p.textContent.length > 60 && p.querySelector('strong'));
+  if (!para) return 'no paragraph with strong';
+  const strong = para.querySelector('strong');
+  const em = document.querySelector('em');
+  const code = para.querySelector('code');
+  const lead = document.querySelector('.lead');
+  return {
+    body: getComputedStyle(para).color,
+    strong: { color: getComputedStyle(strong).color, weight: getComputedStyle(strong).fontWeight },
+    em: em ? { color: getComputedStyle(em).color, style: getComputedStyle(em).fontStyle } : null,
+    code: code ? { color: getComputedStyle(code).color, bg: getComputedStyle(code).backgroundColor } : null,
+    lead: lead ? { color: getComputedStyle(lead).color, size: getComputedStyle(lead).fontSize } : null
+  };
+})()"
+```
+
+If body color is the same as strong color AND both equal `--text-primary`, the hierarchy is flat — add `.post-content .post-html { color: var(--text-secondary); }` and the related `strong`/`em` overrides to mirror the source. Past gap: the host had no `.post-html` typography rules at all, so HTML posts inherited the markdown-body's bright body color and lost all visual hierarchy.
+
 **7c. Interactive click-through.** Static screenshots will miss tab-toggles that swap to a blank view. Click every interactive control once and verify state changes:
 
 ```bash
