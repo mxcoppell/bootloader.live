@@ -779,11 +779,11 @@ body {
     text-align: center;
 }
 
-/* HTML-format post typography: mirror the source preview's tonal hierarchy
-   so <strong> and <em> visibly contrast against body text. Body is muted;
-   strong inherits muted but gets full bold weight (pops by weight); em is
-   even more muted (recedes); lead, code, headings stay bright (highlights). */
-.post-content .post-html { color: var(--text-secondary); }
+/* HTML-format post typography: body stays bright (inherits markdown-body's
+   --fgColor-default) for readability. <strong> pops by weight only (700 vs
+   the inherited 400). <em> recedes via --text-muted + italic. <figcaption>
+   muted as secondary text. Note: deviates from the source preview's muted-
+   body design choice — bright body is preferred here. */
 .post-content .post-html strong { font-weight: 700; }
 .post-content .post-html em { color: var(--text-muted); font-style: italic; }
 .post-content .post-html figcaption { color: var(--text-muted); }
@@ -863,16 +863,16 @@ body {
     pointer-events: none;
 }
 .post-html .svg-figure .label.box-title { font-size: 17px; font-weight: 600; fill: var(--text-primary); }
-.post-html .svg-figure .label.layer-tag { font-size: 11px; fill: var(--text-muted); letter-spacing: 0.08em; }
+.post-html .svg-figure .label.layer-tag { font-size: 11px; fill: var(--text-secondary); letter-spacing: 0.08em; }
 .post-html .svg-figure .label.layer-name { font-size: 18px; fill: var(--text-primary); }
-.post-html .svg-figure .label.layer-sub { font-size: 12px; fill: var(--text-muted); }
+.post-html .svg-figure .label.layer-sub { font-size: 12px; fill: var(--text-secondary); }
 .post-html .svg-figure .label.callout { font-size: 13px; fill: var(--text-primary); }
-.post-html .svg-figure .label.callout-sub { font-size: 11px; fill: var(--text-muted); font-style: italic; }
+.post-html .svg-figure .label.callout-sub { font-size: 11px; fill: var(--text-secondary); font-style: italic; }
 .post-html .svg-figure .label.doc-line { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; fill: var(--text-primary); }
-.post-html .svg-figure .label.bracket-label { font-size: 11px; fill: var(--text-muted); letter-spacing: 0.1em; }
+.post-html .svg-figure .label.bracket-label { font-size: 11px; fill: var(--text-secondary); letter-spacing: 0.1em; }
 .post-html .svg-figure .label.tool-num { font-size: 16px; fill: var(--accent-color); }
 .post-html .svg-figure .label.tool-name { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 14px; fill: var(--text-primary); }
-.post-html .svg-figure .label.tool-sub { font-size: 11px; fill: var(--text-muted); }
+.post-html .svg-figure .label.tool-sub { font-size: 11px; fill: var(--text-secondary); }
 .post-html .svg-figure .doc-rect { fill: var(--bg-tertiary); stroke: var(--text-secondary); }
 .post-html .svg-figure .tool-box { fill: var(--bg-tertiary); }
 .post-html .svg-figure .layer-band { fill: var(--bg-tertiary); stroke: var(--text-secondary); stroke-width: 1; opacity: 0.5; }
@@ -890,8 +890,8 @@ body {
     min-height: 2.5rem;
     margin-top: 0.5rem;
     padding: 0.5rem 1rem;
-    background: var(--bg-secondary);
-    color: var(--text-body);
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
     border-radius: 4px;
     font-size: 0.9rem;
     text-align: left;

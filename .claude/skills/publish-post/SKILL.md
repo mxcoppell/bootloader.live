@@ -194,7 +194,9 @@ npx agent-browser eval "(() => {
 })()"
 ```
 
-If body color is the same as strong color AND both equal `--text-primary`, the hierarchy is flat — add `.post-content .post-html { color: var(--text-secondary); }` and the related `strong`/`em` overrides to mirror the source. Past gap: the host had no `.post-html` typography rules at all, so HTML posts inherited the markdown-body's bright body color and lost all visual hierarchy.
+If body color equals strong color AND strong weight is only 600, bold won't pop. Fix by bumping `.post-content .post-html strong { font-weight: 700 }` so bold contrasts with the inherited 400 by weight alone. Apply `.post-content .post-html em { color: var(--text-muted); font-style: italic }` so italic recedes via color + slant. Apply `.post-content .post-html figcaption { color: var(--text-muted) }` for captions.
+
+**Do NOT** override body color with `--text-secondary` (the source preview does this but the user finds it too dim on bootloader.live). Keep body at the markdown-body inherited bright color — `<strong>` differentiates by weight only, which is sufficient at 700 vs 400.
 
 **7c. Interactive click-through.** Static screenshots will miss tab-toggles that swap to a blank view. Click every interactive control once and verify state changes:
 
