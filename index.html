@@ -876,15 +876,16 @@ body {
 .post-html .svg-figure .doc-rect { fill: var(--bg-tertiary); stroke: var(--text-secondary); }
 .post-html .svg-figure .tool-box { fill: var(--bg-tertiary); }
 .post-html .svg-figure .layer-band { fill: var(--bg-tertiary); stroke: var(--text-secondary); stroke-width: 1; opacity: 0.5; }
-.post-html .svg-figure .step .step-arrow { stroke: var(--text-secondary); stroke-width: 1; opacity: 0.4; }
+.post-html .svg-figure [data-step] .step-arrow { stroke: var(--text-secondary); stroke-width: 1; opacity: 0.4; }
 
-/* step-through interaction states (JS sets data-active / data-completed on .step elements) */
-.post-html .svg-figure[data-interaction="step-through"].js-ready .step { opacity: 0.35; transition: opacity 200ms ease; }
-.post-html .svg-figure[data-interaction="step-through"].js-ready .step[data-active="true"] { opacity: 1; }
-.post-html .svg-figure[data-interaction="step-through"].js-ready .step[data-active="true"] .layer-band { stroke: var(--accent-color); stroke-width: 2; opacity: 1; }
-.post-html .svg-figure[data-interaction="step-through"].js-ready .step[data-active="true"] .step-arrow { stroke: var(--accent-color); stroke-width: 2; opacity: 1; }
-.post-html .svg-figure[data-interaction="step-through"].js-ready .step[data-completed="true"] { opacity: 0.65; }
-.post-html .svg-figure[data-interaction="step-through"].js-ready .step[data-completed="true"] .step-arrow { stroke: var(--text-muted); opacity: 0.6; }
+/* step-through interaction states (JS sets data-active / data-completed on [data-step] elements) */
+.post-html .svg-figure[data-interaction="step-through"].js-ready [data-step] { opacity: 0.35; transition: opacity 200ms ease; }
+.post-html .svg-figure[data-interaction="step-through"].js-ready [data-step][data-active="true"] { opacity: 1; }
+.post-html .svg-figure[data-interaction="step-through"].js-ready [data-step][data-active="true"] .layer-band { stroke: var(--accent-color); stroke-width: 2; opacity: 1; }
+.post-html .svg-figure[data-interaction="step-through"].js-ready [data-step][data-active="true"] .step-arrow { stroke: var(--accent-color); stroke-width: 2; opacity: 1; }
+.post-html .svg-figure[data-interaction="step-through"].js-ready [data-step][data-active="true"] .edge { stroke: var(--accent-color); stroke-width: 2; }
+.post-html .svg-figure[data-interaction="step-through"].js-ready [data-step][data-completed="true"] { opacity: 0.65; }
+.post-html .svg-figure[data-interaction="step-through"].js-ready [data-step][data-completed="true"] .step-arrow { stroke: var(--text-muted); opacity: 0.6; }
 
 .post-html .svg-legend {
     min-height: 2.5rem;
