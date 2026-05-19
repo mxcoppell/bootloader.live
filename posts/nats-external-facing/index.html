@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NATS Goes Outside — bootloader.live</title>
+    <meta name="description" content="NATS removes the rule that high-throughput message brokers must hide inside the VPC behind a REST gateway. Browsers, phones, and IoT devices connect directly — at the cost of rebuilding the trust model from scratch.">
+    <link rel="canonical" href="https://bootloader.live/posts/nats-external-facing/">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="NATS Goes Outside">
+    <meta property="og:description" content="NATS removes the rule that high-throughput message brokers must hide inside the VPC behind a REST gateway. Browsers, phones, and IoT devices connect directly — at the cost of rebuilding the trust model from scratch.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://bootloader.live/posts/nats-external-facing/">
+    <meta property="og:site_name" content="bootloader.live">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="NATS Goes Outside">
+    <meta name="twitter:description" content="NATS removes the rule that high-throughput message brokers must hide inside the VPC behind a REST gateway. Browsers, phones, and IoT devices connect directly — at the cost of rebuilding the trust model from scratch.">
+
+    <!-- JSON-LD -->
+    <script type="application/ld+json">
+    {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "NATS Goes Outside",
+    "description": "NATS removes the rule that high-throughput message brokers must hide inside the VPC behind a REST gateway. Browsers, phones, and IoT devices connect directly — at the cost of rebuilding the trust model from scratch.",
+    "datePublished": "2026-05-17",
+    "url": "https://bootloader.live/posts/nats-external-facing/",
+    "author": {
+        "@type": "Person",
+        "name": "Michael Xie"
+    },
+    "keywords": "Architecture, Data Design",
+    "publisher": {
+        "@type": "Person",
+        "name": "Michael Xie"
+    }
+}
+    </script>
+
+    <style>
+        body {
+            font-family: 'Newsreader', Georgia, serif;
+            max-width: 740px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            background: #222222;
+            color: #e6edf3;
+            line-height: 1.7;
+        }
+        a { color: #58a6ff; }
+        pre { background: #2a2a2a; padding: 1rem; border-radius: 6px; overflow-x: auto; }
+        code { font-size: 0.9em; }
+        img { max-width: 100%; height: auto; }
+        h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        .meta { color: #8b949e; font-size: 0.9rem; margin-bottom: 2rem; }
+    </style>
+</head>
+<body>
+    <script>window.location.replace('https://bootloader.live/#/post/nats-external-facing');</script>
+
+    <article>
+        <h1>NATS Goes Outside</h1>
+        <div class="meta">May 17, 2026</div>
+        <article class="post-html markdown-body">
+
+<p class="lead">For most of the last decade, the rule for high-throughput message brokers was simple: keep them inside the VPC, behind a REST gateway, and let backend services talk to them on the trusted network. Exposing one directly to a browser tab, a phone, or a fleet of cell-connected sensors meant building a stateful translation layer in front and paying the latency cost. NATS removes the rule.</p>
+
+<p>What changes is not the messaging model — that survives the trip outside. What changes is the discipline you bring to three things: how external clients reach the cluster, how the broker decides who they are, and what each one is allowed to touch. The rest of this post is those three things.</p>
+
+<div class="section-badge"><span>Topology</span></div>
+
+<p>Before identity, there is transport. A modern browser cannot open a raw TCP socket. A mobile app inside a restrictive corporate network often cannot either. The traditional fix — an NGINX with Lua plugins, a Node bridge, a REST gateway faking async — added latency, broke end-to-end backpressure, and turned the gateway into its own stateful thing to scale and secure.</p>
+
+<p>NATS speaks WebSocket natively at the broker. Browsers, mobile apps, and IoT devices connect on the same port your firewall is already letting through (typically 443) and use the same publish, subscribe, and request/reply primitives that backend services use. No translation layer. The broker is the edge.</p>
+
+<figure>
+  <img src="images/websocket-edge-schematic.png" alt="Pencil schematic of the NATS WebSocket edge architecture. On the left, three external clients stacked vertically — a browser, a mobile app, an IoT device — each connecting via a labeled 'wss :443' arrow to a central NATS Server box marked 'native WebSocket support'. On the right, three backend services connect to the same NATS Server via labeled 'tcp :4222' arrows. A caption below the central server reads 'no REST gateway · no protocol proxy · no translation layer'." />
+  <figcaption>External clients and backend services connect to the same broker over different transports. No proxy in the middle.</figcaption>
+</figure>
+
+<p>For anything beyond a single broker, NATS scales through a layered topology. A <strong>cluster</strong> of three to five servers in one region holds full-mesh peer connections and gossips about who has joined. A <strong>super-cluster</strong> joins multiple regional clusters through <strong>gateway links</strong>, so a publisher in one region can reach a subscriber in another. And <strong>leaf nodes</strong> sit on the far edge — at a customer site, a factory floor, an IoT cellular hub — proxying local clients to an upstream cluster over a single outbound TLS connection.</p>
+
+<figure>
+  <img src="images/edge-topology-schematic.jpg" alt="Pencil schematic of a NATS super-cluster spanning two regions, drawn left to right. On the far left, four external client types stacked vertically: a browser, a mobile app, an IoT fleet thermostat, and a stick-figure B2B partner. Each client has an arrow going right to one of two leaf nodes in a middle column. Each leaf node has an outbound TLS arrow on port 7422 reaching into Regional Cluster A in the center — a triangle of three full-mesh-connected servers labeled nats-1, nats-2, nats-3. A labeled GATEWAY link with an encryption symbol connects Regional Cluster A to Regional Cluster B on the right, which has its own three-server full mesh of nats-4, nats-5, nats-6. A caption at the bottom reads: 'External clients connect via leaf nodes · regional clusters use full-mesh + gossip · gateways federate clusters into a super-cluster'." />
+  <figcaption>External clients on the left, leaf-node trust hops in the middle, two full-mesh regional clusters joined by a gateway on the right.</figcaption>
+</figure>
+
+<p>The <strong>leaf node</strong> is the load-bearing piece for external-facing deployments. It is not part of the cluster mesh; it is a bridge attached to it. Many untrusted local clients collapse into one explicit, account-scoped trust hop into the cluster. A browser connecting to <code>wss://app.example.com</code> may land on a leaf, on a server in Region A, or on a server in Region B; gossip and interest propagation mean the same messaging fabric appears regardless of which physical endpoint accepted the connection. From any single client's perspective there is just one broker — and that is the point.</p>
+
+<hr />
+
+<div class="section-badge"><span>Identity</span></div>
+
+<p>Once a client can connect, the next question is who they are. The wrong answer is a central user database that every broker queries — it bottlenecks, it is a juicy target, and it puts the broker in the identity-management business. NATS picks a different answer: identity is a delegated chain.</p>
+
+<p>Three tiers. An <strong>operator</strong> is the root of trust; its public key is baked into the server config. The operator signs <strong>account</strong> credentials — one per logical tenant. Each account, in turn, signs <strong>user</strong> credentials — one per connection. Every client carries its user credential and presents it at connect time. The broker verifies the signature chain back to the operator. The broker never stores user records and never sees a private key. A breach of the broker reveals nothing useful.</p>
+
+<figure>
+  <img src="images/trust-hierarchy-schematic.png" alt="Pencil schematic of the NATS JWT trust hierarchy on a warm cream parchment background, drawn landscape and reading left to right. Three labeled rectangular boxes are arranged horizontally. Left box: OPERATOR NKey, with the subtitle 'root of trust · server config · kept offline'. A horizontal arrow labeled 'signs Account JWTs' connects it to the middle box. Middle box: ACCOUNT NKey, with subtitle 'tenant boundary · isolated subject namespace'. A second horizontal arrow labeled 'signs User JWTs' connects it to the right box. Right box: USER JWT, with subtitle 'per-connection identity · presented at CONNECT'. Below the right box, a small simple laptop icon labeled 'CLIENT' has a dashed arrow pointing up to the USER JWT box, labeled 'presents at connect'." />
+  <figcaption>Each tier signs the one below. The client never holds anything above its own user credential.</figcaption>
+</figure>
+
+<p>This is decentralization that matters in practice. A platform team can hand an account to an external organization — a partner, a customer, a regional subsidiary — and that organization issues credentials for its own users without coordinating with the platform team, without modifying server config, and without sharing private keys. The operator's signature on the account credential is all the broker needs.</p>
+
+<p>The chain works when you can adopt the broker's identity workflow. Most organizations cannot. They have Okta, LDAP, a users table with bcrypt hashes, an OAuth provider — and they want NATS connections to authenticate against whatever they already run.</p>
+
+<p><strong>Auth Callout</strong> is the answer. When a client connects, the broker doesn't decide on its own. It forwards the connection attempt to an external auth service — a small microservice the team writes themselves — which makes the real decision against whatever identity backend it likes. The service replies with a freshly-minted user credential, and the broker binds that to the connection for its lifetime. Sensitive material on the wire (plain-text passwords from legacy clients, bearer tokens) is encrypted with one-time ephemeral keys so even an attacker with access to the internal messaging plane learns nothing useful.</p>
+
+<figure class="svg-figure" data-interaction="step-through" data-steps="5">
+  <svg viewBox="0 0 720 420" role="img" aria-labelledby="callout-title callout-desc">
+    <title id="callout-title">Auth Callout flow across three actors with XKey encryption</title>
+    <desc id="callout-desc">A three-lane vertical sequence diagram. CLIENT lane on the left, NATS SERVER lane in the middle, AUTH SERVICE lane on the right. Time flows top to bottom. Step 1: the client opens a connection to the NATS server presenting raw credentials. Step 2: the server constructs an Authorization Request Claim, encrypts it with a one-time XKey, and publishes the encrypted request on the dollar-sign-sys.req.user.auth subject to the auth service. Step 3: the auth service decrypts the request with its XKey, then queries an external identity provider (LDAP, SQL, or OAuth) to validate the credentials. Step 4: the service mints a scoped User JWT, wraps it in an Authorization Response Claim, encrypts the response with the server's one-time public XKey, and publishes back. Step 5: the server decrypts the response, binds the User JWT's permissions to the connection, and discards the one-time XKey.</desc>
+
+    <defs>
+      <marker id="arrow-callout" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" />
+      </marker>
+    </defs>
+
+    <rect class="node" x="50" y="20" width="140" height="36" rx="4" />
+    <text class="label" x="120" y="44" text-anchor="middle" font-weight="700">CLIENT</text>
+    <rect class="node" x="290" y="20" width="140" height="36" rx="4" />
+    <text class="label" x="360" y="44" text-anchor="middle" font-weight="700">NATS SERVER</text>
+    <rect class="node" x="530" y="20" width="140" height="36" rx="4" />
+    <text class="label" x="600" y="44" text-anchor="middle" font-weight="700">AUTH SERVICE</text>
+
+    <line class="edge" x1="120" y1="56" x2="120" y2="400" stroke-dasharray="4 4" stroke-width="1" />
+    <line class="edge" x1="360" y1="56" x2="360" y2="400" stroke-dasharray="4 4" stroke-width="1" />
+    <line class="edge" x1="600" y1="56" x2="600" y2="400" stroke-dasharray="4 4" stroke-width="1" />
+
+    <g data-step="1">
+      <line class="edge" x1="125" y1="100" x2="355" y2="100" marker-end="url(#arrow-callout)" stroke-width="2" />
+      <text class="label" x="240" y="92" text-anchor="middle">CONNECT + raw credentials</text>
+      <text class="label" x="240" y="115" text-anchor="middle" font-size="10">(user/pass, bearer token, etc.)</text>
+    </g>
+
+    <g data-step="2">
+      <line class="edge" x1="365" y1="170" x2="595" y2="170" marker-end="url(#arrow-callout)" stroke-width="2" />
+      <text class="label" x="480" y="148" text-anchor="middle">publish on $SYS.REQ.USER.AUTH</text>
+      <text class="label" x="480" y="185" text-anchor="middle" font-size="10" font-weight="700">[ encrypted with one-time XKey ]</text>
+    </g>
+
+    <g data-step="3">
+      <rect class="node" x="545" y="215" width="110" height="60" rx="4" />
+      <text class="label" x="600" y="237" text-anchor="middle" font-size="11">decrypt with XKey</text>
+      <text class="label" x="600" y="253" text-anchor="middle" font-size="11">query IdP / DB</text>
+      <text class="label" x="600" y="269" text-anchor="middle" font-size="11">validate creds</text>
+    </g>
+
+    <g data-step="4">
+      <line class="edge" x1="595" y1="310" x2="365" y2="310" marker-end="url(#arrow-callout)" stroke-width="2" />
+      <text class="label" x="480" y="297" text-anchor="middle">scoped User JWT (Authorization Response Claim)</text>
+      <text class="label" x="480" y="325" text-anchor="middle" font-size="10" font-weight="700">[ encrypted with server's XKey ]</text>
+    </g>
+
+    <g data-step="5">
+      <line class="edge" x1="355" y1="370" x2="125" y2="370" marker-end="url(#arrow-callout)" stroke-width="2" stroke-dasharray="6 3" />
+      <text class="label" x="240" y="362" text-anchor="middle">OK — bound, XKey discarded</text>
+    </g>
+  </svg>
+  <div class="svg-controls">
+    <button data-action="prev">Prev</button>
+    <span class="step-indicator"></span>
+    <button data-action="next">Next</button>
+  </div>
+  <figcaption>Three actors, five messages. The broker doesn't decide who you are — it asks the auth service and binds whatever the service replies.</figcaption>
+</figure>
+
+<p>The payoff is that existing identity systems get a NATS face without being rebuilt inside NATS. Service identities that never change connection-to-connection can stay on long-lived credentials and skip the round trip entirely. Auth Callout earns its place wherever identity is dynamic or the backend of record lives somewhere else.</p>
+
+<hr />
+
+<div class="section-badge"><span>Access Scope</span></div>
+
+<p>A connected client has a verified identity. The next question is what it can touch. NATS answers in <strong>subjects</strong> — hierarchical strings like <code>orders.us-east.45</code> that double as both the addressing primitive and the access-control primitive. Every credential carries allow and deny lists of subject patterns; the broker checks every publish and subscribe against them.</p>
+
+<p>Two engine rules make the system predictable. <strong>Deny wins</strong> when a subject matches both an allow and a deny rule — useful for granting a broad prefix to a device while locking out a sensitive sub-hierarchy in the same breath. And <strong>anything not explicitly allowed is denied</strong>: once you list one subject in an allow list, you have implicitly denied every other. You cannot accidentally widen a permission by forgetting to write one down.</p>
+
+<figure>
+  <img src="images/scope-control-schematic.png" alt="Pencil schematic of a subject authorization decision tree. At the top, a rules box headed 'USER PERMISSIONS' lists two rules: 'pub allow: telemetry.deviceA.>' and 'pub deny: telemetry.deviceA.admin.>'. Below, four publish attempts each show the subject on the left and an outcome on the right. Attempt 1 (telemetry.deviceA.temp): ALLOWED — matches allow rule. Attempt 2 (telemetry.deviceA.humidity): ALLOWED — matches allow rule. Attempt 3 (telemetry.deviceA.admin.reboot): DENIED — deny precedence. Attempt 4 (telemetry.deviceB.temp): DENIED — default deny, no allow matches." />
+  <figcaption>Four publish attempts against the same two-rule permission set. Allow, deny precedence, and default deny all visible at a glance.</figcaption>
+</figure>
+
+<p>The reason this scales to thousands of users without thousands of policy blocks is <strong>per-identity templating</strong>. A single permission rule can carry the user's own identity as a variable — "publish to <code>orders.&lt;your-user-id&gt;</code> and nothing else" — so every credential issued under that account naturally scopes itself to its own slice of the subject space. You write one rule; the broker applies it differently for every connection.</p>
+
+<p><strong>Tenant bridges.</strong> Subject permissions scope an individual user. They do not scope an entire tenant. For SaaS platforms putting many customers on the same broker, the right primitive is the <strong>account</strong> itself — the same account that sits as the middle tier of the identity chain. Each account is a sealed subject namespace: a publish from account A to <code>orders</code> and a subscribe in account B to the same string see nothing of each other. Cross-tenant data leak is not policy-enforced; it is architecturally impossible.</p>
+
+<p>Real systems still need deliberate sharing — a control plane fanning out to every customer, a partner account exposing one feed to a downstream account, a multi-region deployment moving streams between regions. NATS handles this through <strong>exports</strong> and <strong>imports</strong>: an explicit, named, asymmetric bridge between otherwise-sealed accounts.</p>
+
+<figure>
+  <img src="images/tenant-bridges-sketch.png" alt="Loose pencil-sketch illustration of two boxy buildings side by side on a warm cream parchment background, labeled in large hand-lettered ALL-CAPS at the top: ACCOUNT A on the left, ACCOUNT C on the right. Account A's wall icons show laptops and database cylinders; Account C's wall icons show dashboard graphs and document pages. A thick crosshatch-shaded wall stands between the two buildings. At ground level, a small enclosed walkway crosses through the wall with a hand-lettered sign reading 'EXPORT → IMPORT'; inside the walkway, a small package labeled 'from_a.>' is being carried from Account A toward Account C with an arrow indicating direction." />
+  <figcaption>Two tenant buildings, one wall, one explicitly named skybridge. The wall is the default; the bridge is the contract.</figcaption>
+</figure>
+
+<figure class="svg-figure" data-interaction="hover-reveal">
+  <svg viewBox="0 0 720 280" role="img" aria-labelledby="bridges-title bridges-desc">
+    <title id="bridges-title">Cross-account subject mapping via Exports and Imports</title>
+    <desc id="bridges-desc">Two rounded rectangles side by side, labelled Account A on the left and Account C on the right. Inside Account A: a subject node holds the deeply nested name 'system.core.v2.telemetry.device.metrics.&gt;'. An arrow leaves Account A, crosses the gap labelled 'Export with restricted accounts allowlist', and enters Account C. Inside Account C: a much shorter subject node labelled 'from_a.&gt;' represents the locally mapped import. Beneath it sits an external client labelled 'subscribes to from_a.&gt;' — unaware of the full source path or that the data crosses an account boundary. Hover or focus any element to reveal what it represents.</desc>
+
+    <rect x="20" y="40" width="300" height="220" rx="8" fill="none" stroke-dasharray="4 4" stroke-width="1.5" class="node"
+          tabindex="0" aria-label="Account A — the source tenant. Owns a deeply nested telemetry subject hierarchy."
+          data-label="Account A (source tenant)"
+          data-desc="Isolated subject namespace. Owns a deep telemetry hierarchy that another account wants to consume." />
+
+    <rect x="50" y="100" width="240" height="50" rx="6" class="node"
+          tabindex="0" aria-label="The original subject in Account A's namespace: system.core.v2.telemetry.device.metrics.>"
+          data-label="system.core.v2.telemetry.device.metrics.&gt;"
+          data-desc="The full subject path as it lives in Account A. Long, deeply nested, exposed only via an explicit Export." />
+    <text class="label" x="170" y="130" text-anchor="middle" font-size="11">system.core.v2.…metrics.&gt;</text>
+
+    <text class="label" x="170" y="80" text-anchor="middle" font-size="11">subject in Account A's namespace</text>
+    <text class="label" x="170" y="180" text-anchor="middle" font-size="11">exported with accounts allowlist</text>
+
+    <rect x="400" y="40" width="300" height="220" rx="8" fill="none" stroke-dasharray="4 4" stroke-width="1.5" class="node"
+          tabindex="0" aria-label="Account C — the consuming tenant. Imports the export and remaps it locally to a shorter prefix."
+          data-label="Account C (consumer tenant)"
+          data-desc="Imports the exported subject under a local prefix. External clients in this account never see the cross-tenant routing." />
+
+    <rect x="430" y="100" width="240" height="50" rx="6" class="node"
+          tabindex="0" aria-label="The locally mapped subject in Account C: from_a.>. The same data as Account A's deep subject, accessed via a shorter local prefix."
+          data-label="from_a.&gt;"
+          data-desc="Account C's local-prefix mapping for the imported data. Clients see only this short name; the broker handles cross-account routing invisibly." />
+    <text class="label" x="550" y="130" text-anchor="middle" font-size="13">from_a.&gt;</text>
+
+    <rect x="470" y="190" width="160" height="40" rx="6" class="node"
+          tabindex="0" aria-label="An external client connected in Account C. Subscribes to from_a.>; has zero awareness that the data crosses an account boundary."
+          data-label="external client"
+          data-desc="Subscribes to from_a.&gt; only. Zero awareness of Account A, of the export/import topology, or of the original subject path." />
+    <text class="label" x="550" y="215" text-anchor="middle" font-size="11">subscribes from_a.&gt;</text>
+
+    <line x1="290" y1="125" x2="430" y2="125" stroke-width="2" stroke-dasharray="6 4" class="edge"
+          tabindex="0" aria-label="The export/import bridge. Account A explicitly exposes its subject; Account C explicitly imports it with a local prefix mapping."
+          data-label="Export → Import (local prefix mapping)"
+          data-desc="The bridge between accounts. Account A's export can be locked to specific destination accounts; Account C's import declares which remote subject it consumes and what local prefix to remap it under." />
+    <polygon points="430,125 422,121 422,129" fill="currentColor" class="edge" />
+  </svg>
+  <div class="svg-legend" aria-live="polite"></div>
+  <figcaption>Hover or tab through each element. Account A's deep subject becomes Account C's short local prefix; external clients in C never see the cross-account topology.</figcaption>
+</figure>
+
+<p>The asymmetry is the trick. The source account decides whether to expose a subject at all (publicly, or only to a named allowlist of destination accounts). The consuming account decides what local name the imported subject appears under. External clients in the consumer see a short, friendly prefix and have no idea the data lives in another tenant — and no permission to attempt any other subject in that tenant's namespace.</p>
+
+<hr />
+
+<div class="section-badge"><span>Trading Dash</span></div>
+
+<p>The three pillars compose differently for different problems. Two worked scenarios show the shape.</p>
+
+<p>A financial firm wants to push real-time equity quotes to a browser-based dashboard. The client is untrusted JavaScript on whatever laptop the user happens to own. Any credential held in browser memory has to do exactly one thing and no more.</p>
+
+<figure>
+  <img src="images/trading-dash-sketch.jpg" alt="Pencil sketch of a trader sitting at a desk facing a laptop. The laptop screen shows a stylized 'TRADING DASHBOARD' with a stock ticker reading 'AAPL up, TSLA down, NVDA up, MSFT up'. A pipe-like connection labeled 'wss :443' goes from the laptop up and to the right to a box labeled 'NATS BROKER'. On the pipe, a small ticket icon is labeled 'USER JWT' with subtitles 'sub: market.data.equities.>', 'WEBSOCKET only', '8h expiry · subs: 50'; a small arrow annotation reads 'enforced by cryptography'. To the right of the broker, a cylinder labeled 'MARKET DATA FEED' pumps data into the broker." />
+  <figcaption>The browser holds a JWT ticket; the broker enforces every restriction on the ticket cryptographically.</figcaption>
+</figure>
+
+<p><strong>Topology.</strong> The browser connects directly to the broker over WebSocket on port 443 — the same port the user's firewall is already letting through. No leaf node, no REST gateway, no protocol translator. The broker is the edge.</p>
+
+<p><strong>Identity.</strong> The firm's existing portal stays the identity authority. When the user logs in (with the same OIDC and MFA flow they already use), a backend service mints a fresh, short-lived NATS credential bound to that session and hands it back to the browser over the existing HTTPS connection. The browser presents that credential at connect; the broker verifies the chain back to the firm's account. There is no NATS-specific login screen and no separate user database.</p>
+
+<p><strong>Access scope.</strong> The minted credential is locked down hard. Subscribe is restricted to <code>market.data.equities.&gt;</code>. Publishing is denied for every subject (a leaked credential cannot inject fake market data). The credential expires after eight hours, is bound to the WebSocket transport so it cannot be replayed over raw TCP, and caps the total number of subscriptions so the browser cannot exhaust the broker.</p>
+
+<figure class="svg-figure" data-interaction="step-through" data-steps="6">
+  <svg viewBox="0 0 720 480" role="img" aria-labelledby="trading-title trading-desc">
+    <title id="trading-title">Trading dashboard connection lifecycle as a three-actor message flow</title>
+    <desc id="trading-desc">A three-lane vertical sequence diagram showing the message flow when a trader signs in. BROWSER lane on the left, BACKEND lane in the middle, NATS BROKER lane on the right. Time flows top to bottom. Step 1: the browser sends HTTPS login credentials (with MFA) to the backend. Step 2: an internal action on the backend lane — the backend generates an ephemeral NKey pair for this session. Step 3: another internal action on the backend lane — the backend mints a restrictive User JWT scoped to market.data.equities subscribe only, with 8-hour expiry, locked to WEBSOCKET transport, and a 50-subscription cap. Step 4: the backend returns the JWT plus the private NKey seed to the browser over the existing HTTPS session. Step 5: the browser opens a WebSocket connection to the NATS broker, signs the nonce challenge locally with the seed in memory, and the broker validates the three-tier chain. Step 6: the broker binds the permissions and market data begins streaming to the browser.</desc>
+
+    <defs>
+      <marker id="arrow-trading" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" />
+      </marker>
+    </defs>
+
+    <rect class="node" x="50" y="20" width="140" height="36" rx="4" />
+    <text class="label" x="120" y="44" text-anchor="middle" font-weight="700">BROWSER</text>
+    <rect class="node" x="290" y="20" width="140" height="36" rx="4" />
+    <text class="label" x="360" y="44" text-anchor="middle" font-weight="700">BACKEND</text>
+    <rect class="node" x="530" y="20" width="140" height="36" rx="4" />
+    <text class="label" x="600" y="44" text-anchor="middle" font-weight="700">NATS BROKER</text>
+
+    <line class="edge" x1="120" y1="56" x2="120" y2="460" stroke-dasharray="4 4" stroke-width="1" />
+    <line class="edge" x1="360" y1="56" x2="360" y2="460" stroke-dasharray="4 4" stroke-width="1" />
+    <line class="edge" x1="600" y1="56" x2="600" y2="460" stroke-dasharray="4 4" stroke-width="1" />
+
+    <g data-step="1">
+      <line class="edge" x1="125" y1="100" x2="355" y2="100" marker-end="url(#arrow-trading)" stroke-width="2" />
+      <text class="label" x="240" y="92" text-anchor="middle">HTTPS login (OIDC + MFA)</text>
+    </g>
+
+    <g data-step="2">
+      <rect class="node" x="305" y="135" width="110" height="40" rx="4" />
+      <text class="label" x="360" y="151" text-anchor="middle" font-size="11">generate ephemeral</text>
+      <text class="label" x="360" y="167" text-anchor="middle" font-size="11">NKey pair</text>
+    </g>
+
+    <g data-step="3">
+      <rect class="node" x="295" y="200" width="130" height="60" rx="4" />
+      <text class="label" x="360" y="218" text-anchor="middle" font-size="11">mint restrictive JWT:</text>
+      <text class="label" x="360" y="234" text-anchor="middle" font-size="10">sub: market.data.equities.&gt;</text>
+      <text class="label" x="360" y="248" text-anchor="middle" font-size="10">WS-only · 8h · subs:50</text>
+    </g>
+
+    <g data-step="4">
+      <line class="edge" x1="355" y1="290" x2="125" y2="290" marker-end="url(#arrow-trading)" stroke-width="2" />
+      <text class="label" x="240" y="282" text-anchor="middle">JWT + private NKey seed (HTTPS)</text>
+    </g>
+
+    <g data-step="5">
+      <line class="edge" x1="125" y1="345" x2="595" y2="345" marker-end="url(#arrow-trading)" stroke-width="2" />
+      <text class="label" x="360" y="337" text-anchor="middle">wss :443 — JWT + signed nonce</text>
+      <text class="label" x="360" y="361" text-anchor="middle" font-size="10">(broker walks the three-tier chain)</text>
+    </g>
+
+    <g data-step="6">
+      <line class="edge" x1="595" y1="420" x2="125" y2="420" marker-end="url(#arrow-trading)" stroke-width="2" stroke-dasharray="6 3" />
+      <text class="label" x="360" y="412" text-anchor="middle">market data stream begins</text>
+      <text class="label" x="360" y="438" text-anchor="middle" font-size="10">(every subscription enforced by JWT permissions)</text>
+    </g>
+  </svg>
+  <div class="svg-controls">
+    <button data-action="prev">Prev</button>
+    <span class="step-indicator"></span>
+    <button data-action="next">Next</button>
+  </div>
+  <figcaption>Three actors, six exchanges. The backend is the only thing that mints credentials; the browser only holds them; the broker only trusts them via cryptography.</figcaption>
+</figure>
+
+<p>The trust boundary is the credential, not the network.</p>
+
+<hr />
+
+<div class="section-badge"><span>IoT Migration</span></div>
+
+<p>A smart-home provider has tens of thousands of legacy thermostats already deployed in customers' houses, each one authenticating with a hardcoded MQTT username and password baked in at the factory. The provider wants to move the backend to a NATS-based multi-tenant platform — without an over-the-air firmware update and without breaking any deployed device.</p>
+
+<figure>
+  <img src="images/iot-migration-sketch.jpg" alt="Pencil sketch of legacy IoT thermostat migration on a warm cream parchment background. On the left, three old-style dial thermostats stacked vertically, each labeled 'HARDCODED CREDS' and emitting a speech bubble reading 'MQTT username/password'. Dashed wireless signal lines go right from each thermostat, converging into a central box labeled 'NATS BROKER'. Adjacent to the broker on the right, a smiling stick-figure character labeled 'AUTH CALLOUT SERVICE' holds a JWT ticket; the service has a connecting line to a small book labeled 'SQL DATABASE'. On the far right, three vertical container silos labeled 'CUSTOMER_X', 'CUSTOMER_Y', 'CUSTOMER_Z'. An arrow from the broker routes one specific thermostat's connection into the CUSTOMER_X silo, labeled 'mapped to tenant at connect'." />
+  <figcaption>The thermostat sends what it always sent. The broker, the auth service, and the SQL database do the tenant mapping invisibly.</figcaption>
+</figure>
+
+<p><strong>Topology.</strong> Each thermostat speaks MQTT to a leaf node sitting at the regional edge, which proxies the connection onto the upstream cluster. Adding more leaf nodes scales the fleet linearly; the cluster itself does not change shape as the device count grows.</p>
+
+<p><strong>Identity.</strong> The thermostat cannot be modified, so it cannot generate keys or present a JWT — all it will ever send is its hardcoded username and password. Auth Callout bridges that. The broker forwards every connection attempt to an auth service that looks the device up in the provider's existing SQL database of device-to-customer mappings, finds which customer the device belongs to, and mints a NATS credential on the fly that places the device into that customer's account.</p>
+
+<p><strong>Access scope.</strong> The minted credential restricts publishing to that one device's own telemetry subjects (<code>telemetry.device_beta_99.&gt;</code>) and nothing else. One compromised thermostat cannot publish on another device's behalf and cannot see another customer's traffic — the account boundary is sealed at the protocol level, not by a policy that could be miswritten.</p>
+
+<figure class="svg-figure" data-interaction="step-through" data-steps="5">
+  <svg viewBox="0 0 720 440" role="img" aria-labelledby="iot-title iot-desc">
+    <title id="iot-title">IoT thermostat auth callout as a four-actor message flow</title>
+    <desc id="iot-desc">A four-lane vertical sequence diagram showing what happens at the broker when one legacy thermostat reconnects. Lanes from left to right: THERMOSTAT (the legacy MQTT device), NATS BROKER, AUTH SERVICE (Go microservice), SQL DB (the existing customer database). Time flows top to bottom. Step 1: the thermostat opens an MQTT connection to the broker presenting its hardcoded username and password. Step 2: the broker constructs an Authorization Request Claim with the credentials, generates a one-time XKey, encrypts the payload, and publishes it to the auth service on the system auth subject. Step 3: the auth service decrypts with its XKey, then queries the SQL database for the device's tenant assignment, which returns Customer_X. Step 4: the auth service mints a User JWT with issuer_account set to Customer_X and publish permission scoped to telemetry.device_beta_99, then encrypts the response with the broker's one-time XKey and publishes back. Step 5: the broker decrypts, binds the JWT to the connection, discards the XKey, and routes the thermostat into the Customer_X account silo.</desc>
+
+    <defs>
+      <marker id="arrow-iot" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" />
+      </marker>
+    </defs>
+
+    <rect class="node" x="20" y="20" width="120" height="36" rx="4" />
+    <text class="label" x="80" y="44" text-anchor="middle" font-weight="700" font-size="12">THERMOSTAT</text>
+    <rect class="node" x="200" y="20" width="120" height="36" rx="4" />
+    <text class="label" x="260" y="44" text-anchor="middle" font-weight="700" font-size="12">NATS BROKER</text>
+    <rect class="node" x="400" y="20" width="120" height="36" rx="4" />
+    <text class="label" x="460" y="44" text-anchor="middle" font-weight="700" font-size="12">AUTH SERVICE</text>
+    <rect class="node" x="600" y="20" width="100" height="36" rx="4" />
+    <text class="label" x="650" y="44" text-anchor="middle" font-weight="700" font-size="12">SQL DB</text>
+
+    <line class="edge" x1="80" y1="56" x2="80" y2="420" stroke-dasharray="4 4" stroke-width="1" />
+    <line class="edge" x1="260" y1="56" x2="260" y2="420" stroke-dasharray="4 4" stroke-width="1" />
+    <line class="edge" x1="460" y1="56" x2="460" y2="420" stroke-dasharray="4 4" stroke-width="1" />
+    <line class="edge" x1="650" y1="56" x2="650" y2="420" stroke-dasharray="4 4" stroke-width="1" />
+
+    <g data-step="1">
+      <line class="edge" x1="85" y1="100" x2="255" y2="100" marker-end="url(#arrow-iot)" stroke-width="2" />
+      <text class="label" x="170" y="92" text-anchor="middle" font-size="11">MQTT CONNECT</text>
+      <text class="label" x="170" y="115" text-anchor="middle" font-size="10">user=device_beta_99, pass=legacy_secret</text>
+    </g>
+
+    <g data-step="2">
+      <line class="edge" x1="265" y1="160" x2="455" y2="160" marker-end="url(#arrow-iot)" stroke-width="2" />
+      <text class="label" x="360" y="142" text-anchor="middle" font-size="11">$SYS.REQ.USER.AUTH (request)</text>
+      <text class="label" x="360" y="178" text-anchor="middle" font-size="10" font-weight="700">[ encrypted with one-time XKey ]</text>
+    </g>
+
+    <g data-step="3">
+      <line class="edge" x1="465" y1="220" x2="645" y2="220" marker-end="url(#arrow-iot)" stroke-width="2" />
+      <text class="label" x="555" y="212" text-anchor="middle" font-size="11">SELECT tenant FROM devices</text>
+      <line class="edge" x1="645" y1="252" x2="465" y2="252" marker-end="url(#arrow-iot)" stroke-width="2" stroke-dasharray="6 3" />
+      <text class="label" x="555" y="270" text-anchor="middle" font-size="11">Customer_X</text>
+    </g>
+
+    <g data-step="4">
+      <line class="edge" x1="455" y1="320" x2="265" y2="320" marker-end="url(#arrow-iot)" stroke-width="2" />
+      <text class="label" x="360" y="297" text-anchor="middle" font-size="11">scoped User JWT</text>
+      <text class="label" x="360" y="313" text-anchor="middle" font-size="10">issuer_account=Customer_X · pub: telemetry.device_beta_99.&gt;</text>
+      <text class="label" x="360" y="338" text-anchor="middle" font-size="10" font-weight="700">[ encrypted with broker's XKey ]</text>
+    </g>
+
+    <g data-step="5">
+      <line class="edge" x1="255" y1="395" x2="85" y2="395" marker-end="url(#arrow-iot)" stroke-width="2" stroke-dasharray="6 3" />
+      <text class="label" x="170" y="387" text-anchor="middle" font-size="11">OK — routed into Customer_X silo</text>
+      <text class="label" x="170" y="410" text-anchor="middle" font-size="10">(XKey discarded, device sees no change)</text>
+    </g>
+  </svg>
+  <div class="svg-controls">
+    <button data-action="prev">Prev</button>
+    <span class="step-indicator"></span>
+    <button data-action="next">Next</button>
+  </div>
+  <figcaption>Four actors, five exchanges. The thermostat never knows the SQL database exists; the SQL database never knows the broker exists.</figcaption>
+</figure>
+
+<p>The device sees no change. The credentials it sends are the credentials it has always sent. Everything that makes this an external-facing multi-tenant deployment happens between the broker, the auth service, and the SQL database — invisible to the deployed fleet.</p>
+
+<hr />
+
+<p>Putting NATS in front of external clients is not "punch a hole in the firewall." It is composing three things deliberately. <strong>Topology</strong> decides where the bridge sits — leaf nodes catching untrusted clients, regional clusters carrying interest, gateways federating across distance. <strong>Identity</strong> decides who gets in — a delegated chain the broker verifies cryptographically, with Auth Callout as the escape hatch for systems whose users already live somewhere else. <strong>Access scope</strong> decides what each one can touch — per-identity, default-deny, and sealed at the account boundary.</p>
+
+<p>Get the three right and the inversion holds: the internal cluster trusts everything implicitly because it is safe to; the external-facing cluster trusts nothing implicitly and verifies every contract at every connect. Not "expose the cluster" — collapse implicit edges into explicit hops.</p>
+
+<figure>
+  <img src="images/closing-pillars-sketch.jpg" alt="Pencil sketch of three classical stone pillars standing in a row, each carved with visible hatching for texture. Above the three pillars a single long horizontal stone lintel carries a hand-lettered inscription: 'VERIFIED CONTRACT — at every CONNECT'. The three pillars are labeled at their bases, left to right: TOPOLOGY, IDENTITY, ACCESS SCOPE. Below each base label, a smaller italic subtitle notes what each pillar provides: 'TOPOLOGY: where the bridge sits'; 'IDENTITY: who gets in'; 'ACCESS SCOPE: what they can touch'." />
+  <figcaption>Three pillars holding up the same lintel. Remove any one and the contract collapses.</figcaption>
+</figure>
+
+<hr />
+
+<h3>References</h3>
+<ol>
+  <li>NATS Docs. <a href="https://docs.nats.io/running-a-nats-service/configuration/websocket">WebSocket transport configuration</a> — listener parameters, TLS requirements, origin controls.</li>
+  <li>NATS Docs. <a href="https://docs.nats.io/running-a-nats-service/configuration/clustering">Clustering, super-clusters, and gateways</a> — full-mesh routing, gossip discovery, cross-region federation.</li>
+  <li>NATS Docs. <a href="https://docs.nats.io/running-a-nats-service/configuration/leafnodes">Leaf nodes</a> — outbound TLS, account-scoped trust hop, edge-facing topology.</li>
+  <li><a href="https://github.com/nats-io/nats.js">nats-io/nats.js</a> — official WebSocket client library for browser, Node.js, and Deno. (The standalone <code>nats.ws</code> repo was archived May 2026 and folded into <code>nats.js</code>; older posts and tutorials may still reference the archived repo.)</li>
+  <li>NATS Docs. <a href="https://docs.nats.io/running-a-nats-service/nats_admin/security/jwt">Managing JWT Security</a> — three-tier hierarchy, signing chain, server-side validation.</li>
+  <li>NATS Docs. <a href="https://docs.nats.io/running-a-nats-service/configuration/securing_nats/auth_intro/jwt">Decentralized JWT Authentication / Authorization</a> — Ed25519 NKey identity, nonce-signing handshake.</li>
+  <li>NATS Docs. <a href="https://docs.nats.io/using-nats/nats-tools/nsc/signing_keys">Scoped Signing Keys</a> — permission templates on the signing key, instant policy propagation.</li>
+  <li>NATS Docs. <a href="https://docs.nats.io/running-a-nats-service/configuration/securing_nats/auth_callout">Auth Callout</a> — request/response claim schemas, XKey encryption, AUTH account convention.</li>
+  <li><a href="https://github.com/synadia-io/callout.go">synadia-io/callout.go</a> — Go library for building Auth Callout services.</li>
+  <li>NATS Docs. <a href="https://docs.nats.io/running-a-nats-service/configuration/securing_nats/authorization">Subject Authorization</a> — wildcard syntax, allow/deny precedence, response permissions.</li>
+  <li>NATS Docs. <a href="https://docs.nats.io/running-a-nats-service/configuration/securing_nats/accounts">Multi-Tenancy using Accounts</a> — namespace isolation, Exports and Imports, cross-account subject mapping.</li>
+  <li>Synadia. <a href="https://www.synadia.com">Synadia (managed NATS, NGS)</a> — managed Operator for organizations that don't want to self-host the trust root.</li>
+</ol>
+
+</article>
+
+    </article>
+
+    <p><a href="https://bootloader.live">← Back to bootloader.live</a></p>
+
+    <script>window.goatcounter={no_onload:true};</script>
+    <script data-goatcounter="https://mxcoppell.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
