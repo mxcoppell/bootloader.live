@@ -6,6 +6,7 @@ This blog covers AI-assisted software development, MCP (Model Context Protocol) 
 
 ## Posts
 
+- [Spec-Driven Flow Becomes the Agent Default](https://bootloader.live/posts/agentic-spec-driven-flow/): Six teams. Six different jobs. One promotional discount code that has to ship by June first. All six now help build the thing — each reaches the agent through the Claude product built for their kind of work.
 - [NATS Goes Outside](https://bootloader.live/posts/nats-external-facing/): NATS removes the rule that high-throughput message brokers must hide inside the VPC behind a REST gateway. Browsers, phones, and IoT devices connect directly — at the cost of rebuilding the trust model from scratch.
 - [How OpenAPI Is Evolving for AI Agents](https://bootloader.live/posts/openapi-for-ai-agents/): Every guide says the same thing: hand the agent your OpenAPI spec and it will figure out the rest. In practice, the agent loads the spec, the spec eats a third of the context window, and the agent picks the wrong endpoint anyway.
 - [Managing Spec-Driven Context in a Real Agile SDLC](https://bootloader.live/posts/manage-sdd-context/): The spec says one thing. The Jira story says another. Production is still doing a third.
