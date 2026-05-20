@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Renovation Loop — bootloader.live</title>
+    <meta name="description" content="Every established software company is putting AI inside its SDLC right now. The decisions left to make are which legacy products it touches first, how the work is verified, and what gets signed before it ships.">
+    <link rel="canonical" href="https://bootloader.live/posts/ai-first-brownfield-renovation/">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="The Renovation Loop">
+    <meta property="og:description" content="Every established software company is putting AI inside its SDLC right now. The decisions left to make are which legacy products it touches first, how the work is verified, and what gets signed before it ships.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://bootloader.live/posts/ai-first-brownfield-renovation/">
+    <meta property="og:site_name" content="bootloader.live">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="The Renovation Loop">
+    <meta name="twitter:description" content="Every established software company is putting AI inside its SDLC right now. The decisions left to make are which legacy products it touches first, how the work is verified, and what gets signed before it ships.">
+
+    <!-- JSON-LD -->
+    <script type="application/ld+json">
+    {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "The Renovation Loop",
+    "description": "Every established software company is putting AI inside its SDLC right now. The decisions left to make are which legacy products it touches first, how the work is verified, and what gets signed before it ships.",
+    "datePublished": "2026-05-20",
+    "url": "https://bootloader.live/posts/ai-first-brownfield-renovation/",
+    "author": {
+        "@type": "Person",
+        "name": "Michael Xie"
+    },
+    "keywords": "Workflow, Architecture",
+    "publisher": {
+        "@type": "Person",
+        "name": "Michael Xie"
+    }
+}
+    </script>
+
+    <style>
+        body {
+            font-family: 'Newsreader', Georgia, serif;
+            max-width: 740px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            background: #222222;
+            color: #e6edf3;
+            line-height: 1.7;
+        }
+        a { color: #58a6ff; }
+        pre { background: #2a2a2a; padding: 1rem; border-radius: 6px; overflow-x: auto; }
+        code { font-size: 0.9em; }
+        img { max-width: 100%; height: auto; }
+        h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        .meta { color: #8b949e; font-size: 0.9rem; margin-bottom: 2rem; }
+    </style>
+</head>
+<body>
+    <script>window.location.replace('https://bootloader.live/#/post/ai-first-brownfield-renovation');</script>
+
+    <article>
+        <h1>The Renovation Loop</h1>
+        <div class="meta">May 20, 2026</div>
+        <article class="post-html markdown-body">
+<!-- created: 2026-05-20 -->
+
+<h1>The Renovation Loop</h1>
+
+<p class="lead">Every established software company is putting AI inside its SDLC right now. The decisions left to make are which legacy products it touches first, how the work is verified, and what gets signed before it ships. A repeatable renovation methodology — specs as the contract, evals as the gate, the audit trail as the deliverable — is what turns those decisions into something a portfolio of fifty or five hundred services can run on.</p>
+
+<p>The methodology is not just built around the agent. The agent is one piece of it. The spec, the eval, the human checkpoints, and the agentic SDLC the renovation lives inside are what let the work scale across an established company's portfolio of products and services.</p>
+
+<figure>
+  <img src="images/spec-rail-sketch.jpg" alt="Hand-drawn pencil sketch in 3D isometric perspective. A railroad track stretches from a small brick workshop labeled BROWNFIELD (LEGACY) in the foreground to a clean modern building labeled RENOVATED (TARGET) in the distance. The rail itself is labeled SPEC (RAIL). A small wooden trolley with a friendly robot character rides the rail and is labeled AGENT (TROLLEY). Four small lantern signals hang above the track labeled EVAL, BLAST RADIUS, CHECKPOINT, and AUDIT." />
+  <figcaption>The agent rides the rail; the rail is the spec.</figcaption>
+</figure>
+
+<div class="section-badge"><span>Pain Spots</span></div>
+
+<p>A brownfield portfolio is a graveyard of decisions made when the team, platform, and customer were different. Triage starts with measurement. DORA's four delivery metrics separate services that bleed money from services that only look old.<sup><a href="#ref-2">2</a></sup> Below the "high" band on two of four is a candidate.</p>
+
+<div class="callout-note">
+<strong>Vocabulary.</strong> <strong>DORA</strong> — DevOps Research and Assessment, Google's benchmark for software-delivery performance. <strong>Deploy frequency</strong> — how often code reaches production. <strong>Lead time</strong> — time from a code commit to that code running in production. <strong>MTTR</strong> — mean time to recover after a production failure. <strong>Change failure rate</strong> — share of deploys that cause incidents. <strong>CVE</strong> — Common Vulnerabilities and Exposures, the public catalog of disclosed security flaws.
+</div>
+
+<figure>
+  <img src="images/pain-spot-rubric-schematic.jpg" alt="Hand-drawn pencil schematic titled BROWNFIELD PAIN-SPOT RUBRIC. Left column labeled DELIVERY (DORA) shows four semi-circular gauges for DEPLOY FREQ, LEAD TIME, MTTR, and CHANGE FAIL %. Right column labeled BROWNFIELD SIGNALS shows four stacked-bar boxes for P0 BUG AGE, RUNTIME COST/REQ, OPEN CVE COUNT, and BUS FACTOR. A horizontal threshold band across the bottom is split into three regions: WATCH, RENOVATE, DEPRECATE. Dashed arrows route gauge readings into the band." />
+  <figcaption>Three layers of signal. Two "renovate now" hits across layers triggers the path decision.</figcaption>
+</figure>
+
+<p>Layered on top, brownfield-specific signals decide the path: customer bugs aging past ninety days, runtime spend twice the sibling-service median, any critical CVE older than seven days, single-owner code holding most of a service's churn. A third layer comes from behavioural code analysis — Tornhill / CodeScene-style hotspot ranking surfaces the files in the top one percent of churn that also carry high complexity, where renovation will repay itself fastest.</p>
+
+<p>Five paths follow: full rebuild, strangler-fig, encapsulate-and-extend, feature-extend in place, or deprecate. AI lowers per-service extraction cost, so strangler-fig becomes viable for services once too expensive to peel apart. It does not move the rebuild line — the Strangler Fig pattern's 2024 update reaffirms gradual replacement over big-bang rewrite,<sup><a href="#ref-3">3</a></sup> and unspecified behaviour is what AI is worst at. For services touching EU AI Act high-risk obligations, AI pushes <em>away</em> from rebuild — encapsulate-and-extend buys regulatory time before the August 2026 enforcement date.</p>
+
+<p>Picking a path is the first decision. The renovation that follows needs to land inside a standing agentic SDLC, not a one-time project — the same loop has to run on the next legacy service, and the one after that. What that standing SDLC looks like is the next section.</p>
+
+<hr />
+
+<div class="section-badge"><span>AI First</span></div>
+
+<p>"AI-first" is not "AI-assisted with extra steps." The honest definition is operational: the spec and the eval are the contract surface, and the agent works against that surface. Four practices distinguish the discipline.</p>
+
+<figure>
+  <img src="images/ai-first-pillars-sketch.jpg" alt="Hand-drawn pencil sketch in 3D isometric perspective. A horizontal beam labeled AI-FIRST SDLC (THE DISCIPLINE) rests on four stone pillars on a wooden platform labeled BROWNFIELD SERVICE. From left to right the pillars carry icons and labels: a document icon SPECS (CONTRACT), a gauge icon EVALS (GATE), a lock icon TIERS (BLAST RADIUS), and a stamp icon CHECKPOINTS (SIGNATURE). A small friendly robot character stands beside the rightmost pillar." />
+  <figcaption>Four pillars hold the discipline. Drop any one and the beam falls.</figcaption>
+</figure>
+
+<p><strong>Specs are machine-readable.</strong> GitHub Spec Kit, AWS Kiro Specs, and Anthropic's Agent Skills converge on the same shape — a few files humans author and agents execute against. Kiro Specs are three artifacts: <code>requirements.md</code> with EARS-notation acceptance criteria,<sup><a href="#ref-5">5</a></sup> <code>design.md</code>, and <code>tasks.md</code>.<sup><a href="#ref-4">4</a></sup> EARS notation itself came from Alistair Mavin's work at Rolls-Royce in 2009 and is now used by Airbus, Bosch, Honeywell, NASA, and Siemens. The contract surface predates the agent; the agent just has a stricter compiler.</p>
+
+<p><strong>Harnesses are per-product and dual-purpose.</strong> Each renovation pipeline runs inside an agent harness scoped to one product or service. The same harness supports day-to-day development — worktree isolation, branch protection, secret scanning, IaC dry-run — and gates merges through that product's eval suite. The suite has four layers: golden datasets captured from production traffic, behavioural assertions derived from the spec, property tests for invariants, and performance thresholds pinned to the legacy baseline. A payment service's harness is not interchangeable with a fraud-detection service's harness; the boundaries between them are part of what the platform owns.</p>
+
+<p><strong>Blast radius is bounded by permission tier.</strong> No agent holds production-write permission by default. Tier escalation is a fresh human action per change, not a persistent grant.</p>
+
+<div class="callout-note">
+<strong>The 5-tier ladder.</strong> <em>Reader</em> — source and non-PII telemetry only. <em>Drafter</em> — write to scratch and spec drafts. <em>Committer</em> — push to <code>claude/*</code> branches (requires signed spec). <em>Stager</em> — deploy to staging, run IaC dry-runs (tech lead approval). <em>Canarier</em> — trigger one-percent canary (SRE on-call plus tech lead). <em>Promoter</em> — promote canary to one hundred percent (SRE plus tech lead plus compliance for regulated services). Promoter is never default-held; promotion is a fresh signature per change.
+</div>
+
+<p><strong>Checkpoints are artifact-anchored.</strong> Reviewers approve a signed spec diff or an eval result via Sigstore cosign attestation — not a vibe, not a screenshot. The artifact is what the audit trail captures, and the audit trail is what the regulator reads.</p>
+
+<hr />
+
+<div class="section-badge"><span>The Loop</span></div>
+
+<p>A single service moves through six phases. The agent drafts a spec from source, comments, API traffic, and runtime telemetry — read-only, no network egress except telemetry. A triad of product, tech lead, and compliance reviews and signs the spec; this is the contract for everything that follows. The agent generates an eval suite from the spec and existing fixtures, and the tech lead reviews each generated assertion before it joins the gate. The agent executes the change in an isolated worktree, on a <code>claude/&lt;service&gt;-&lt;task&gt;</code> branch, at the lowest permission tier that fits the task shape.</p>
+
+<figure>
+  <img src="images/renovation-loop-schematic.jpg" alt="Hand-drawn pencil schematic of a six-step renovation cycle. Six numbered boxes arranged in a clockwise loop labeled RENOVATION LOOP in the center: 1. SPEC EXTRACT, 2. SPEC APPROVE, 3. EVAL GENERATE, 4. AGENT EXECUTE, 5. EVAL GATE, 6. TELEMETRY. A small gate icon between stages 5 and 6 is labeled MERGE GATE. A dashed feedback arrow loops from stage 6 back to stage 1 labeled SPEC UPDATE. Two small human-figure icons next to stages 2 and 5 are labeled HUMAN CHECKPOINT." />
+  <figcaption>Spec before code. Eval before merge. Telemetry into the next spec.</figcaption>
+</figure>
+
+<p>Pre-merge gates run the eval suite, the secret scanner, the dependency-license audit, and the infrastructure-as-code dry-run. Failures route to the named owner; nothing reaches production via an agent commit. Post-deploy traffic flows through canary, shadow, dual-run, and cutover stages in order, each with its own kill-switch and its own evals at parity. Thirty days after cutover, telemetry feeds into a retrospective that updates the spec and adds any new edge cases as eval entries.</p>
+
+<p>Order matters. Spec before code. Eval before merge. Telemetry into the next spec, not the next code change. The loop is what makes the work auditable; the agent is what makes it fast. Branch-by-abstraction is enforced at the harness — the agent cannot delete the old code path until the new path's evals pass at parity in shadow traffic for seven consecutive days.</p>
+
+<hr />
+
+<div class="section-badge"><span>Streamlining</span></div>
+
+<p>A portfolio renovation is many renovations running in parallel, each on its own service, each with its own team. The streamlining comes from the methodology itself — the same loop runs on every service, even though the spec, the eval suite, the harness, and the team differ. A payments team and a fulfillment team can both be in spec-extraction phase on the same morning without knowing each other's work. The audit trail makes their decisions reviewable, and the contract surface makes sure their work converges where it has to.</p>
+
+<figure>
+  <img src="images/streamlining-portfolio-schematic.jpg" alt="Hand-drawn pencil schematic in landscape orientation. Seven renovation cycles of varying sizes scattered organically across the upper portion of the canvas — two large (ATLAS, PHOENIX), three medium (NEPTUNE, MERIDIAN, TITAN), and two small (ORION, AURORA). Each cycle is a closed circular loop with six numbered stations spaced around its circumference and curved pencil arrows flowing clockwise, including a return arrow from station 6 back to station 1 that completes the cycle. Each cycle is labeled with its codename in hand-lettered ALL CAPS. Below all the cycles, a single horizontal beam runs across labeled PORTFOLIO PLATFORM with five small icons: a gear for ORCHESTRATION, an eye-with-graph for OBSERVABILITY, a play-button-with-checklist for EVAL RUNNER, a ledger book for AUDIT, and a key for SECRETS." />
+  <figcaption>Many cycles in flight, different scopes, same loop. The portfolio platform underneath operates orchestration, observability, and the supporting infrastructure every renovation draws on.</figcaption>
+</figure>
+
+<p>The platform team owns the portfolio platform: orchestration across many renovations, observability across services, plus the shared eval runners, audit-trail aggregation, and secret management every renovation depends on. Each renovation team applies the methodology to their own product: they write their own spec, build their own eval suite, pick the harness that fits their stack. Coordination happens at the contract surface — when one team's renovation changes a shared API or event, the change surfaces to every dependent team through the contracts they already share. The methodology is the playbook every team runs; the spec, the evals, and the work are the team's own.</p>
+
+<p>Collaboration inside a renovation team is RACI by artifact, not by ceremony. Product authors user stories. Compliance authors the audit-trail format and samples action logs each cycle — not templates, action logs. Legal reviews per vendor, not per pull request. Security authors permission tiers and secret-scan rules. Platform owns the safety infrastructure with its own SLOs. The DORA 2025 report names the lever directly: a high-quality internal platform is the strongest correlate of getting value from AI.<sup><a href="#ref-2">2</a></sup></p>
+
+<hr />
+
+<div class="section-badge"><span>Watchpoints</span></div>
+
+<p>Running the renovation methodology across a portfolio is a multi-year practice. Four watchpoints deserve continuous attention — the places where the methodology either holds together or starts to drift.</p>
+
+<figure>
+  <img src="images/watchpoints-sketch.jpg" alt="Hand-drawn pencil sketch in 3D isometric perspective. A wooden rail line runs diagonally across the canvas with a small wooden trolley carrying a friendly robot labeled AGENT. Four tall watchtowers stand along both sides of the rail, each with an attentive guard character holding a different instrument. From left to right the watchtower labels read SPEC FIDELITY (guard with magnifying glass), PERMISSION TIERS (guard with key), EVAL GATES (guard with gauge), and AUDIT TRAILS (guard with open ledger book). The rail itself carries a small RENOVATION label." />
+  <figcaption>Four areas of vigilance along the renovation rail.</figcaption>
+</figure>
+
+<p><strong>Spec fidelity.</strong> Spec extraction from legacy code is hallucination-prone, and no controlled study has measured it on real five-hundred-thousand-line codebases — the strongest available study on AI in mature code was superseded in early 2026 with no reliable replacement number.<sup><a href="#ref-1">1</a></sup> Sample twenty to fifty freshly-extracted specs each quarter and rate them for fidelity. Veracode 2025 adds the security side: forty-five percent of AI-generated code carries an OWASP Top Ten vulnerability,<sup><a href="#ref-11">11</a></sup> which makes pre-merge static checks non-optional.</p>
+
+<p><strong>Permission tiers.</strong> Production write and development write live at different tiers, enforced at the credential layer. No agent holds production-write by default. The Replit<sup><a href="#ref-6">6</a></sup> and PocketOS<sup><a href="#ref-10">10</a></sup> incidents both point to the same practice: scope secrets per environment, never read tokens from unrelated files. At portfolio scale, dual-control with weekly-rotated reviewers — plus batched playbook signing for low-risk repeated actions — is how the practice survives sign-fatigue.</p>
+
+<p><strong>Eval gates.</strong> Public benchmark scores leak into agent training; a held-out adversarial set re-rolled per release catches the Goodhart pattern. Anthropic and Redwood Research showed in late 2025 that reward-hacking learned in production coding RL generalized to alignment faking when the same model was later used with Claude Code.<sup><a href="#ref-12">12</a></sup> SWE-Bench Pro confirms the contamination delta on agentic benchmarks.<sup><a href="#ref-13">13</a></sup> Any "delete and rebuild" plan also needs a forced pause window — the reason the AWS Kiro thirteen-hour outage happened.<sup><a href="#ref-8">8</a></sup></p>
+
+<p><strong>Audit trails.</strong> Compliance samples agent action logs at random, not templated narratives — the Delve case (493 of 494 SOC 2 reports from identical boilerplate)<sup><a href="#ref-9">9</a></sup> is the cleanest counter-example. Agent system prompts and harnesses are supply-chain artifacts; signed provenance is the same discipline a binary release gets, the lesson of the Amazon Q for VS Code injection.<sup><a href="#ref-7">7</a></sup> The methodology survives churn by keeping specs, evals, and audit trails portable across NIST AI RMF,<sup><a href="#ref-14">14</a></sup> ISO/IEC 42001:2023,<sup><a href="#ref-15">15</a></sup> and the EU AI Act.<sup><a href="#ref-16">16</a></sup></p>
+
+<hr />
+
+<p>Every successful renovation methodology in the last forty years — structured programming, object orientation, agile, microservices — survived its hype cycle by becoming infrastructure under the next one. AI-first migration is on the same path. The agent is part of the methodology, not all of it. The spec is the spine, the eval is the contract, the checkpoint is the trust. AI-first migration does not just make the work faster — it makes the work auditable at a velocity that gradual modernization could not reach.</p>
+
+<hr />
+
+<h3>References</h3>
+<ol>
+  <li id="ref-1">METR, "Measuring the Impact of Early-2025 AI on Experienced Open-Source Developer Productivity," 2025-07-10 — original RCT, 16 developers, 246 tasks (<a href="https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/">metr.org</a> ; <a href="https://arxiv.org/abs/2507.09089">arXiv 2507.09089</a>). <strong>Superseded by</strong> METR, "We are Changing our Developer Productivity Experiment Design," 2026-02-24 (<a href="https://metr.org/blog/2026-02-24-uplift-update/">metr.org/uplift-update</a>) — 30–50% of developers reported systematically skipping tasks "they did not want to do without AI," biasing measured uplift; current quantitative early-2026 brownfield number is unreliable.</li>
+  <li id="ref-2">Google Cloud, "2025 DORA Report — AI-Assisted Software Development," 2025. <a href="https://cloud.google.com/resources/content/2025-dora-ai-assisted-software-development-report">cloud.google.com</a>. Throughput up; stability still negative; platform-quality is the strongest correlate of AI value capture.</li>
+  <li id="ref-3">Fowler, M., "Rewriting Strangler Fig," 2024-08. <a href="https://martinfowler.com/articles/2024-strangler-fig-rewrite.html">martinfowler.com</a>.</li>
+  <li id="ref-4">GitHub, "Spec-driven development with AI," 2025. <a href="https://github.com/github/spec-kit">github.com/github/spec-kit</a>. AWS, "Kiro Specs," 2025. <a href="https://kiro.dev/docs/specs/">kiro.dev/docs/specs</a>. Anthropic, "Equipping agents for the real world with Agent Skills," 2025. <a href="https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills">anthropic.com</a>.</li>
+  <li id="ref-5">Mavin, A., "Easy Approach to Requirements Syntax (EARS)," 2009. <a href="https://alistairmavin.com/ears/">alistairmavin.com/ears</a>.</li>
+  <li id="ref-6">The Register, "Vibe coding service Replit deleted production database, faked data, told fibs galore," 2025-07-21. <a href="https://www.theregister.com/2025/07/21/replit_saastr_vibe_coding_incident/">theregister.com</a>. AI Incident Database #1152.</li>
+  <li id="ref-7">AWS Security Bulletin AWS-2025-019; GitHub Security Advisory GHSA-7g7f-ff96-5gcw, 2025-07-23. <a href="https://aws.amazon.com/security/security-bulletins/AWS-2025-019/">aws.amazon.com</a>.</li>
+  <li id="ref-8">The Decoder, "AWS AI coding tool decided to delete and recreate a customer-facing system, causing 13-hour outage," 2025-12. <a href="https://the-decoder.com/aws-ai-coding-tool-decided-to-delete-and-recreate-a-customer-facing-system-causing-13-hour-outage-report-says/">the-decoder.com</a>. AI Incident Database #1442.</li>
+  <li id="ref-9">Captain Compliance, "The Delve Scandal — Fake SOC 2 Audits, Open-Source Code Theft, and Exit from Y Combinator," 2025. <a href="https://captaincompliance.com/news/the-delve-scandal-fake-soc-2-audits-open-source-code-theft-and-exit-from-y-combinator/">captaincompliance.com</a>.</li>
+  <li id="ref-10">The Register, "Cursor-Opus agent snuffs out startup's production database," 2026-04-27 — PocketOS incident postmortem by founder Jer Crane (<a href="https://www.theregister.com/software/2026/04/27/cursor-opus-agent-snuffs-out-startups-production-database/">theregister.com</a>). Zenity engineering analysis (<a href="https://zenity.io/blog/current-events/ai-agent-database-deletion-pocketos">zenity.io</a>).</li>
+  <li id="ref-11">Veracode, "2025 GenAI Code Security Report," 2025. AI-generated code introduces an OWASP Top Ten vulnerability in 45 percent of samples (Java exceeds 70 percent); cross-checked via Cloud Security Alliance research note 2026.</li>
+  <li id="ref-12">MacDiarmid, Wright, Uesato et al. (Anthropic + Redwood Research), "Natural Emergent Misalignment from Reward Hacking in Production RL," 2025-11-23 — <a href="https://arxiv.org/abs/2511.18397">arXiv 2511.18397</a>. Reward-hacking in real production coding environments generalized to alignment faking, sabotage, and cooperation with malicious actors when used with Claude Code. Mitigations: prevent reward hacking, RLHF diversity, inoculation prompting.</li>
+  <li id="ref-13">Deng et al., "SWE-Bench Pro," <a href="https://arxiv.org/abs/2509.16941">arXiv 2509.16941</a>, v2 2025-11-14. Public set (11 GPL repos), held-out set (12 GPL repos), commercial set (18 proprietary repos). Claude Opus 4.1: 22.7% public → 17.8% held-out. GPT-5: 23.1% → 14.9%. Quantifies the contamination delta on agentic coding benchmarks.</li>
+  <li id="ref-14">NIST, "Artificial Intelligence Risk Management Framework — Generative AI Profile (AI 600-1)," 2024-07-26. <a href="https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence">nist.gov</a>.</li>
+  <li id="ref-15">ISO/IEC 42001:2023, "Information technology — Artificial intelligence — Management system," 2023-12. <a href="https://www.iso.org/standard/42001">iso.org/standard/42001</a>.</li>
+  <li id="ref-16">EU Regulation 2024/1689 (Artificial Intelligence Act). In force 2024-08-01; high-risk system obligations apply 2026-08-02; biometric and critical-infrastructure obligations 2027-12-02.</li>
+</ol>
+
+</article>
+
+    </article>
+
+    <p><a href="https://bootloader.live">← Back to bootloader.live</a></p>
+
+    <script>window.goatcounter={no_onload:true};</script>
+    <script data-goatcounter="https://mxcoppell.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
