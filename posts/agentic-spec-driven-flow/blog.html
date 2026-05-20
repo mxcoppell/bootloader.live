@@ -1,0 +1,112 @@
+<article class="post-html markdown-body">
+
+<p class="lead">Six teams. Six different jobs. One promotional discount code that has to ship by June first. All six of them now help build the thing — and each reaches the agent through a Claude product chosen for their kind of work.</p>
+
+<p>The change that arrived quietly with the latest AI assistants is that the agent is no longer one tool for engineers only. It is a product family. Marketing, legal, security, engineering, site reliability, and customer support each have a Claude product built for their kind of work, and one shared document the agent reads first whenever any of them ask it to do anything.</p>
+
+<figure>
+  <img src="images/section-1-six-teams-sketch.png" alt="Hand-drawn pencil sketch of six stylized human figures seated around a round wooden table. Each figure holds a different device — smartphone, laptop, tablet, clipboard, paper folder, desktop monitor. In the center of the table sits a single open notebook with hand-lettered text on the page reading 'THE BRIEF'. All six figures lean slightly toward the notebook. Soft graphite hatching, paper grain background, grayscale only." />
+  <figcaption>Six teams around one brief. The brief is the thing the agent reads. The product on the chair is how each team reaches the brief.</figcaption>
+</figure>
+
+<hr />
+
+<div class="section-badge"><span>Six Teams</span></div>
+
+<p>To make this concrete, follow one feature all the way through: a discount code called <code>SUMMER26</code>. Marketing wants twenty-five percent off for first-time customers, valid June through August, capped at fifty thousand redemptions. That single sentence sets six different jobs in motion. Each team reaches the agent through the product Anthropic actually built for their kind of work — and the mapping below is fact-checked against Anthropic's published case studies, not just plausible-sounding.</p>
+
+<p><strong>Marketing</strong> splits into two patterns. Marketers who build their own tools use Claude Code — Anthropic's own growth marketer built a small Figma helper that generates ad variations and a quick drafting helper for responsive search ads, both inside Claude Code. Marketers who use ready-made workflows — campaign planning, brief drafting, brand-voice rewrites — use <strong>Claude Cowork</strong> with its marketing plugin, which talks to the design and analytics tools they already work in.</p>
+
+<p><strong>Legal and compliance</strong> use <strong>Claude Enterprise</strong> — the chat-based surface on Anthropic's Enterprise tier — with the legal plugin and small connectors that reach Google Drive, the team's ticketing system, Slack, and the calendar. Anthropic's December 2025 write-up on how its own legal team uses Claude describes doing most of the work inside Microsoft Word. The plugin handles contract review, NDA triage, and compliance workflows — exactly the kind of paper-pushing a junior legal associate would otherwise do by hand.</p>
+
+<p><strong>Security</strong> uses <strong>Claude Code</strong>'s built-in security review, shipped in March 2026. It runs automatically on every code change and produces a written report covering the usual hazards: injection holes, broken authentication, leaked credentials, careless handling of customer data. A security engineer reads the report; the agent does the scanning. There is also a separate read-only mode the agent can run in — useful when security wants to see "what would you build for this?" without anything actually getting built.</p>
+
+<p><strong>Engineering</strong> uses Claude Code in full mode. Shopify and Mercado Libre were both named as production adopters at scale at Anthropic's developer conference in May 2026; Mercado Libre's stated goal is "90% autonomous coding by the third quarter." For <code>SUMMER26</code>, the engineering team drafts the technical plan and the task list against the approved brief, and the engineering lead reviews the result the way a senior engineer reviews a junior engineer's design.</p>
+
+<p><strong>Site reliability</strong> has two patterns. The simpler one is Claude Code invoked from inside Slack — the on-call engineer mentions the agent in the launch channel and it reads the brief and the live system state in one move. The more advanced pattern is a custom site-reliability agent built with Claude's developer toolkit, wired up to read live metrics, container logs, configuration files, and runbooks, and to draft incident post-mortems. An Anthropic engineer quoted in <em>The Register</em> describes the working agent as "reading the logs at the speed of I/O" during incidents — a thing no on-call human can match at three in the morning.</p>
+
+<p><strong>Customer support</strong> uses <strong>Claude Cowork</strong> with the customer-support plugin — one of eleven role-specific plugins Anthropic released in January 2026. The plugin's job is to triage incoming tickets, draft responses to common questions, package up escalations for the on-call engineer, look up a customer's history from past tickets, and turn resolved issues into knowledge-base articles for the next person who asks the same thing.</p>
+
+<p>Six teams. Three Claude products between them, plus Slack as a shared room: <strong>Cowork</strong> for marketing and support; <strong>Claude Enterprise</strong> for legal; <strong>Claude Code</strong> for security, engineering, and site reliability. The brief is the constant. The product is the door each team walks through.</p>
+
+<hr />
+
+<div class="section-badge"><span>The Lifecycle</span></div>
+
+<p>A product feature does not move through six neat phases; it moves through seven, and the seventh feeds the first. The classical software lifecycle is Planning, Requirements, Design, Implementation, Testing, Deployment, and Operations — and Operations is not the exit, it is the input to the next planning cycle. The loop is what every team is actually in.</p>
+
+<figure>
+  <img src="images/section-2-sdlc-loop-sketch.png" alt="Hand-drawn pencil sketch showing seven stylized human figures arranged evenly around a circle, each at a numbered station 1 through 7 in clockwise order. In the center of the circle is an open notebook on a small wooden stand, labeled THE BRIEF. Each figure holds a different tool: figure 1 a laptop with a layout on screen; figure 2 a clipboard and a small scroll; figure 3 a monitor showing a shield icon; figure 4 an open laptop showing code; figure 5 a magnifying glass over a checklist; figure 6 a stopwatch and a dashboard panel; figure 7 a headset and a tablet. Curved pencil arrows connect each station clockwise, with the final arrow returning from figure 7 to figure 1. Soft graphite hatching, grayscale only." />
+  <figcaption>The SDLC as a loop, not a pipeline. Each station is a stage; each figure holds the tool for that stage. The brief in the center is the one constant — every Claude product reads it, every team writes into it.</figcaption>
+</figure>
+
+<p>Walking the loop clockwise for <code>SUMMER26</code>: <strong>Planning</strong> (station 1) is Marketing and Finance using Claude Cowork — the campaign brief and the rough budget impact get drafted in one pass, where they used to be a marketing memo plus a separate finance meeting. <strong>Requirements</strong> (station 2) is Marketing and Legal using Claude Enterprise with the legal plugin — relevant clauses from past launches surface automatically, and the disclosure rules get drafted in language a non-lawyer can read. <strong>Design</strong> (station 3) is Security and Engineering using Claude Code in a read-only preview mode — the agent proposes an implementation outline in plain prose, and security writes the threat model against the proposal before any code exists.</p>
+
+<p><strong>Implementation</strong> (station 4) is Engineering using Claude Code in full mode — the technical plan and the task list get produced as a single coherent draft against the approved brief. <strong>Testing</strong> (station 5) is the longest stage and the one with the most ways to ship wrong work; it gets its own section below. <strong>Deployment</strong> (station 6) is SRE using Claude Code, often invoked from inside Slack — the launch runbook is drafted from the technical plan, and the on-call agent is in the launch channel before the feature is turned on for real customers. <strong>Operations</strong> (station 7) is SRE, Support, and Marketing all reading the same dashboard — the support plugin drafts the customer-facing answers from the brief, incidents get triaged in the same channel where launch was tracked, and redemption metrics flow back to Marketing for the next campaign. Station 7 hands back to station 1, because Operations is not the end of the loop — it is the start of the next one.</p>
+
+<hr />
+
+<div class="section-badge"><span>Test Harness</span></div>
+
+<p>"The agent writes tests from the spec" is the line that ships wrong code. The failure mode has a name — <em>asserting the same mistake twice</em> — and it happens when the agent generates tests that recreate the same flaw the agent put in the code. A real testing harness for spec-driven AI work has six pieces in 2026, each available off the shelf:</p>
+
+<ol>
+  <li><strong>A precise contract derived from the brief.</strong> A structured list of what the feature must do, in a format the rest of the tools can check automatically — not the prose brief, a tighter version of it.</li>
+  <li><strong>Scenario tests written in plain English.</strong> Small playbooks like "when a first-time customer enters SUMMER26 at checkout, they get 25% off" — generated by the agent with rules attached so the scenarios stay concrete and check one thing at a time.</li>
+  <li><strong>Property tests that throw thousands of random inputs at the code</strong> and check that universal rules hold — the discount is never larger than the subtotal, the total is never negative, the same code never gets applied twice to the same customer.</li>
+  <li><strong>Contract checkers that send the system intentionally-malformed requests</strong> to find responses that break the contract — an expired code applied to a renewal, a price that overflows the field, a region the campaign was not supposed to reach.</li>
+  <li><strong>Mutation tests that secretly change the code in tiny ways and re-run the test suite.</strong> Any change the tests fail to notice is a real gap. This is the piece that catches the asserts-the-same-mistake-twice failure. Meta's engineering team reported about four times the bug-detection rate when AI-generated tests are graded this way instead of by simple coverage. The merge bar becomes "tests pass and the suite catches the secret changes," not just "tests pass."</li>
+  <li><strong>A second agent whose only job is to look for ways the first agent's work is wrong</strong> — because an agent that grades its own output will confidently call it correct.</li>
+</ol>
+
+<div class="callout-note">
+<strong>GitHub Spec Kit makes this discipline opinionated.</strong> Its project-rules document — the small file at the top of the project that captures team agreements — requires tests be written first and confirmed to fail before any code is written, and it requires the tests to run against real systems instead of pretend ones. The framework checks both rules when the agent drafts the plan, and anything that violates them has to be logged and defended in a tracking section someone signs. The six pieces above are what those rules require in practice.
+</div>
+
+<hr />
+
+<div class="section-badge"><span>The Handoffs</span></div>
+
+<p>The traditional handoff leaks in three predictable places. The kickoff meeting half-records who agreed to what, and the next team rebuilds the other half from Slack scrollback. The translation step — taking marketing's intent and rewriting it as an engineering ticket — drops constraints and reframes goals. The waiting step — the team that needs an answer sits idle until the previous team gets to their queue. The cross-team Claude pattern closes each of these leaks with a different mechanism, and the mechanism is the load-bearing part of the post.</p>
+
+<figure>
+  <img src="images/section-3-handoffs-relay-sketch.png" alt="Hand-drawn pencil sketch of six stylized human figures running left to right in a relay race composition. The first runner passes a small paper baton labeled 'THE BRIEF' to the second; the third holds the baton next; the fourth, fifth, and sixth follow. Each runner wears a small chest symbol indicating their role — a megaphone, a scroll, a shield, a wrench, a stopwatch, a headset. A simple ground line runs beneath them. Soft graphite hatching, grayscale only." />
+  <figcaption>Six runners. One baton. The baton is the brief. The race is the lifecycle. The handoff is the moment the document moves — and the brief never leaves the runners' hands.</figcaption>
+</figure>
+
+<p><strong>The context is shared, not retranslated.</strong> Every Claude product reads from the same brief. Claude Code on the engineer's screen opens the same document that Claude Cowork loaded for marketing in Confluence, that Claude Enterprise loaded for legal inside Microsoft Word, and that Claude in Slack loaded for the on-call engineer in the launch channel. Small adapters connect the tools to that single source — each Claude product wires up to the same document in turn, so an edit anywhere shows up everywhere. The translation step is gone, because no team is rewriting the previous team's words; every team is editing the same brief.</p>
+
+<p><strong>The handoff is automated.</strong> When marketing marks their section of the brief ready, the review-routing rules on the project automatically request a sign-off from legal. When legal commits an amendment, an adapter syncs the change to the Confluence page compliance already reads, and to the Notion page other teams keep open. When engineering finishes the technical plan, Claude in Slack drops a summary in the channel where the launch is being tracked. When the deploy goes live, the same Slack agent drafts the customer-facing announcement from the brief. The handoff is no longer "we meet on Tuesday at three" — it is the next team's notification arriving with the document already open in front of them.</p>
+
+<p><strong>Friction collapses where the kickoff used to sit.</strong> A built-in Spec Kit command reads the task list produced at the end of planning and creates the corresponding tickets in Linear or Jira, routed to the right team — engineering tasks to engineering, site-reliability tasks to SRE, support tasks to support — each ticket already linked back to the brief and ready to start. The framework also requires every section of the brief to name its owner before the launch can move forward, so the right person gets paged automatically instead of someone in Slack having to remember whom to tag. The kickoff meeting is no longer where the work begins; the work begins when the previous team's section is marked ready and the next team's tool reads it.</p>
+
+<p>The handoff used to be the place where work got lost. With the brief in the middle of the loop and every Claude product reading from it through these small adapters, the handoff is where work transfers without ever leaving the document.</p>
+
+<hr />
+
+<p>The agent did not give any team a new job. It gave the people already in the room a faster way to do the job they already had, and a single document — the brief in the center of the loop — that the agent reads first whenever it is asked to do anything at all. The pattern is universal in that sense: cross-team work has always needed a place outside any one person's head to hold what was agreed — not a methodology, not a brand-name workflow, just a document that the next session is guaranteed to open and the next reviewer is guaranteed to find.</p>
+
+<hr />
+
+<h3>References</h3>
+
+<ol>
+  <li>Anthropic. "How Anthropic teams use Claude Code." <a href="https://claude.com/blog/how-anthropic-teams-use-claude-code">claude.com/blog/how-anthropic-teams-use-claude-code</a>. July 2025.</li>
+  <li>Anthropic. "How Anthropic uses Claude in Legal." <a href="https://claude.com/blog/how-anthropic-uses-claude-legal">claude.com/blog/how-anthropic-uses-claude-legal</a>. December 2025.</li>
+  <li>Anthropic. "Cowork: Claude Code power for knowledge work." <a href="https://claude.com/product/cowork">claude.com/product/cowork</a>.</li>
+  <li>Anthropic. "Plugins for Claude Code and Cowork." <a href="https://claude.com/plugins">claude.com/plugins</a>. Eleven open-sourced role plugins (Jan 30 2026).</li>
+  <li>Anthropic. "Automated security reviews in Claude Code." <a href="https://support.claude.com/en/articles/11932705-automated-security-reviews-in-claude-code">support.claude.com — security reviews</a>. March 2026.</li>
+  <li>Anthropic. <a href="https://github.com/anthropics/claude-code-security-review">github.com/anthropics/claude-code-security-review</a>.</li>
+  <li>Anthropic Agent SDK Cookbook. "Site Reliability Agent." <a href="https://platform.claude.com/cookbook/claude-agent-sdk-03-the-site-reliability-agent">platform.claude.com — SRE agent</a>.</li>
+  <li>Anthropic Engineering. "Harness design for long-running applications." <a href="https://www.anthropic.com/engineering/harness-design-long-running-apps">anthropic.com/engineering — harness design</a>.</li>
+  <li>Anthropic Red Team. "Property-Based Testing with Claude." <a href="https://red.anthropic.com/2026/property-based-testing/">red.anthropic.com — property-based testing</a>. Early 2026.</li>
+  <li>Claude Code Best Practices. <a href="https://code.claude.com/docs/en/best-practices">code.claude.com/docs/en/best-practices</a>.</li>
+  <li>GitHub. "Spec Kit." <a href="https://github.com/github/spec-kit">github.com/github/spec-kit</a>. Constitution Articles III and IX.</li>
+  <li>Knight, Andy. "Gherkin Guidelines for AI." April 2026.</li>
+  <li>PactFlow. "PactFlow MCP Server." October 2025.</li>
+  <li>Specmatic. "Specmatic MCP Server." <a href="https://github.com/specmatic/specmatic-mcp-server">github.com/specmatic/specmatic-mcp-server</a>.</li>
+  <li>Meta Engineering. "Just-in-Time AI testing." April 2026.</li>
+  <li>Claude.com Customers. Gradial (April 2026), Pendo (May 2026), Smartsheet (April 2026), Shopify and Mercado Libre announced at Code w/ Claude 2026 (May 6 2026). <a href="https://claude.com/customers">claude.com/customers</a>.</li>
+</ol>
+
+</article>
