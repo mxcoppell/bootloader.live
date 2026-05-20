@@ -13,6 +13,37 @@ The post file ships content. **The host site (`index.html`) ships the renderer.*
 
 If you only verify "the page loads," you will miss silent rendering failures: empty `var()` references collapse to SVG defaults (invisible strokes), missing class rules collapse to browser defaults (black SVG fills), and JS selector/attribute-name drift collapses to non-interactive UI. None of these throw errors.
 
+## Design vocabulary (what the host supports)
+
+When you (or the source author) build a new HTML post, these classes/patterns are already wired up in the host. Use them by name; mirror new patterns from `preview.html` only when nothing here fits.
+
+**Typography**
+- `<p class="lead">` — bright, 1.15em, 1.6 line-height. Use for opening hook paragraph.
+- Body `<p>` — inherits markdown-body bright color, 1.65 line-height. Don't override with `color:`.
+- `<strong>` — weight 700 (host bumps from inherited 400 so bold pops without color change).
+- `<em>` — `--text-muted` italic.
+- `<h3>` — borderless, 1.2em, generous top margin.
+- `<hr>` — single 1px `--bg-tertiary` line with 2.5em vertical margin.
+
+**Section dividers**
+- `<div class="section-badge"><span>Label</span></div>` — pill-shaped slate-blue badge (`#455a64` on `#90a4ae` border), centered. Use to introduce major sections.
+
+**Callouts** (translucent tint of the page bg + colored left border)
+- `<div class="callout-note">…</div>` — blue tint, `--accent-color` border. Information/recommendation.
+- `<div class="callout-warn">…</div>` — amber tint, `--warn-color` border. Caveats/cautions.
+
+**Figures**
+- `<figure><img …><figcaption>…</figcaption></figure>` — image gets `background: #fff` (essential for pencil/sketch art on dark theme) and `border-radius: 6px`; caption is italic `--text-muted`.
+
+**SVG figures** — `<figure class="svg-figure" data-interaction="…">` wraps an `<svg>`. Three interaction modes:
+- `data-interaction="hover-reveal"` — nodes with `tabindex="0"` populate a `.svg-legend` sibling on hover/focus from `data-label` + `data-desc`.
+- `data-interaction="step-through" data-steps="N"` — `<button data-action="prev|next">` cycles `[data-step]` groups. **Both conventions supported**: host JS toggles `data-active="true"` on the current step; source-preview JS toggles a `.active-step` class. CSS targets both. Past steps optionally get `data-completed="true"`.
+- `data-interaction="toggle-view"` — `.svg-tabs button[data-view]` tabs swap visibility of `[data-view]` `<g>` children.
+
+Supported SVG element classes (host CSS provides defaults): `.node`, `.edge`, `.label` plus modifiers (`.box-title`, `.layer-name`, `.layer-tag`, `.layer-sub`, `.callout`, `.callout-sub`, `.doc-line`, `.bracket-label`, `.tool-num`, `.tool-name`, `.tool-sub`), `.layer-band`, `.step-arrow`, `.doc-rect`, `.tool-box`.
+
+**Theme tokens** safely usable inside SVG fill/stroke and post CSS: `--text-primary`, `--text-secondary`, `--text-muted`, `--bg-primary`, `--bg-secondary`, `--bg-tertiary`, `--accent-color`, `--warn-color`, `--border-color`. **Don't use** `--text-body` or `--border-soft` — they don't exist in the host (substitute `--text-secondary`).
+
 ## Prerequisites
 
 - `ai-productivity-blog` repo at `../ai-productivity-blog` relative to this project
@@ -85,11 +116,12 @@ For any `MISSING:` output, add a matching CSS rule under `.post-html .svg-figure
 
 **4c. DOMPurify allowlist check.** Find `sanitizeHtmlFragment` in `index.html`. Verify any non-standard SVG attributes the post uses (e.g., `data-step`, `data-view`, `data-label`, custom `data-*`) appear in `ADD_ATTR`. Standard SVG attributes (`x`, `y`, `cx`, `cy`, `r`, `stroke-dasharray`, `viewBox`, etc.) are covered by `USE_PROFILES: { svg: true }`.
 
-**4d. JS attribute-convention check.** Look at the source's `preview.html` `<script>` block. Find `initToggleView` / `initStepThrough` / `initHoverReveal`. Compare attribute names the source's JS reads/writes against the host's. Past divergences:
-- Toggle-view: source uses SVG `display="none"` attribute; host previously toggled HTML `hidden`. Mirror the source.
-- Step-through: source CSS uses `[data-state="active"]`; host JS sets `data-active="true"`. Mirror whichever side is correct and align both.
+**4d. JS attribute-convention check.** Look at the source's `preview.html` `<script>` block. Find `initToggleView` / `initStepThrough` / `initHoverReveal`. Compare attribute names the source's JS reads/writes against the host's. Past divergences (all now supported in the host):
+- Toggle-view: source may use SVG `display="none"`; host previously toggled HTML `hidden`. Mirror the source's choice in the host JS if the source uses something different.
+- Step-through highlight: there are **three** conventions in the wild — `<g class="step" data-step>` (openapi), bare `<g data-step>` toggled with `data-active="true"` (nats), and bare `<g data-step>` toggled with `.active-step` class (agentic-spec). Host CSS targets all three (`[data-step][data-active="true"], [data-step].active-step`); host JS only sets `data-active`. If the source's JS uses `.active-step` and you copy that JS unchanged, the class-based rules kick in. Either approach renders correctly.
+- Step-through child highlight: openapi uses `.step-arrow`, nats uses `.edge`, agentic-spec may highlight `.node` / `text.label`. Host CSS includes all of these. If the post uses a new child class for its active visual cue, add a matching rule.
 
-Whenever you find drift, the source's `preview.html` is the spec. Update the host to match — both CSS selectors and JS attribute names.
+Whenever you find drift the host doesn't cover, the source's `preview.html` is the spec. Update the host to match — both CSS selectors and JS attribute names.
 
 ### 5. Register in `POSTS[]`
 
@@ -151,7 +183,7 @@ npx agent-browser screenshot /tmp/<slug>-source.png
 
 Then open bootloader.live's render and screenshot the same SVG. Compare visually. Anything that looks meaningfully different is a host-side gap to close before publishing.
 
-**7b. Computed-style probe.** For every interactive SVG, confirm key style properties aren't falling through to defaults:
+**7b. Computed-style probe.** For every interactive SVG, confirm key style properties aren't falling through to defaults. Also confirm callouts and the `--warn-color` token resolve:
 
 ```bash
 npx agent-browser eval "(() => {
@@ -167,9 +199,18 @@ npx agent-browser eval "(() => {
   document.querySelectorAll('.post-html .svg-figure .label.box-title').forEach(e => {
     if (parseInt(getComputedStyle(e).fontSize) <= 14) checks.push('box-title not enlarged (missing rule)');
   });
+  // Callouts and theme tokens
+  const warn = getComputedStyle(document.documentElement).getPropertyValue('--warn-color').trim();
+  if (!warn) checks.push('--warn-color token missing');
+  document.querySelectorAll('.post-html .callout-note, .post-html .callout-warn').forEach(el => {
+    const bg = getComputedStyle(el).backgroundColor;
+    if (bg === 'rgba(0, 0, 0, 0)' || bg === 'transparent') checks.push('callout background fell to transparent');
+  });
   return checks.length ? checks : 'all OK';
 })()"
 ```
+
+When testing a step-through SVG whose source uses the `.active-step` class, wait at least 250ms after toggling the class before probing — the host CSS has `transition: opacity 200ms ease` on `[data-step]`, so an immediate `getComputedStyle` will sample the starting value mid-animation and report a misleading 0.35.
 
 Add more probes as new classes appear. If any check fails, fix the host CSS before publishing.
 
