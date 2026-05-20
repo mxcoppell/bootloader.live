@@ -57,6 +57,7 @@
     --border-subtle: #21262d;
     --accent-color: #58a6ff;
     --color-attention-fg: #d29922;
+    --warn-color: #f0a020;
     --accent-hover: #79c0ff;
     --link-color: #58a6ff;
     --code-bg: #2a2a2a;
@@ -79,6 +80,7 @@
     --border-subtle: #e8eaed;
     --accent-color: #2563eb;
     --color-attention-fg: #9a6700;
+    --warn-color: #9a6700;
     --accent-hover: #1d4ed8;
     --link-color: #0969da;
     --code-bg: #f5f5f5;
@@ -101,6 +103,7 @@
         --border-color: #d0d7de;
         --border-subtle: #e8eaed;
         --accent-color: #2563eb;
+        --warn-color: #9a6700;
         --accent-hover: #1d4ed8;
         --link-color: #0969da;
         --code-bg: #f5f5f5;
@@ -789,20 +792,68 @@ body {
 .post-content .post-html figcaption { color: var(--text-muted); }
 
 .post-html .lead {
-    font-size: 1.1em;
+    font-size: 1.15em;
     color: var(--text-primary);
+    line-height: 1.6;
 }
 
+/* Selectors are .post-content .post-html (specificity 0,2,1) to beat the existing
+   .post-content .markdown-body rules above without resorting to !important. */
+.post-content .post-html p { line-height: 1.65; }
+.post-content .post-html ol li,
+.post-content .post-html ul li { line-height: 1.65; margin: 0.3em 0; }
+.post-content .post-html h3 {
+    color: var(--text-primary);
+    border: none;
+    padding-bottom: 0;
+    margin-top: 2em;
+    font-size: 1.2em;
+}
+.post-content .post-html hr {
+    border: none;
+    border-top: 1px solid var(--bg-tertiary);
+    background: transparent;
+    height: auto;
+    margin: 2.5em 0;
+    padding: 0;
+}
+.post-content .post-html figure { margin: 1.8em 0; text-align: center; }
+.post-content .post-html figure img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+    background: #fff;
+}
+.post-content .post-html figcaption {
+    color: var(--text-muted);
+    font-size: 0.9em;
+    margin-top: 0.6em;
+    font-style: italic;
+}
+
+/* Callouts: translucent tint of the page background, colored left border.
+   The tint communicates type (blue = note, amber = warn); the border anchors it. */
 .post-html .callout-note,
 .post-html .callout-warn {
     border-left: 4px solid var(--accent-color);
-    background: var(--bg-secondary);
-    padding: 1rem 1.25rem;
-    margin: 1.5rem 0;
-    border-radius: 0 6px 6px 0;
+    padding: 1em 1.4em;
+    margin: 1.5em 0;
+    border-radius: 4px;
+    line-height: 1.55;
+}
+.post-html .callout-note {
+    background: rgba(88, 166, 255, 0.08);
+    border-left-color: var(--accent-color);
 }
 .post-html .callout-warn {
-    border-left-color: var(--color-attention-fg);
+    background: rgba(240, 160, 32, 0.08);
+    border-left-color: var(--warn-color);
+}
+[data-theme="light"] .post-html .callout-note {
+    background: rgba(37, 99, 235, 0.08);
+}
+[data-theme="light"] .post-html .callout-warn {
+    background: rgba(154, 103, 0, 0.10);
 }
 
 .post-html .compare-grid {
@@ -878,14 +929,25 @@ body {
 .post-html .svg-figure .layer-band { fill: var(--bg-tertiary); stroke: var(--text-secondary); stroke-width: 1; opacity: 0.5; }
 .post-html .svg-figure [data-step] .step-arrow { stroke: var(--text-secondary); stroke-width: 1; opacity: 0.4; }
 
-/* step-through interaction states (JS sets data-active / data-completed on [data-step] elements) */
+/* step-through interaction states. Host JS sets [data-active="true"]; source-preview JS
+   may instead add the .active-step class. Both selectors cover both conventions. */
 .post-html .svg-figure[data-interaction="step-through"].js-ready [data-step] { opacity: 0.35; transition: opacity 200ms ease; }
-.post-html .svg-figure[data-interaction="step-through"].js-ready [data-step][data-active="true"] { opacity: 1; }
-.post-html .svg-figure[data-interaction="step-through"].js-ready [data-step][data-active="true"] .layer-band { stroke: var(--accent-color); stroke-width: 2; opacity: 1; }
-.post-html .svg-figure[data-interaction="step-through"].js-ready [data-step][data-active="true"] .step-arrow { stroke: var(--accent-color); stroke-width: 2; opacity: 1; }
-.post-html .svg-figure[data-interaction="step-through"].js-ready [data-step][data-active="true"] .edge { stroke: var(--accent-color); stroke-width: 2; }
+.post-html .svg-figure[data-interaction="step-through"].js-ready [data-step][data-active="true"],
+.post-html .svg-figure[data-interaction="step-through"].js-ready [data-step].active-step { opacity: 1; }
+.post-html .svg-figure[data-interaction="step-through"].js-ready [data-step][data-active="true"] .layer-band,
+.post-html .svg-figure[data-interaction="step-through"].js-ready [data-step].active-step .layer-band { stroke: var(--accent-color); stroke-width: 2; opacity: 1; }
+.post-html .svg-figure[data-interaction="step-through"].js-ready [data-step][data-active="true"] .step-arrow,
+.post-html .svg-figure[data-interaction="step-through"].js-ready [data-step].active-step .step-arrow { stroke: var(--accent-color); stroke-width: 2; opacity: 1; }
+.post-html .svg-figure[data-interaction="step-through"].js-ready [data-step][data-active="true"] .edge,
+.post-html .svg-figure[data-interaction="step-through"].js-ready [data-step].active-step .edge { stroke: var(--accent-color); stroke-width: 2; }
+.post-html .svg-figure[data-interaction="step-through"].js-ready .node.active-step { stroke: var(--accent-color); stroke-width: 2; }
+.post-html .svg-figure[data-interaction="step-through"].js-ready rect.node.active-step { fill: rgba(88, 166, 255, 0.15); }
+.post-html .svg-figure[data-interaction="step-through"].js-ready text.label.active-step { fill: var(--accent-color); }
+.post-html .svg-figure[data-interaction="step-through"].js-ready .edge.active-step { stroke: var(--accent-color); stroke-width: 2; }
 .post-html .svg-figure[data-interaction="step-through"].js-ready [data-step][data-completed="true"] { opacity: 0.65; }
 .post-html .svg-figure[data-interaction="step-through"].js-ready [data-step][data-completed="true"] .step-arrow { stroke: var(--text-muted); opacity: 0.6; }
+/* .active-step wins over [data-completed="true"] (same specificity, later in source). */
+.post-html .svg-figure[data-interaction="step-through"].js-ready [data-step].active-step { opacity: 1; }
 
 .post-html .svg-legend {
     min-height: 2.5rem;
