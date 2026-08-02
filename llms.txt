@@ -6,6 +6,7 @@ This blog covers AI-assisted software development, MCP (Model Context Protocol) 
 
 ## Posts
 
+- [The Outcome Gate](https://bootloader.live/posts/agentic-sdlc-outcome-management/): A senior engineer opens a pull request and the scrollbar becomes a threat signal. The agent did not change one function — it rewired a workflow, added tests, and left a diff too large for "review every line" to survive as the default control.
 - [The Renovation Loop](https://bootloader.live/posts/ai-first-brownfield-renovation/): Every established software company is putting AI inside its SDLC right now. The decisions left to make are which legacy products it touches first, how the work is verified, and what gets signed before it ships.
 - [Spec-Driven Flow Becomes the Agent Default](https://bootloader.live/posts/agentic-spec-driven-flow/): Six teams. Six different jobs. One promotional discount code that has to ship by June first. All six now help build the thing — each reaches the agent through the Claude product built for their kind of work.
 - [NATS Goes Outside](https://bootloader.live/posts/nats-external-facing/): NATS removes the rule that high-throughput message brokers must hide inside the VPC behind a REST gateway. Browsers, phones, and IoT devices connect directly — at the cost of rebuilding the trust model from scratch.

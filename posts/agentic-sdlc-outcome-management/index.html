@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Outcome Gate — bootloader.live</title>
+    <meta name="description" content="A senior engineer opens a pull request and the scrollbar becomes a threat signal. The agent did not change one function — it rewired a workflow, added tests, and left a diff too large for &quot;review every line&quot; to survive as the default control.">
+    <link rel="canonical" href="https://bootloader.live/posts/agentic-sdlc-outcome-management/">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="The Outcome Gate">
+    <meta property="og:description" content="A senior engineer opens a pull request and the scrollbar becomes a threat signal. The agent did not change one function — it rewired a workflow, added tests, and left a diff too large for &quot;review every line&quot; to survive as the default control.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://bootloader.live/posts/agentic-sdlc-outcome-management/">
+    <meta property="og:site_name" content="bootloader.live">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="The Outcome Gate">
+    <meta name="twitter:description" content="A senior engineer opens a pull request and the scrollbar becomes a threat signal. The agent did not change one function — it rewired a workflow, added tests, and left a diff too large for &quot;review every line&quot; to survive as the default control.">
+
+    <!-- JSON-LD -->
+    <script type="application/ld+json">
+    {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "The Outcome Gate",
+    "description": "A senior engineer opens a pull request and the scrollbar becomes a threat signal. The agent did not change one function — it rewired a workflow, added tests, and left a diff too large for \"review every line\" to survive as the default control.",
+    "datePublished": "2026-08-02",
+    "url": "https://bootloader.live/posts/agentic-sdlc-outcome-management/",
+    "author": {
+        "@type": "Person",
+        "name": "Michael Xie"
+    },
+    "keywords": "Workflow, Architecture",
+    "publisher": {
+        "@type": "Person",
+        "name": "Michael Xie"
+    }
+}
+    </script>
+
+    <style>
+        body {
+            font-family: 'Newsreader', Georgia, serif;
+            max-width: 740px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            background: #222222;
+            color: #e6edf3;
+            line-height: 1.7;
+        }
+        a { color: #58a6ff; }
+        pre { background: #2a2a2a; padding: 1rem; border-radius: 6px; overflow-x: auto; }
+        code { font-size: 0.9em; }
+        img { max-width: 100%; height: auto; }
+        h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        .meta { color: #8b949e; font-size: 0.9rem; margin-bottom: 2rem; }
+    </style>
+</head>
+<body>
+    <script>window.location.replace('https://bootloader.live/#/post/agentic-sdlc-outcome-management');</script>
+
+    <article>
+        <h1>The Outcome Gate</h1>
+        <div class="meta">August 2, 2026</div>
+        <article class="post-html markdown-body">
+<!-- created: 2026-08-02 -->
+
+<h1>The Outcome Gate</h1>
+
+<p class="lead">A senior engineer opens a pull request and the scrollbar becomes a threat signal. The agent did not change one function. It rewired a workflow, added tests, changed configuration, edited documentation, and left behind a diff large enough that "review every line" now means "become the slowest machine in the factory."</p>
+
+<p>That is the tension behind Uncle Bob Martin's July 2026 post. The surprising sentence was not that agents can write code. The surprising sentence was that the author of <em>Clean Code</em> said his current strategy is to not read any code written by his agents, because that is the only way he can benefit from their productivity.<sup><a href="#ref-1">1</a></sup></p>
+
+<p>The easy reaction is outrage. The useful reaction is to read the next sentence. Martin did not say "trust the agent." He said he surrounds agents with constraints: unit tests, Gherkin tests, QA procedures, quality metrics, mutation testing, test coverage, and more. His word for it was the gauntlet. Two weeks earlier, he added the caveat that just because AI can perform every test does not mean it always should; he was still calibrating how much gauntlet fits which project.<sup><a href="#ref-2">2</a></sup></p>
+
+<figure>
+  <img src="images/reviewer-conveyor.jpg" alt="Black and white pencil illustration of one tired senior engineer facing a conveyor belt full of agent-generated pull request bundles coming from a robot workshop." />
+  <figcaption>The bottleneck moved from writing code to trusting what was written.</figcaption>
+</figure>
+
+<div class="section-badge"><span>The Quote</span></div>
+
+<p>Martin's post works because it violates the old professional reflex: if I am responsible for the code, I must understand the code. That reflex is not wrong. It protected systems for decades. It also assumes the amount of code moving through the system is sized for human reading.</p>
+
+<p>Agentic workflows break that assumption. A coding agent can research a repository, create a plan, edit files, run checks, fix failures, and open a pull request while the human is in another meeting. The question stops being "can a person read this code?" and becomes "where does human judgment produce the most control per minute?"</p>
+
+<p>The answer is not "nowhere." Humans still own intent, trade-offs, architecture boundaries, security exceptions, release accountability, and post-incident learning. But they cannot be placed at every internal motion of the agent and still get agentic throughput. Too many human-in-the-loop checkpoints turn the factory back into a ticket queue.</p>
+
+<div class="callout-note">
+  <strong>Martin's claim is narrow.</strong> It is not "code does not matter." It is "reading generated code is no longer the only serious way to gain confidence." The source code is part of the deliverable, not the whole deliverable.
+</div>
+
+<hr />
+
+<div class="section-badge"><span>Gauntlet</span></div>
+
+<p>The gauntlet matters because it turns "I did not read the code" from a reckless sentence into an operating claim. A gauntlet is not a test suite with a better name. It is a set of independent constraints that the agent cannot talk its way around.</p>
+
+<figure>
+  <img src="images/constraint-gauntlet.jpg" alt="Black and white pencil schematic of a small robot pushing a bundle through gates represented by a checklist, behavior examples, QA clipboard, metrics gauge, and mutation bug trap." />
+  <figcaption>The agent output earns confidence by passing constraints, not by sounding confident.</figcaption>
+</figure>
+
+<p>Unit tests check local behavior. Gherkin or BDD scenarios encode examples a product owner can read. QA procedures exercise customer journeys. Quality metrics catch structural drift. Mutation testing changes the implementation in small ways to see whether tests notice. Coverage shows where evidence is absent, though it cannot prove evidence is good.</p>
+
+<p>That mixture points to the real lesson: the control plane moves from implementation text to verification artifacts. The reviewer no longer asks only "is this line elegant?" The reviewer asks "which claim does this behavior satisfy, what evidence proves it, who owns the oracle, and what happens if the evidence is wrong?"</p>
+
+<p>That last question is where many "AI writes the tests" workflows fail. If the same agent misunderstands the requirement, writes the implementation, writes the test, and grades the result, the harness can become a machine for confirming the original misunderstanding. The gauntlet works only when its expectations come from outside the agent's self-confirming loop.</p>
+
+<hr />
+
+<div class="section-badge"><span>The Queue</span></div>
+
+<p>The traditional pull-request review system was already a queue. Agents make the queue visible. Microsoft research from July 2026 reported a 24.0 percent increase in merged pull requests per engineer per day for regular command-line coding-agent users, while cautioning that merged PRs are an imperfect proxy for value.<sup><a href="#ref-10">10</a></sup> Another July 2026 enterprise study of 802 developers and 196,212 pull requests found near-doubling of per-capita PR throughput in a favorable environment, but the work moved downstream into review and automation.<sup><a href="#ref-11">11</a></sup></p>
+
+<p>That is the productivity discount. If an agent doubles the amount of change entering the system, and every change still waits for a human to inspect every line, the constraint did not disappear. It moved. Teams then respond in two bad ways: shallow approvals that preserve speed but lose control, or deeper approvals that preserve control but give back the speed.</p>
+
+<svg class="svg-figure" viewBox="0 0 760 330" role="img" aria-labelledby="queue-title queue-desc">
+  <title id="queue-title">Productivity discount queue</title>
+  <desc id="queue-desc">A diagram contrasting an every-step human inspection path that creates a review queue with an outcome-evidence path that preserves human judgment for intent and exceptions.</desc>
+  <defs>
+    <marker id="arrow-queue" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="currentColor"></path>
+    </marker>
+  </defs>
+  <g class="node">
+    <rect x="35" y="125" width="130" height="64" rx="12"></rect>
+    <text class="label" x="100" y="153" text-anchor="middle">Agent creates</text>
+    <text class="label" x="100" y="174" text-anchor="middle">change</text>
+  </g>
+  <g class="node">
+    <rect x="220" y="48" width="150" height="72" rx="12"></rect>
+    <text class="label" x="295" y="78" text-anchor="middle">Inspect every</text>
+    <text class="label" x="295" y="100" text-anchor="middle">line and step</text>
+  </g>
+  <g class="node">
+    <rect x="420" y="48" width="128" height="72" rx="12"></rect>
+    <text class="label" x="484" y="78" text-anchor="middle">Review queue</text>
+    <text class="label" x="484" y="100" text-anchor="middle">grows</text>
+  </g>
+  <g class="node">
+    <rect x="600" y="48" width="128" height="72" rx="12"></rect>
+    <text class="label" x="664" y="78" text-anchor="middle">Productivity</text>
+    <text class="label" x="664" y="100" text-anchor="middle">discount</text>
+  </g>
+  <g class="node">
+    <rect x="220" y="210" width="150" height="72" rx="12"></rect>
+    <text class="label" x="295" y="240" text-anchor="middle">Harness checks</text>
+    <text class="label" x="295" y="262" text-anchor="middle">routine risk</text>
+  </g>
+  <g class="node">
+    <rect x="420" y="210" width="128" height="72" rx="12"></rect>
+    <text class="label" x="484" y="240" text-anchor="middle">Human reviews</text>
+    <text class="label" x="484" y="262" text-anchor="middle">intent</text>
+  </g>
+  <g class="node">
+    <rect x="600" y="210" width="128" height="72" rx="12"></rect>
+    <text class="label" x="664" y="240" text-anchor="middle">Throughput</text>
+    <text class="label" x="664" y="262" text-anchor="middle">preserved</text>
+  </g>
+  <g class="edge">
+    <path d="M165 145 C190 120, 200 98, 220 84" marker-end="url(#arrow-queue)"></path>
+    <path d="M370 84 L420 84" marker-end="url(#arrow-queue)"></path>
+    <path d="M548 84 L600 84" marker-end="url(#arrow-queue)"></path>
+    <path d="M165 169 C190 198, 200 230, 220 246" marker-end="url(#arrow-queue)"></path>
+    <path d="M370 246 L420 246" marker-end="url(#arrow-queue)"></path>
+    <path d="M548 246 L600 246" marker-end="url(#arrow-queue)"></path>
+  </g>
+</svg>
+
+<p>GitHub's March 2026 code-review data points in the same direction: more than one in five GitHub reviews involved Copilot code review, and more than 12,000 organizations ran it automatically.<sup><a href="#ref-13">13</a></sup> Automated review does not remove the need for design judgment. It shows that review itself is becoming an agentic system, with humans supervising a collaboration pattern rather than reading every changed line as the default proof of diligence.</p>
+
+<hr />
+
+<div class="section-badge"><span>Oracle</span></div>
+
+<p>The hardest problem is not whether the agent can write code. The hardest problem is whether the target is correct. If AI drafts the spec and AI implements the spec, a wrong spec makes the whole factory efficient at being wrong.</p>
+
+<p>That is why the oracle must be managed before the output. In testing language, the oracle is the source of expected truth: the business rule, customer promise, regulatory obligation, invariant, example, or product decision that says what correct means. The agent can draft it. The agent can format it. The agent can turn it into executable checks. The agent should not be the final authority that it is true.</p>
+
+<svg class="svg-figure" viewBox="0 0 760 360" role="img" aria-labelledby="oracle-title oracle-desc">
+  <title id="oracle-title">Oracle separation for agentic delivery</title>
+  <desc id="oracle-desc">A diagram showing product intent and domain evidence feeding an approved spec, while agent implementation and generated tests remain separate from the independent oracle.</desc>
+  <defs>
+    <marker id="arrow-oracle" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="currentColor"></path>
+    </marker>
+  </defs>
+  <g class="node">
+    <rect x="35" y="42" width="150" height="70" rx="12"></rect>
+    <text class="label" x="110" y="72" text-anchor="middle">Customer and</text>
+    <text class="label" x="110" y="94" text-anchor="middle">business truth</text>
+  </g>
+  <g class="node">
+    <rect x="35" y="154" width="150" height="70" rx="12"></rect>
+    <text class="label" x="110" y="184" text-anchor="middle">Regulation and</text>
+    <text class="label" x="110" y="206" text-anchor="middle">risk evidence</text>
+  </g>
+  <g class="node">
+    <rect x="250" y="96" width="150" height="82" rx="12"></rect>
+    <text class="label" x="325" y="126" text-anchor="middle">Approved</text>
+    <text class="label" x="325" y="148" text-anchor="middle">intent contract</text>
+  </g>
+  <g class="node">
+    <rect x="465" y="42" width="130" height="70" rx="12"></rect>
+    <text class="label" x="530" y="72" text-anchor="middle">Agent writes</text>
+    <text class="label" x="530" y="94" text-anchor="middle">implementation</text>
+  </g>
+  <g class="node">
+    <rect x="465" y="154" width="130" height="70" rx="12"></rect>
+    <text class="label" x="530" y="184" text-anchor="middle">Agent drafts</text>
+    <text class="label" x="530" y="206" text-anchor="middle">checks</text>
+  </g>
+  <g class="node">
+    <rect x="635" y="96" width="95" height="82" rx="12"></rect>
+    <text class="label" x="682" y="126" text-anchor="middle">Evidence</text>
+    <text class="label" x="682" y="148" text-anchor="middle">package</text>
+  </g>
+  <g class="node">
+    <rect x="250" y="255" width="345" height="62" rx="12"></rect>
+    <text class="label" x="422" y="282" text-anchor="middle">Independent oracle stays outside the agent loop</text>
+    <text class="label" x="422" y="304" text-anchor="middle">Human judgment approves what correct means</text>
+  </g>
+  <g class="edge">
+    <path d="M185 77 C212 85, 230 103, 250 122" marker-end="url(#arrow-oracle)"></path>
+    <path d="M185 189 C212 181, 230 163, 250 148" marker-end="url(#arrow-oracle)"></path>
+    <path d="M400 122 L465 78" marker-end="url(#arrow-oracle)"></path>
+    <path d="M400 152 L465 188" marker-end="url(#arrow-oracle)"></path>
+    <path d="M595 77 C620 87, 628 102, 635 121" marker-end="url(#arrow-oracle)"></path>
+    <path d="M595 189 C620 180, 628 162, 635 148" marker-end="url(#arrow-oracle)"></path>
+    <path d="M325 178 L384 255" marker-end="url(#arrow-oracle)"></path>
+  </g>
+</svg>
+
+<p>Fresh spec-driven development work is converging on that point. Microsoft's June 2026 article argues that AI-native engineering needs structured specs as the shared source of truth across requirements, design, implementation, tests, and validation.<sup><a href="#ref-5">5</a></sup> O'Reilly's July 2026 analysis makes the control explicit: agent-written specs still need validation before implementation agents run, and BDD-style executable examples help turn judgment into a runnable oracle.<sup><a href="#ref-6">6</a></sup></p>
+
+<p>The practical rule is simple: review the oracle before reviewing the output. Approve the business rule. Approve the negative cases. Approve the personas and permissions. Approve the "not included" section. Approve the data boundary. Then let the agent produce the boring volume under that contract.</p>
+
+<hr />
+
+<div class="section-badge"><span>Harness</span></div>
+
+<p>A verification harness is the factory wall around the agent. It decides what context the agent sees, where it can act, which tools it can use, how its work is evaluated, and what evidence survives after the session ends. The harness is not a prompt. It is durable infrastructure.</p>
+
+<p>Thread AI's June 2026 harness write-up draws a useful distinction: rules describe intent, contracts define completion, and facts decide whether the work is done.<sup><a href="#ref-4">4</a></sup> Microsoft Foundry's July 2026 agent-evaluation docs describe the same direction from another angle: datasets, rubrics, quality and safety evaluators, pass/fail thresholds, and production traces turned into curated evaluation datasets.<sup><a href="#ref-14">14</a></sup><sup><a href="#ref-15">15</a></sup></p>
+
+<svg class="svg-figure" viewBox="0 0 760 390" role="img" aria-labelledby="harness-title harness-desc">
+  <title id="harness-title">Outcome-managed agentic SDLC harness</title>
+  <desc id="harness-desc">A loop from intent contract through risk tier, agent work, sandbox, verification, evidence package, risk gate, release or human decision, telemetry, and harness improvement.</desc>
+  <defs>
+    <marker id="arrow-harness" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="currentColor"></path>
+    </marker>
+  </defs>
+  <g class="node">
+    <rect x="30" y="58" width="120" height="58" rx="12"></rect>
+    <text class="label" x="90" y="82" text-anchor="middle">Intent</text>
+    <text class="label" x="90" y="102" text-anchor="middle">contract</text>
+  </g>
+  <g class="node">
+    <rect x="185" y="58" width="105" height="58" rx="12"></rect>
+    <text class="label" x="237" y="82" text-anchor="middle">Risk</text>
+    <text class="label" x="237" y="102" text-anchor="middle">tier</text>
+  </g>
+  <g class="node">
+    <rect x="325" y="58" width="120" height="58" rx="12"></rect>
+    <text class="label" x="385" y="82" text-anchor="middle">Agent</text>
+    <text class="label" x="385" y="102" text-anchor="middle">work plan</text>
+  </g>
+  <g class="node">
+    <rect x="480" y="58" width="120" height="58" rx="12"></rect>
+    <text class="label" x="540" y="82" text-anchor="middle">Sandboxed</text>
+    <text class="label" x="540" y="102" text-anchor="middle">execution</text>
+  </g>
+  <g class="node">
+    <rect x="625" y="150" width="110" height="70" rx="12"></rect>
+    <text class="label" x="680" y="178" text-anchor="middle">Independent</text>
+    <text class="label" x="680" y="200" text-anchor="middle">verification</text>
+  </g>
+  <g class="node">
+    <rect x="475" y="275" width="130" height="58" rx="12"></rect>
+    <text class="label" x="540" y="299" text-anchor="middle">Evidence</text>
+    <text class="label" x="540" y="319" text-anchor="middle">package</text>
+  </g>
+  <g class="node">
+    <rect x="320" y="275" width="130" height="58" rx="12"></rect>
+    <text class="label" x="385" y="299" text-anchor="middle">Risk gate</text>
+    <text class="label" x="385" y="319" text-anchor="middle">decision</text>
+  </g>
+  <g class="node">
+    <rect x="160" y="275" width="130" height="58" rx="12"></rect>
+    <text class="label" x="225" y="299" text-anchor="middle">Release or</text>
+    <text class="label" x="225" y="319" text-anchor="middle">exception</text>
+  </g>
+  <g class="node">
+    <rect x="30" y="180" width="120" height="58" rx="12"></rect>
+    <text class="label" x="90" y="204" text-anchor="middle">Telemetry</text>
+    <text class="label" x="90" y="224" text-anchor="middle">feedback</text>
+  </g>
+  <g class="edge">
+    <path d="M150 87 L185 87" marker-end="url(#arrow-harness)"></path>
+    <path d="M290 87 L325 87" marker-end="url(#arrow-harness)"></path>
+    <path d="M445 87 L480 87" marker-end="url(#arrow-harness)"></path>
+    <path d="M600 96 C637 105, 660 124, 675 150" marker-end="url(#arrow-harness)"></path>
+    <path d="M660 220 C632 254, 604 275, 605 300" marker-end="url(#arrow-harness)"></path>
+    <path d="M475 304 L450 304" marker-end="url(#arrow-harness)"></path>
+    <path d="M320 304 L290 304" marker-end="url(#arrow-harness)"></path>
+    <path d="M160 304 C98 292, 78 260, 90 238" marker-end="url(#arrow-harness)"></path>
+    <path d="M90 180 C70 142, 68 118, 82 116" marker-end="url(#arrow-harness)"></path>
+  </g>
+</svg>
+
+<p>A serious harness has layers. First, spec intake: what is the approved intent, what is explicitly out of scope, and what assumptions are unresolved. Second, risk classification: low, medium, high, or critical. Third, executable acceptance: examples, properties, contracts, and negative cases. Fourth, deterministic build and regression checks. Fifth, AI evals and trace grading for behaviors that deterministic tests do not capture. Sixth, security, dependency, permission, and supply-chain checks. Seventh, a policy gate that emits an evidence package.</p>
+
+<figure>
+  <img src="images/production-uat-harness.jpg" alt="Black and white pencil schematic of an agent deploying to an isolated production-like environment, replaying realistic traffic, observing gauges, looping fixes back into the agent, and sending an evidence packet to a human review desk." />
+  <figcaption>Production-grade UAT needs a production twin: real release path, isolated customers, human gate.</figcaption>
+</figure>
+
+<p>Production-grade UAT starts when the agent can exercise its work through a production twin, not a toy staging box. For a checkout change, the harness deploys the branch through the same release path into an isolated environment with production-shaped configuration, schema migration, feature flags, observability, and replayed or synthetic traffic. The agent can run journeys, inspect traces, fix failures, redeploy, and rerun the suite. It cannot promote itself.</p>
+
+<p>That is where UAT changes. The gate becomes a human-readable evidence packet: approved spec version, covered journeys, personas and permission boundaries, failed checks, fixes made by the agent, security and dependency results, sensitive-file changes, unresolved risks, rollback plan, monitoring plan, and explicit acceptance debt. The human approves the release decision from that packet, not from raw confidence language.</p>
+
+<hr />
+
+<div class="section-badge"><span>Risk Gates</span></div>
+
+<p>Outcome management fails if every change gets the same ceremony. Low-risk work should not wait behind a human architecture board. High-risk work should not slip through because the tests are green. The point is not fewer checkpoints. The point is checkpoints placed where judgment compounds.</p>
+
+<figure>
+  <img src="images/risk-gate.jpg" alt="Black and white pencil illustration of a split road with small low-risk code parcels moving through an automated lane and a larger locked parcel stopped at a guarded human review booth." />
+  <figcaption>Fast lanes and human gates coexist. Risk decides the route.</figcaption>
+</figure>
+
+<p>A practical tiering model looks like this. Low-risk changes get automated checks, sampled outcome review, and telemetry monitoring. Medium-risk changes get human review of intent, evidence, and sensitive diffs. High-risk changes get review of spec, architecture, security posture, and relevant code paths. Critical changes get independent expert review, staged rollout, rollback rehearsal, and explicit sign-off.</p>
+
+<p>The code-reading list is concrete. Humans still read code at trust boundaries: authentication, authorization, crypto, secrets, identity, payments, billing, privacy, data retention, migrations, analytics, CI/CD, deployment, rollback, infrastructure, tests, policy, agent instructions, MCP configuration, and anything involved in a high-severity incident or unexplained eval failure.</p>
+
+<p>Security sources are moving in the same direction. Snyk's June 2026 agentic development security launch frames the new problem as governing what agents use, what they do, and what they generate.<sup><a href="#ref-19">19</a></sup> NIST's 2026 AI-agent standards work and AI-agent identity material show that agent identity, authorization, and operational controls are becoming standards concerns, not local team preferences.<sup><a href="#ref-20">20</a></sup><sup><a href="#ref-21">21</a></sup></p>
+
+<div class="callout-warn">
+  <strong>The dangerous copy-paste is "I do not read AI code."</strong> The safe copy-paste is "I do not use universal line-by-line reading as my default control; I use independent evidence and risk-based escalation."
+</div>
+
+<hr />
+
+<div class="section-badge"><span>Factory</span></div>
+
+<p>The industry language around this is settling around the agentic software factory. That phrase is useful only if the factory is understood as a managed production system, not a room full of unsupervised agents.</p>
+
+<p>BCG Platinion's March 2026 framing says humans define business intent and review outcomes while agents build, test, and ship.<sup><a href="#ref-3">3</a></sup> Tricentis describes agentic software quality through governance, approvals, auditability, and release readiness.<sup><a href="#ref-18">18</a></sup> Datadog and OpenAI both published harness-oriented engineering material in early 2026, describing agents that operate inside systems of tools, evals, feedback loops, and constraints rather than free-form chat sessions.<sup><a href="#ref-16">16</a></sup><sup><a href="#ref-17">17</a></sup></p>
+
+<p>The alignment is not perfect. Vendors have incentives to name categories early. Consulting firms have incentives to name transformations. Research papers have limited external validity. Still, the direction is consistent: agents are doing more SDLC work, and the mature response is to strengthen the control plane around intent, identity, tools, evidence, quality, and release gates.</p>
+
+<p>That changes the role of platform engineering. The internal platform is no longer just a golden path for human teams. It becomes the factory floor: repository rules, isolated worktrees, tool permissions, test runners, eval datasets, trace capture, secret boundaries, environment promotion, policy-as-code, audit logs, and exception handling. The agent works inside that floor. The human improves the floor.</p>
+
+<p>It also changes the role of product management. A vague ticket is no longer a harmless starting point. It is an ambiguous contract that an agent can satisfy in the wrong direction at high speed. Product must supply sharper acceptance truth: users, journeys, business rules, disallowed behavior, nonfunctional requirements, and examples. The agent can help draft those artifacts, but the organization has to own their correctness.</p>
+
+<hr />
+
+<div class="section-badge"><span>The Catch</span></div>
+
+<p>The strongest objection to Martin's post is correct: outcome checks only prove what they measure. A harness can be wrong. A metric can be gamed. A generated spec can launder a false assumption. A security scanner can miss a privilege escalation path. A green dashboard can become theater.</p>
+
+<p>That objection does not restore universal code reading as the default. It changes the design target. The answer is engineered distrust: oracle separation, adversarial challenge, hidden tests, mutation tests, negative cases, least-privilege tools, traceable evidence, risk gates, and post-release telemetry that feeds back into the harness.</p>
+
+<p>March 2026 TDAD research supports that direction by combining behavioral specs with visible and hidden tests, mutation testing, and regression scenarios.<sup><a href="#ref-8">8</a></sup> Another March 2026 paper reported that targeted test context reduced regressions in a SWE-bench Verified experiment, while generic procedural TDD prompting increased them.<sup><a href="#ref-9">9</a></sup> The lesson is not "tests solve it." The lesson is that the test context must be designed, targeted, and independent enough to catch the failure modes agents actually create.</p>
+
+<p>The deeper catch is cultural. Many organizations say "human in the loop" when they mean "someone will be blamed later." That is not governance. A human checkpoint has value only when the human can see the right artifact, has authority to stop the flow, and is placed before the expensive mistake. Reviewing an agent's thousand-line diff after the wrong requirement has already been accepted is late theater.</p>
+
+<p>The better phrase is human-on-the-loop for routine flow and human-in-the-loop for risk. Humans supervise the system, sample outcomes, tune the harness, and intervene on exceptions. They enter the critical path when intent, risk, security, architecture, compliance, or accountability demands judgment.</p>
+
+<hr />
+
+<p>Martin is directionally right and dangerously easy to misread. The next SDLC shift is not from review to no review. It is from reading the factory's internal motion to governing the contract, gates, evidence, and exceptions that decide whether the factory produced the right thing. Agentic software delivery is not reading less — verifying better.</p>
+
+<hr />
+
+<h3>References</h3>
+
+<ol>
+  <li id="ref-1">Uncle Bob Martin. X post, July 23, 2026. <a href="https://x.com/unclebobmartin/status/2080257779395154409">x.com/unclebobmartin/status/2080257779395154409</a>.</li>
+  <li id="ref-2">Uncle Bob Martin. X post on test-overload calibration, July 2, 2026. <a href="https://x.com/unclebobmartin/status/2072736888478175413">x.com/unclebobmartin/status/2072736888478175413</a>.</li>
+  <li id="ref-3">BCG Platinion. "The Agentic Software Factory." March 26, 2026. <a href="https://www.bcgplatinion.com/insights/the-agentic-software-factory">bcgplatinion.com/insights/the-agentic-software-factory</a>.</li>
+  <li id="ref-4">Thread AI. "An inside look: how we built our agentic SDLC harness." June 24, 2026. <a href="https://www.threadai.com/blog/an-inside-look-how-we-built-our-agentic-sdlc-harness">threadai.com/blog/an-inside-look-how-we-built-our-agentic-sdlc-harness</a>.</li>
+  <li id="ref-5">Microsoft Developer Blog. "Spec-driven development: AI-native engineering." June 10, 2026. <a href="https://developer.microsoft.com/blog/spec-driven-development-ai-native-engineering/">developer.microsoft.com/blog/spec-driven-development-ai-native-engineering</a>.</li>
+  <li id="ref-6">O'Reilly Radar. "Why AI Coding Agents Still Need Clear Specs." July 8, 2026. <a href="https://www.oreilly.com/radar/why-ai-coding-agents-still-need-clear-specs/">oreilly.com/radar/why-ai-coding-agents-still-need-clear-specs</a>.</li>
+  <li id="ref-7">Augment Code. "AI spec template." April 8, 2026. <a href="https://www.augmentcode.com/guides/ai-spec-template">augmentcode.com/guides/ai-spec-template</a>.</li>
+  <li id="ref-8">arXiv 2603.08806. Behavioral specifications, hidden tests, mutation testing, and regression scenarios for tool-using agents. March 2026. <a href="https://arxiv.org/abs/2603.08806">arxiv.org/abs/2603.08806</a>.</li>
+  <li id="ref-9">arXiv 2603.17973. Targeted test context and AI coding regressions. March 2026. <a href="https://arxiv.org/abs/2603.17973">arxiv.org/abs/2603.17973</a>.</li>
+  <li id="ref-10">arXiv 2607.01418. Microsoft early-2026 command-line coding agent rollout study. July 2026. <a href="https://arxiv.org/abs/2607.01418">arxiv.org/abs/2607.01418</a>.</li>
+  <li id="ref-11">arXiv 2607.01904. Enterprise 2x mandate study of 802 developers and 196,212 pull requests. July 2026. <a href="https://arxiv.org/abs/2607.01904">arxiv.org/abs/2607.01904</a>.</li>
+  <li id="ref-12">arXiv 2607.13196. Agentic code review collaboration patterns and review quality. July 2026. <a href="https://arxiv.org/abs/2607.13196">arxiv.org/abs/2607.13196</a>.</li>
+  <li id="ref-13">GitHub Blog. "60 million Copilot code reviews and counting." March 5, 2026. <a href="https://github.blog/ai-and-ml/github-copilot/60-million-copilot-code-reviews-and-counting/">github.blog/ai-and-ml/github-copilot/60-million-copilot-code-reviews-and-counting</a>.</li>
+  <li id="ref-14">Microsoft Foundry. "Evaluate your AI agent." Updated July 24, 2026. <a href="https://learn.microsoft.com/en-us/azure/foundry/observability/how-to/evaluate-agent">learn.microsoft.com/en-us/azure/foundry/observability/how-to/evaluate-agent</a>.</li>
+  <li id="ref-15">Microsoft Foundry. "Create evaluation datasets from traces." Updated July 24, 2026. <a href="https://learn.microsoft.com/en-us/azure/foundry/observability/how-to/traces-to-dataset">learn.microsoft.com/en-us/azure/foundry/observability/how-to/traces-to-dataset</a>.</li>
+  <li id="ref-16">OpenAI. "Harness engineering." February 11, 2026. <a href="https://openai.com/index/harness-engineering/">openai.com/index/harness-engineering</a>.</li>
+  <li id="ref-17">Datadog. "Harness-first agents." March 9, 2026. <a href="https://www.datadoghq.com/blog/ai/harness-first-agents/">datadoghq.com/blog/ai/harness-first-agents</a>.</li>
+  <li id="ref-18">Tricentis. "Tricentis introduces Agentic Software Quality Platform." March 10, 2026. <a href="https://www.tricentis.com/news/tricentis-introduces-agentic-software-quality-platform">tricentis.com/news/tricentis-introduces-agentic-software-quality-platform</a>.</li>
+  <li id="ref-19">Snyk. "Snyk launches Evo Agentic Development Security." June 23, 2026. <a href="https://snyk.io/news/snyk-launches-evo-agentic-development-security/">snyk.io/news/snyk-launches-evo-agentic-development-security</a>.</li>
+  <li id="ref-20">NIST. "AI Agent Standards Initiative." Published February 17, 2026; modified April 20, 2026. <a href="https://www.nist.gov/artificial-intelligence/ai-agent-standards-initiative">nist.gov/artificial-intelligence/ai-agent-standards-initiative</a>.</li>
+  <li id="ref-21">NIST CSRC/NCCoE. "Accelerating the adoption of software and AI agent identity and authorization." February 5, 2026. <a href="https://csrc.nist.gov/pubs/other/2026/02/05/accelerating-the-adoption-of-software-and-ai-agent/ipd">csrc.nist.gov/pubs/other/2026/02/05/accelerating-the-adoption-of-software-and-ai-agent/ipd</a>.</li>
+</ol>
+
+</article>
+
+    </article>
+
+    <p><a href="https://bootloader.live">← Back to bootloader.live</a></p>
+
+    <script>window.goatcounter={no_onload:true};</script>
+    <script data-goatcounter="https://mxcoppell.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
